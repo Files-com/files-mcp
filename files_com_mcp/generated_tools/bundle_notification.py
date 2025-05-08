@@ -23,7 +23,7 @@ async def list_bundle_notification(context: Context) -> str:
             [
                 "id",
                 "bundle_id",
-                "user_id",
+                "notify_user_id",
                 "notify_on_registration",
                 "notify_on_upload",
             ],
@@ -63,7 +63,7 @@ async def find_bundle_notification(
             [
                 "id",
                 "bundle_id",
-                "user_id",
+                "notify_user_id",
                 "notify_on_registration",
                 "notify_on_upload",
             ],
@@ -78,13 +78,15 @@ async def find_bundle_notification(
 
 
 async def create_bundle_notification(
-    context: Context, bundle_id: int | None = None, user_id: int | None = None
+    context: Context,
+    bundle_id: int | None = None,
+    notify_user_id: int | None = None,
 ) -> str:
     """Create Bundle Notification
 
     Args:
         bundle_id: Bundle ID to notify on
-        user_id: The id of the user to notify.
+        notify_user_id: The id of the user to notify.
     """
 
     try:
@@ -95,8 +97,8 @@ async def create_bundle_notification(
         if bundle_id is None:
             return "Missing required parameter: bundle_id"
         params["bundle_id"] = bundle_id
-        if user_id is not None:
-            params["user_id"] = user_id
+        if notify_user_id is not None:
+            params["notify_user_id"] = notify_user_id
 
         # Smart Default(s)
         params["notify_on_registration"] = True
@@ -112,7 +114,7 @@ async def create_bundle_notification(
             [
                 "id",
                 "bundle_id",
-                "user_id",
+                "notify_user_id",
                 "notify_on_registration",
                 "notify_on_upload",
             ],
@@ -161,7 +163,7 @@ async def update_bundle_notification(
             [
                 "id",
                 "bundle_id",
-                "user_id",
+                "notify_user_id",
                 "notify_on_registration",
                 "notify_on_upload",
             ],
@@ -201,7 +203,7 @@ async def delete_bundle_notification(
             [
                 "id",
                 "bundle_id",
-                "user_id",
+                "notify_user_id",
                 "notify_on_registration",
                 "notify_on_upload",
             ],
@@ -230,9 +232,11 @@ def register_tools(mcp):
     async def create_bundle_notification_tool(
         context: Context,
         bundle_id: int | None = None,
-        user_id: int | None = None,
+        notify_user_id: int | None = None,
     ) -> str:
-        return await create_bundle_notification(context, bundle_id, user_id)
+        return await create_bundle_notification(
+            context, bundle_id, notify_user_id
+        )
 
     @mcp.tool()
     async def update_bundle_notification_tool(
