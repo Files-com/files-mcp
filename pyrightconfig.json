@@ -1,0 +1,4 @@
+{
+  "_comment": "FastMCP does an exact check for the Context type on an argument in the tool method signature. When we try to add generic typing to satisy this pyright rule, FastMCP breaks.",
+  "reportMissingTypeArgument": false
+}

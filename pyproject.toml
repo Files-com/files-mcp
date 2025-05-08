@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "files_com_mcp"
+version = "1.0.1"
+description = "MCP for the Files.com API"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+  "fastmcp>=2.2.0",
+  "mcp",
+  "files-com",
+  "requests>=2.31.0",
+  "fastapi"
+]
+
+[project.scripts]
+files-com-mcp = "files_com_mcp.__main__:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "tests.*", "doc"]
+
+[tool.setuptools.package-data]
+files_sdk = ["../_VERSION", "../README.md"]
+
+[tool.black]
+line-length=79
+include="files_com_mcp/"
+[tool.pyright]
+include=["files_com_mcp"]
+reportMissingTypeArgument=true
+reportUnnecessaryCast=true
+reportUnnecessaryComparison=true
+reportUnnecessaryContains=true
+reportUnnecessaryIsInstance=true
+# The project currently uses dynamic types
+reportGeneralTypeIssues=false

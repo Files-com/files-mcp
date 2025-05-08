@@ -1,0 +1,15 @@
+tool_list = [
+    "bundle",
+    "bundle_download",
+    "bundle_notification",
+    "bundle_recipient",
+    "bundle_registration",
+    "file",
+    "folder",
+    "group",
+    "user",
+    "automation",
+    "history",
+    "permission",
+    "remote_server",
+]
