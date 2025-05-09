@@ -1,18 +1,53 @@
-# Files.com Python MCP Server
+# Files.com MCP Server
 
-Files.com's MCP gives your LLM access to our most popular API operations.
+Modern AI models like ChatGPT and Claude are no longer just answering questions—they’re taking action. With Files.com MCP, you can securely give LLMs controlled access to real-world operations inside your Files.com environment.
+
+Whether it's uploading, downloading, querying folders, or managing users, MCP enables your AI agent to interact with your Files.com infrastructure as if it were an extension of your team—without compromising on security, auditability, or control.
+
 
 ## What Is MCP?
 
-Model Context Protocol (MCP) is a protocol designed to expose structured tools or capabilities that can be incorporated into a Large Language Model (LLM)'s execution context. It allows LLMs, like ChatGPT or Claude, to call real-world functions as part of generating responses.
+Model Context Protocol (MCP) is a structured interface that lets Large Language Models call real APIs as part of their workflow. Think of it as a way to “hand tools” to the LLM—where the tools are real, authenticated functions from your Files.com environment.
 
-Think of MCP as a standardized way to present a set of available "tools" (functions) that an LLM can use when it doesn't just need to answer, but needs to act, e.g. uploading a file, querying a folder, or creating a user.
+When integrated via MCP, your LLM can:
+
+ - Transfer files between cloud and on-prem systems
+
+ - Query folders or file metadata
+
+ - Create and manage users
+
+ - Automate workflows like archival or sharing
+
+ - And much more
+
+MCP turns the LLM from a passive assistant into an active file operations agent.
+
+
+## What is Files.com?
+
+Files.com is the modern platform for secure file transfer, automation, and storage integration. Used by thousands of enterprises, Files.com connects cloud apps, on-prem systems, and human workflows—all through a single, powerful interface.
+
+With robust APIs, native protocol support (SFTP, FTPS, AS2, and more), and enterprise-grade access controls, Files.com is built to move your files—reliably, securely, and at scale.
+
+
+## Common Use Cases
+
+*AI Assistants for Operations Teams:* Let your internal chatbot fetch or archive files on request.
+
+*Automated LLM Workflows:* Build AI agents that react to incoming support requests, then retrieve or upload the necessary files from your environment.
+
+*Developer Copilots:* Enable your dev-focused LLMs to create users, provision folders, or debug via real-time file access.
+
 
 ## Important Information
 
-Some LLMs struggle with too many tools in the context. LLM clients often offer a way to disable and enable specific tools for an MCP. If your LLM is having trouble picking the right tools, try disabling the tools you do not need in your LLM client.
+Large Language Models perform best when their toolset is focused. If you're integrating with Files.com MCP and noticing inconsistent tool usage, your LLM may be overloaded with too many available functions.
 
-## Installing in Claude
+Most LLM clients allow you to selectively enable or disable tools exposed through MCP. For best results, only include the specific tools your agent needs for its task. This reduces ambiguity and improves the model’s ability to pick the right operation every time.
+
+
+## Using with Claude
 
 To install into Claude you have to add JSON to the `claude_desktop_config.json`
 
@@ -22,9 +57,11 @@ To add our MCP, add the following JSON (be sure to change the path and FILESCOM_
 
 NOTE: This version assumes you are running from source. Once we have PyPi publishing this README will have them version as well.
 
+
 ### uv Required
 
-These examples requires `uv` which is a popular modern environment manager for running isolated python tools. Installation is out of scope of this README.
+These examples require `uv` which is a popular modern environment manager for running isolated python tools. You will need to install it first.
+
 
 ### Claude Config - STDIO
 
@@ -49,6 +86,7 @@ These examples requires `uv` which is a popular modern environment manager for r
 }
 ```
 
+
 ## Development
 
 While our MCP works well out-of-the-box, some power users find value in modifying MCP code to suit their unique needs. For those power users, it is recommended to use STDIO mode. Upload and Download tools rely on the file system where the MCP is running.
@@ -56,13 +94,15 @@ While our MCP works well out-of-the-box, some power users find value in modifyin
 To test LLM tools we recommend a popular command-line program called `inspector`. This will start a WebUI on a local port, the output of the command will give you the link to the inspector GUI.
 Ex: http://127.0.0.1:6274
 
-## Develoment - STDIO
+
+### Develoment - STDIO
 
 ```
 FILESCOM_API_KEY="dummyKey" npx @modelcontextprotocol/inspector uv run -m files_com_mcp
 ```
 
-## Development - SSE
+
+### Development - SSE
 
 ```
 FILESCOM_API_KEY="dummyKey" uv run -m files_com_mcp --mode server --port 12345

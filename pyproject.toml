@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "files_com_mcp"
-version = "1.0.2"
+version = "1.0.3"
 description = "MCP for the Files.com API"
 readme = "README.md"
 license = { text = "MIT" }
