@@ -49,14 +49,11 @@ Most LLM clients allow you to selectively enable or disable tools exposed throug
 
 ## Using with Claude
 
-To install into Claude you have to add JSON to the `claude_desktop_config.json`
+To install into Claude you have to add JSON to the `claude_desktop_config.json` file
 
 An official tutorial can found here: https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server
 
-To add our MCP, add the following JSON (be sure to change the path and FILESCOM_API_KEY value)
-
-NOTE: This version assumes you are running from source. Once we have PyPi publishing this README will have them version as well.
-
+To add the Files.com MCP, use the Claude Config JSON below (be sure to change the FILES_COM_API_KEY value)
 
 ### uv Required
 
@@ -89,7 +86,7 @@ To test LLM tools we recommend a popular command-line program called `inspector`
 Ex: http://127.0.0.1:6274
 
 
-### Develoment - STDIO
+### Development - STDIO
 
 ```
 FILESCOM_API_KEY="dummyKey" npx @modelcontextprotocol/inspector uv run -m files_com_mcp
