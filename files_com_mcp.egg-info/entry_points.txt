@@ -1,0 +1,2 @@
+[console_scripts]
+files-com-mcp = files_com_mcp.__main__:main
