@@ -62,21 +62,16 @@ NOTE: This version assumes you are running from source. Once we have PyPi publis
 
 These examples require `uv` which is a popular modern environment manager for running isolated python tools. You will need to install it first.
 
-
-### Claude Config - STDIO
+### Claude Config
 
 ```
 {
   "mcpServers": {
-    "files_com_mcp": {
+    "mcp-proxy": {
       "type": "stdio",
-      "command": "uv",
+      "command": "uvx",
       "args": [
-        "--directory",
-        "/path/to/folder-containing-files_com_mcp",
-        "run",
-        "-m",
-        "files_com_mcp"
+        "files-com-mcp"
       ],
       "env": {
         "FILES_COM_API_KEY": "CHangeME"
@@ -85,7 +80,6 @@ These examples require `uv` which is a popular modern environment manager for ru
   }
 }
 ```
-
 
 ## Development
 
@@ -112,4 +106,27 @@ Launch the inspector
 
 ```
 npx @modelcontextprotocol/inspector
+```
+
+### Development Claude Config
+
+```
+{
+  "mcpServers": {
+    "files_com_mcp": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/path/to/folder-containing-files_com_mcp",
+        "run",
+        "-m",
+        "files_com_mcp"
+      ],
+      "env": {
+        "FILES_COM_API_KEY": "CHangeME"
+      }
+    }
+  }
+}
 ```
