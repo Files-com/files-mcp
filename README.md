@@ -2,8 +2,6 @@
 
 ## Introduction
 
-## Introduction
-
 Modern AI models like ChatGPT and Claude are no longer just answering questions—they’re taking action. With Files.com MCP, you can securely give LLMs controlled access to real-world operations inside your Files.com environment.
 
 Whether it's uploading, downloading, querying folders, or managing users, MCP enables your AI agent to interact with your Files.com infrastructure as if it were an extension of your team—without compromising on security, auditability, or control.
@@ -46,6 +44,14 @@ Large Language Models perform best when their toolset is focused. If you're inte
 
 Most LLM clients allow you to selectively enable or disable tools exposed through MCP. For best results, only include the specific tools your agent needs for its task. This reduces ambiguity and improves the model’s ability to pick the right operation every time.
 
+### Installation Into Your LLM
+
+Each LLM client has its own method for installing an MCP, and they typically provide specific instructions. Many clients follow a pattern similar to Claude, so our Claude example is a great starting point if you’re working with one of those.
+
+For LLMs that require a more detailed or technical setup, our MCP is implemented in Python and available on PyPI: https://pypi.org/project/files-com-mcp/
+
+If your LLM client needs you to supply execution details for our MCP, we recommend using `uvx`, as demonstrated in the Claude example. This approach ensures a smooth, reproducible setup with minimal effort.
+
 ### Using with Claude
 
 To install into Claude you have to add JSON to the `claude_desktop_config.json` file
@@ -56,7 +62,7 @@ To add the Files.com MCP, use the Claude Config JSON below (be sure to change th
 
 #### uv Required
 
-These examples require `uv` which is a popular modern environment manager for running isolated python tools. You will need to install it first.
+These examples require `uv` which is a popular modern environment manager for running isolated python tools. You will need to install it first. Using uvx is a huge improvement over older Python environment setup methods. It is simple, runs smoothly, and eliminates the need for manual configuration or unnecessary complexity.
 
 #### Claude Config
 
