@@ -134,6 +134,13 @@ To sort the returned data, pass in the ```sort_by``` method argument.
 Each resource supports a unique set of valid sort fields and can only be sorted by one field at a
 time.
 
+#### Special note about the List Folder Endpoint
+
+For historical reasons, and to maintain compatibility
+with a variety of other cloud-based MFT and EFSS services, Folders will always be listed before Files
+when listing a Folder.  This applies regardless of the sorting parameters you provide.  These *will* be
+used, after the initial sort application of Folders before Files.
+
 ### Filtering
 
 Filters apply selection criteria to the underlying query that returns the results. They can be
