@@ -65,13 +65,13 @@ async def upload_file_from_local(
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="Download_File_to_Local")
     async def download_file_to_local_tool(
         context: Context, remote_path: str, local_path: str
     ) -> str:
         return await download_file_to_local(context, remote_path, local_path)
 
-    @mcp.tool()
+    @mcp.tool(name="Upload_File_from_Local")
     async def upload_file_from_local_tool(
         context: Context,
         local_path: str,

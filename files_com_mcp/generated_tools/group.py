@@ -189,15 +189,15 @@ async def delete_group(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Group")
     async def list_group_tool(context: Context) -> str:
         return await list_group(context)
 
-    @mcp.tool()
+    @mcp.tool(name="Find_Group")
     async def find_group_tool(context: Context, id: int | None = None) -> str:
         return await find_group(context, id)
 
-    @mcp.tool()
+    @mcp.tool(name="Create_Group")
     async def create_group_tool(
         context: Context,
         name: str | None = None,
@@ -207,7 +207,7 @@ def register_tools(mcp):
     ) -> str:
         return await create_group(context, name, notes, user_ids, admin_ids)
 
-    @mcp.tool()
+    @mcp.tool(name="Update_Group")
     async def update_group_tool(
         context: Context,
         id: int | None = None,
@@ -220,7 +220,7 @@ def register_tools(mcp):
             context, id, notes, user_ids, admin_ids, name
         )
 
-    @mcp.tool()
+    @mcp.tool(name="Delete_Group")
     async def delete_group_tool(
         context: Context, id: int | None = None
     ) -> str:

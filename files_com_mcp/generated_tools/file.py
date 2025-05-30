@@ -141,17 +141,17 @@ async def move_file(
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="Delete_File")
     async def delete_file_tool(
         context: Context, path: str | None = None
     ) -> str:
         return await delete_file(context, path)
 
-    @mcp.tool()
+    @mcp.tool(name="Find_File")
     async def find_file_tool(context: Context, path: str | None = None) -> str:
         return await find_file(context, path)
 
-    @mcp.tool()
+    @mcp.tool(name="Copy_File")
     async def copy_file_tool(
         context: Context,
         path: str | None = None,
@@ -159,7 +159,7 @@ def register_tools(mcp):
     ) -> str:
         return await copy_file(context, path, destination)
 
-    @mcp.tool()
+    @mcp.tool(name="Move_File")
     async def move_file_tool(
         context: Context,
         path: str | None = None,

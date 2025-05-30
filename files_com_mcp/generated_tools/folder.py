@@ -68,13 +68,13 @@ async def create_folder(context: Context, path: str | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_For_Folder")
     async def list_for_folder_tool(
         context: Context, path: str | None = None
     ) -> str:
         return await list_for_folder(context, path)
 
-    @mcp.tool()
+    @mcp.tool(name="Create_Folder")
     async def create_folder_tool(
         context: Context, path: str | None = None
     ) -> str:

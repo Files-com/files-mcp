@@ -352,29 +352,29 @@ async def delete_automation(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Automation")
     async def list_automation_tool(context: Context) -> str:
         return await list_automation(context)
 
-    @mcp.tool()
+    @mcp.tool(name="Find_Automation")
     async def find_automation_tool(
         context: Context, id: int | None = None
     ) -> str:
         return await find_automation(context, id)
 
-    @mcp.tool()
+    @mcp.tool(name="Create_Automation")
     async def create_automation_tool(
         context: Context, automation: str | None = None
     ) -> str:
         return await create_automation(context, automation)
 
-    @mcp.tool()
+    @mcp.tool(name="Update_Automation")
     async def update_automation_tool(
         context: Context, id: int | None = None
     ) -> str:
         return await update_automation(context, id)
 
-    @mcp.tool()
+    @mcp.tool(name="Delete_Automation")
     async def delete_automation_tool(
         context: Context, id: int | None = None
     ) -> str:

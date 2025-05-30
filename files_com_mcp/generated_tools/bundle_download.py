@@ -37,7 +37,7 @@ async def list_bundle_download(
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Bundle_Download")
     async def list_bundle_download_tool(
         context: Context, bundle_id: int | None = None
     ) -> str:

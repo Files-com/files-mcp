@@ -19,6 +19,6 @@ async def check_platform_status() -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="Check_Platform_Status")
     async def check_platform_status_tool() -> str:
         return await check_platform_status()

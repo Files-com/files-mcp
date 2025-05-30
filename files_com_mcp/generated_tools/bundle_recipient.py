@@ -94,13 +94,13 @@ async def create_bundle_recipient(
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Bundle_Recipient")
     async def list_bundle_recipient_tool(
         context: Context, bundle_id: int | None = None
     ) -> str:
         return await list_bundle_recipient(context, bundle_id)
 
-    @mcp.tool()
+    @mcp.tool(name="Create_Bundle_Recipient")
     async def create_bundle_recipient_tool(
         context: Context,
         bundle_id: int | None = None,

@@ -69,7 +69,7 @@ These examples require `uv` which is a popular modern environment manager for ru
 ```
 {
   "mcpServers": {
-    "mcp-proxy": {
+    "Files.com": {
       "type": "stdio",
       "command": "uvx",
       "args": [
@@ -227,7 +227,7 @@ npx @modelcontextprotocol/inspector
 ```
 {
   "mcpServers": {
-    "files_com_mcp": {
+    "Files.com": {
       "type": "stdio",
       "command": "uv",
       "args": [

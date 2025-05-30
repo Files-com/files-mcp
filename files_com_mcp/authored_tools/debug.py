@@ -4,6 +4,6 @@ async def hello_world() -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="Hello_World")
     async def hello_world_tool() -> str:
         return await hello_world()

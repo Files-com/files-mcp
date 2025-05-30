@@ -237,28 +237,28 @@ async def list_history(context: Context) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_For_File_History")
     async def list_for_file_history_tool(
         context: Context, path: str | None = None
     ) -> str:
         return await list_for_file_history(context, path)
 
-    @mcp.tool()
+    @mcp.tool(name="List_For_Folder_History")
     async def list_for_folder_history_tool(
         context: Context, path: str | None = None
     ) -> str:
         return await list_for_folder_history(context, path)
 
-    @mcp.tool()
+    @mcp.tool(name="List_For_User_History")
     async def list_for_user_history_tool(
         context: Context, user_id: int | None = None
     ) -> str:
         return await list_for_user_history(context, user_id)
 
-    @mcp.tool()
+    @mcp.tool(name="List_Logins_History")
     async def list_logins_history_tool(context: Context) -> str:
         return await list_logins_history(context)
 
-    @mcp.tool()
+    @mcp.tool(name="List_History")
     async def list_history_tool(context: Context) -> str:
         return await list_history(context)

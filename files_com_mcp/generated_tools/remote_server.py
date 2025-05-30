@@ -62,11 +62,11 @@ async def find_remote_server(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Remote_Server")
     async def list_remote_server_tool(context: Context) -> str:
         return await list_remote_server(context)
 
-    @mcp.tool()
+    @mcp.tool(name="Find_Remote_Server")
     async def find_remote_server_tool(
         context: Context, id: int | None = None
     ) -> str:

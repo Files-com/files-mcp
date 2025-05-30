@@ -37,7 +37,7 @@ async def list_bundle_registration(
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Bundle_Registration")
     async def list_bundle_registration_tool(
         context: Context, bundle_id: int | None = None
     ) -> str:

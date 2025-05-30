@@ -125,7 +125,7 @@ async def delete_permission(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Permission")
     async def list_permission_tool(
         context: Context,
         path: str | None = None,
@@ -134,7 +134,7 @@ def register_tools(mcp):
     ) -> str:
         return await list_permission(context, path, group_id, user_id)
 
-    @mcp.tool()
+    @mcp.tool(name="Create_Permission")
     async def create_permission_tool(
         context: Context,
         path: str | None = None,
@@ -146,7 +146,7 @@ def register_tools(mcp):
             context, path, group_id, permission, user_id
         )
 
-    @mcp.tool()
+    @mcp.tool(name="Delete_Permission")
     async def delete_permission_tool(
         context: Context, id: int | None = None
     ) -> str:

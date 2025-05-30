@@ -218,17 +218,17 @@ async def delete_bundle_notification(
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Bundle_Notification")
     async def list_bundle_notification_tool(context: Context) -> str:
         return await list_bundle_notification(context)
 
-    @mcp.tool()
+    @mcp.tool(name="Find_Bundle_Notification")
     async def find_bundle_notification_tool(
         context: Context, id: int | None = None
     ) -> str:
         return await find_bundle_notification(context, id)
 
-    @mcp.tool()
+    @mcp.tool(name="Create_Bundle_Notification")
     async def create_bundle_notification_tool(
         context: Context,
         bundle_id: int | None = None,
@@ -238,7 +238,7 @@ def register_tools(mcp):
             context, bundle_id, notify_user_id
         )
 
-    @mcp.tool()
+    @mcp.tool(name="Update_Bundle_Notification")
     async def update_bundle_notification_tool(
         context: Context,
         id: int | None = None,
@@ -249,7 +249,7 @@ def register_tools(mcp):
             context, id, notify_on_registration, notify_on_upload
         )
 
-    @mcp.tool()
+    @mcp.tool(name="Delete_Bundle_Notification")
     async def delete_bundle_notification_tool(
         context: Context, id: int | None = None
     ) -> str:

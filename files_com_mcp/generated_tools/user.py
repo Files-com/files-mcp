@@ -339,15 +339,15 @@ async def delete_user(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_User")
     async def list_user_tool(context: Context) -> str:
         return await list_user(context)
 
-    @mcp.tool()
+    @mcp.tool(name="Find_User")
     async def find_user_tool(context: Context, id: int | None = None) -> str:
         return await find_user(context, id)
 
-    @mcp.tool()
+    @mcp.tool(name="Create_User")
     async def create_user_tool(
         context: Context,
         username: str | None = None,
@@ -377,7 +377,7 @@ def register_tools(mcp):
             user_home,
         )
 
-    @mcp.tool()
+    @mcp.tool(name="Update_User")
     async def update_user_tool(
         context: Context,
         id: int | None = None,
@@ -409,6 +409,6 @@ def register_tools(mcp):
             username,
         )
 
-    @mcp.tool()
+    @mcp.tool(name="Delete_User")
     async def delete_user_tool(context: Context, id: int | None = None) -> str:
         return await delete_user(context, id)

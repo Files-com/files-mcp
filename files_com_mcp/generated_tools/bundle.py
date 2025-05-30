@@ -240,15 +240,15 @@ async def delete_bundle(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool()
+    @mcp.tool(name="List_Bundle")
     async def list_bundle_tool(context: Context) -> str:
         return await list_bundle(context)
 
-    @mcp.tool()
+    @mcp.tool(name="Find_Bundle")
     async def find_bundle_tool(context: Context, id: int | None = None) -> str:
         return await find_bundle(context, id)
 
-    @mcp.tool()
+    @mcp.tool(name="Create_Bundle")
     async def create_bundle_tool(
         context: Context,
         paths: list | None = None,
@@ -270,13 +270,13 @@ def register_tools(mcp):
             require_registration,
         )
 
-    @mcp.tool()
+    @mcp.tool(name="Update_Bundle")
     async def update_bundle_tool(
         context: Context, id: int | None = None, expires_at: str | None = None
     ) -> str:
         return await update_bundle(context, id, expires_at)
 
-    @mcp.tool()
+    @mcp.tool(name="Delete_Bundle")
     async def delete_bundle_tool(
         context: Context, id: int | None = None
     ) -> str:
