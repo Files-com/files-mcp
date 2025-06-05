@@ -1,10 +1,17 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
 
-async def list_for_folder(context: Context, path: str | None = None) -> str:
+async def list_for_folder(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+) -> str:
     """List Folders by Path
 
     Args:
@@ -35,7 +42,12 @@ async def list_for_folder(context: Context, path: str | None = None) -> str:
         return f"General Exception: {ex}"
 
 
-async def create_folder(context: Context, path: str | None = None) -> str:
+async def create_folder(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+) -> str:
     """Create Folder
 
     Args:
@@ -68,14 +80,20 @@ async def create_folder(context: Context, path: str | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_For_Folder")
+    @mcp.tool(name="List_For_Folder", description="List Folders by Path")
     async def list_for_folder_tool(
-        context: Context, path: str | None = None
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
     ) -> str:
         return await list_for_folder(context, path)
 
-    @mcp.tool(name="Create_Folder")
+    @mcp.tool(name="Create_Folder", description="Create Folder")
     async def create_folder_tool(
-        context: Context, path: str | None = None
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
     ) -> str:
         return await create_folder(context, path)

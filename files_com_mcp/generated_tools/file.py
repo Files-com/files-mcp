@@ -1,10 +1,17 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
 
-async def delete_file(context: Context, path: str | None = None) -> str:
+async def delete_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+) -> str:
     """Delete File/Folder
 
     Args:
@@ -35,7 +42,12 @@ async def delete_file(context: Context, path: str | None = None) -> str:
         return f"General Exception: {ex}"
 
 
-async def find_file(context: Context, path: str | None = None) -> str:
+async def find_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+) -> str:
     """Find File/Folder by Path
 
     Args:
@@ -67,7 +79,13 @@ async def find_file(context: Context, path: str | None = None) -> str:
 
 
 async def copy_file(
-    context: Context, path: str | None = None, destination: str | None = None
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+    destination: Annotated[
+        str | None, Field(description="Copy destination path.", default=None)
+    ],
 ) -> str:
     """Copy File/Folder
 
@@ -104,7 +122,13 @@ async def copy_file(
 
 
 async def move_file(
-    context: Context, path: str | None = None, destination: str | None = None
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+    destination: Annotated[
+        str | None, Field(description="Move destination path.", default=None)
+    ],
 ) -> str:
     """Move File/Folder
 
@@ -141,28 +165,46 @@ async def move_file(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="Delete_File")
+    @mcp.tool(name="Delete_File", description="Delete File/Folder")
     async def delete_file_tool(
-        context: Context, path: str | None = None
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
     ) -> str:
         return await delete_file(context, path)
 
-    @mcp.tool(name="Find_File")
-    async def find_file_tool(context: Context, path: str | None = None) -> str:
+    @mcp.tool(name="Find_File", description="Find File/Folder by Path")
+    async def find_file_tool(
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
+    ) -> str:
         return await find_file(context, path)
 
-    @mcp.tool(name="Copy_File")
+    @mcp.tool(name="Copy_File", description="Copy File/Folder")
     async def copy_file_tool(
         context: Context,
-        path: str | None = None,
-        destination: str | None = None,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
+        destination: Annotated[
+            str | None,
+            Field(description="Copy destination path.", default=None),
+        ],
     ) -> str:
         return await copy_file(context, path, destination)
 
-    @mcp.tool(name="Move_File")
+    @mcp.tool(name="Move_File", description="Move File/Folder")
     async def move_file_tool(
         context: Context,
-        path: str | None = None,
-        destination: str | None = None,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
+        destination: Annotated[
+            str | None,
+            Field(description="Move destination path.", default=None),
+        ],
     ) -> str:
         return await move_file(context, path, destination)

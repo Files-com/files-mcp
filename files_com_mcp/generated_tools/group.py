@@ -1,4 +1,6 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
@@ -30,7 +32,10 @@ async def list_group(context: Context) -> str:
         return f"General Exception: {ex}"
 
 
-async def find_group(context: Context, id: int | None = None) -> str:
+async def find_group(
+    context: Context,
+    id: Annotated[int | None, Field(description="Group ID.", default=None)],
+) -> str:
     """Show Group
 
     Args:
@@ -63,10 +68,26 @@ async def find_group(context: Context, id: int | None = None) -> str:
 
 async def create_group(
     context: Context,
-    name: str | None = None,
-    notes: str | None = None,
-    user_ids: str | None = None,
-    admin_ids: str | None = None,
+    name: Annotated[
+        str | None, Field(description="Group name.", default=None)
+    ],
+    notes: Annotated[
+        str | None, Field(description="Group notes.", default=None)
+    ],
+    user_ids: Annotated[
+        str | None,
+        Field(
+            description="A list of user ids. If sent as a string, should be comma-delimited.",
+            default=None,
+        ),
+    ],
+    admin_ids: Annotated[
+        str | None,
+        Field(
+            description="A list of group admin user ids. If sent as a string, should be comma-delimited.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """Create Group
 
@@ -109,11 +130,27 @@ async def create_group(
 
 async def update_group(
     context: Context,
-    id: int | None = None,
-    notes: str | None = None,
-    user_ids: str | None = None,
-    admin_ids: str | None = None,
-    name: str | None = None,
+    id: Annotated[int | None, Field(description="Group ID.", default=None)],
+    notes: Annotated[
+        str | None, Field(description="Group notes.", default=None)
+    ],
+    user_ids: Annotated[
+        str | None,
+        Field(
+            description="A list of user ids. If sent as a string, should be comma-delimited.",
+            default=None,
+        ),
+    ],
+    admin_ids: Annotated[
+        str | None,
+        Field(
+            description="A list of group admin user ids. If sent as a string, should be comma-delimited.",
+            default=None,
+        ),
+    ],
+    name: Annotated[
+        str | None, Field(description="Group name.", default=None)
+    ],
 ) -> str:
     """Update Group
 
@@ -157,7 +194,10 @@ async def update_group(
         return f"General Exception: {ex}"
 
 
-async def delete_group(context: Context, id: int | None = None) -> str:
+async def delete_group(
+    context: Context,
+    id: Annotated[int | None, Field(description="Group ID.", default=None)],
+) -> str:
     """Delete Group
 
     Args:
@@ -189,39 +229,81 @@ async def delete_group(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Group")
+    @mcp.tool(name="List_Group", description="List Groups")
     async def list_group_tool(context: Context) -> str:
         return await list_group(context)
 
-    @mcp.tool(name="Find_Group")
-    async def find_group_tool(context: Context, id: int | None = None) -> str:
+    @mcp.tool(name="Find_Group", description="Show Group")
+    async def find_group_tool(
+        context: Context,
+        id: Annotated[
+            int | None, Field(description="Group ID.", default=None)
+        ],
+    ) -> str:
         return await find_group(context, id)
 
-    @mcp.tool(name="Create_Group")
+    @mcp.tool(name="Create_Group", description="Create Group")
     async def create_group_tool(
         context: Context,
-        name: str | None = None,
-        notes: str | None = None,
-        user_ids: str | None = None,
-        admin_ids: str | None = None,
+        name: Annotated[
+            str | None, Field(description="Group name.", default=None)
+        ],
+        notes: Annotated[
+            str | None, Field(description="Group notes.", default=None)
+        ],
+        user_ids: Annotated[
+            str | None,
+            Field(
+                description="A list of user ids. If sent as a string, should be comma-delimited.",
+                default=None,
+            ),
+        ],
+        admin_ids: Annotated[
+            str | None,
+            Field(
+                description="A list of group admin user ids. If sent as a string, should be comma-delimited.",
+                default=None,
+            ),
+        ],
     ) -> str:
         return await create_group(context, name, notes, user_ids, admin_ids)
 
-    @mcp.tool(name="Update_Group")
+    @mcp.tool(name="Update_Group", description="Update Group")
     async def update_group_tool(
         context: Context,
-        id: int | None = None,
-        notes: str | None = None,
-        user_ids: str | None = None,
-        admin_ids: str | None = None,
-        name: str | None = None,
+        id: Annotated[
+            int | None, Field(description="Group ID.", default=None)
+        ],
+        notes: Annotated[
+            str | None, Field(description="Group notes.", default=None)
+        ],
+        user_ids: Annotated[
+            str | None,
+            Field(
+                description="A list of user ids. If sent as a string, should be comma-delimited.",
+                default=None,
+            ),
+        ],
+        admin_ids: Annotated[
+            str | None,
+            Field(
+                description="A list of group admin user ids. If sent as a string, should be comma-delimited.",
+                default=None,
+            ),
+        ],
+        name: Annotated[
+            str | None, Field(description="Group name.", default=None)
+        ],
     ) -> str:
         return await update_group(
             context, id, notes, user_ids, admin_ids, name
         )
 
-    @mcp.tool(name="Delete_Group")
+    @mcp.tool(name="Delete_Group", description="Delete Group")
     async def delete_group_tool(
-        context: Context, id: int | None = None
+        context: Context,
+        id: Annotated[
+            int | None, Field(description="Group ID.", default=None)
+        ],
     ) -> str:
         return await delete_group(context, id)

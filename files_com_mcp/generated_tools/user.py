@@ -1,4 +1,6 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
@@ -44,7 +46,10 @@ async def list_user(context: Context) -> str:
         return f"General Exception: {ex}"
 
 
-async def find_user(context: Context, id: int | None = None) -> str:
+async def find_user(
+    context: Context,
+    id: Annotated[int | None, Field(description="User ID.", default=None)],
+) -> str:
     """Show User
 
     Args:
@@ -91,17 +96,57 @@ async def find_user(context: Context, id: int | None = None) -> str:
 
 async def create_user(
     context: Context,
-    username: str | None = None,
-    email: str | None = None,
-    group_ids: str | None = None,
-    password: str | None = None,
-    authentication_method: str | None = None,
-    name: str | None = None,
-    company: str | None = None,
-    notes: str | None = None,
-    require_password_change: bool | None = None,
-    user_root: str | None = None,
-    user_home: str | None = None,
+    username: Annotated[
+        str | None, Field(description="User's username", default=None)
+    ],
+    email: Annotated[
+        str | None, Field(description="User's email.", default=None)
+    ],
+    group_ids: Annotated[
+        str | None,
+        Field(
+            description="A list of group ids to associate this user with.  Comma delimited.",
+            default=None,
+        ),
+    ],
+    password: Annotated[
+        str | None, Field(description="User password.", default=None)
+    ],
+    authentication_method: Annotated[
+        str | None,
+        Field(description="How is this user authenticated?", default=None),
+    ],
+    name: Annotated[
+        str | None, Field(description="User's full name", default=None)
+    ],
+    company: Annotated[
+        str | None, Field(description="User's company", default=None)
+    ],
+    notes: Annotated[
+        str | None,
+        Field(description="Any internal notes on the user", default=None),
+    ],
+    require_password_change: Annotated[
+        bool | None,
+        Field(
+            description="Is a password change required upon next user login?",
+            default=None,
+        ),
+    ],
+    user_root: Annotated[
+        str | None,
+        Field(
+            description="Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.",
+            default=None,
+        ),
+    ],
+    user_home: Annotated[
+        str | None,
+        Field(
+            description="Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """Create User
 
@@ -191,18 +236,58 @@ async def create_user(
 
 async def update_user(
     context: Context,
-    id: int | None = None,
-    email: str | None = None,
-    group_ids: str | None = None,
-    password: str | None = None,
-    authentication_method: str | None = None,
-    name: str | None = None,
-    company: str | None = None,
-    notes: str | None = None,
-    require_password_change: bool | None = None,
-    user_root: str | None = None,
-    user_home: str | None = None,
-    username: str | None = None,
+    id: Annotated[int | None, Field(description="User ID.", default=None)],
+    email: Annotated[
+        str | None, Field(description="User's email.", default=None)
+    ],
+    group_ids: Annotated[
+        str | None,
+        Field(
+            description="A list of group ids to associate this user with.  Comma delimited.",
+            default=None,
+        ),
+    ],
+    password: Annotated[
+        str | None, Field(description="User password.", default=None)
+    ],
+    authentication_method: Annotated[
+        str | None,
+        Field(description="How is this user authenticated?", default=None),
+    ],
+    name: Annotated[
+        str | None, Field(description="User's full name", default=None)
+    ],
+    company: Annotated[
+        str | None, Field(description="User's company", default=None)
+    ],
+    notes: Annotated[
+        str | None,
+        Field(description="Any internal notes on the user", default=None),
+    ],
+    require_password_change: Annotated[
+        bool | None,
+        Field(
+            description="Is a password change required upon next user login?",
+            default=None,
+        ),
+    ],
+    user_root: Annotated[
+        str | None,
+        Field(
+            description="Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.",
+            default=None,
+        ),
+    ],
+    user_home: Annotated[
+        str | None,
+        Field(
+            description="Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.",
+            default=None,
+        ),
+    ],
+    username: Annotated[
+        str | None, Field(description="User's username", default=None)
+    ],
 ) -> str:
     """Update User
 
@@ -293,7 +378,10 @@ async def update_user(
         return f"General Exception: {ex}"
 
 
-async def delete_user(context: Context, id: int | None = None) -> str:
+async def delete_user(
+    context: Context,
+    id: Annotated[int | None, Field(description="User ID.", default=None)],
+) -> str:
     """Delete User
 
     Args:
@@ -339,28 +427,71 @@ async def delete_user(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_User")
+    @mcp.tool(name="List_User", description="List Users")
     async def list_user_tool(context: Context) -> str:
         return await list_user(context)
 
-    @mcp.tool(name="Find_User")
-    async def find_user_tool(context: Context, id: int | None = None) -> str:
+    @mcp.tool(name="Find_User", description="Show User")
+    async def find_user_tool(
+        context: Context,
+        id: Annotated[int | None, Field(description="User ID.", default=None)],
+    ) -> str:
         return await find_user(context, id)
 
-    @mcp.tool(name="Create_User")
+    @mcp.tool(name="Create_User", description="Create User")
     async def create_user_tool(
         context: Context,
-        username: str | None = None,
-        email: str | None = None,
-        group_ids: str | None = None,
-        password: str | None = None,
-        authentication_method: str | None = None,
-        name: str | None = None,
-        company: str | None = None,
-        notes: str | None = None,
-        require_password_change: bool | None = None,
-        user_root: str | None = None,
-        user_home: str | None = None,
+        username: Annotated[
+            str | None, Field(description="User's username", default=None)
+        ],
+        email: Annotated[
+            str | None, Field(description="User's email.", default=None)
+        ],
+        group_ids: Annotated[
+            str | None,
+            Field(
+                description="A list of group ids to associate this user with.  Comma delimited.",
+                default=None,
+            ),
+        ],
+        password: Annotated[
+            str | None, Field(description="User password.", default=None)
+        ],
+        authentication_method: Annotated[
+            str | None,
+            Field(description="How is this user authenticated?", default=None),
+        ],
+        name: Annotated[
+            str | None, Field(description="User's full name", default=None)
+        ],
+        company: Annotated[
+            str | None, Field(description="User's company", default=None)
+        ],
+        notes: Annotated[
+            str | None,
+            Field(description="Any internal notes on the user", default=None),
+        ],
+        require_password_change: Annotated[
+            bool | None,
+            Field(
+                description="Is a password change required upon next user login?",
+                default=None,
+            ),
+        ],
+        user_root: Annotated[
+            str | None,
+            Field(
+                description="Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.",
+                default=None,
+            ),
+        ],
+        user_home: Annotated[
+            str | None,
+            Field(
+                description="Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.",
+                default=None,
+            ),
+        ],
     ) -> str:
         return await create_user(
             context,
@@ -377,21 +508,61 @@ def register_tools(mcp):
             user_home,
         )
 
-    @mcp.tool(name="Update_User")
+    @mcp.tool(name="Update_User", description="Update User")
     async def update_user_tool(
         context: Context,
-        id: int | None = None,
-        email: str | None = None,
-        group_ids: str | None = None,
-        password: str | None = None,
-        authentication_method: str | None = None,
-        name: str | None = None,
-        company: str | None = None,
-        notes: str | None = None,
-        require_password_change: bool | None = None,
-        user_root: str | None = None,
-        user_home: str | None = None,
-        username: str | None = None,
+        id: Annotated[int | None, Field(description="User ID.", default=None)],
+        email: Annotated[
+            str | None, Field(description="User's email.", default=None)
+        ],
+        group_ids: Annotated[
+            str | None,
+            Field(
+                description="A list of group ids to associate this user with.  Comma delimited.",
+                default=None,
+            ),
+        ],
+        password: Annotated[
+            str | None, Field(description="User password.", default=None)
+        ],
+        authentication_method: Annotated[
+            str | None,
+            Field(description="How is this user authenticated?", default=None),
+        ],
+        name: Annotated[
+            str | None, Field(description="User's full name", default=None)
+        ],
+        company: Annotated[
+            str | None, Field(description="User's company", default=None)
+        ],
+        notes: Annotated[
+            str | None,
+            Field(description="Any internal notes on the user", default=None),
+        ],
+        require_password_change: Annotated[
+            bool | None,
+            Field(
+                description="Is a password change required upon next user login?",
+                default=None,
+            ),
+        ],
+        user_root: Annotated[
+            str | None,
+            Field(
+                description="Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.",
+                default=None,
+            ),
+        ],
+        user_home: Annotated[
+            str | None,
+            Field(
+                description="Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.",
+                default=None,
+            ),
+        ],
+        username: Annotated[
+            str | None, Field(description="User's username", default=None)
+        ],
     ) -> str:
         return await update_user(
             context,
@@ -409,6 +580,9 @@ def register_tools(mcp):
             username,
         )
 
-    @mcp.tool(name="Delete_User")
-    async def delete_user_tool(context: Context, id: int | None = None) -> str:
+    @mcp.tool(name="Delete_User", description="Delete User")
+    async def delete_user_tool(
+        context: Context,
+        id: Annotated[int | None, Field(description="User ID.", default=None)],
+    ) -> str:
         return await delete_user(context, id)

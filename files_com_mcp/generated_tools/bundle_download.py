@@ -1,13 +1,18 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
 
 async def list_bundle_download(
-    context: Context, bundle_id: int | None = None
+    context: Context,
+    bundle_id: Annotated[
+        int | None, Field(description="Bundle ID", default=None)
+    ],
 ) -> str:
-    """List Bundle Downloads
+    """List Bundle (also called Share Link) Downloads
 
     Args:
         bundle_id: Bundle ID
@@ -37,8 +42,14 @@ async def list_bundle_download(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Bundle_Download")
+    @mcp.tool(
+        name="List_Bundle_Download",
+        description="List Bundle (also called Share Link) Downloads",
+    )
     async def list_bundle_download_tool(
-        context: Context, bundle_id: int | None = None
+        context: Context,
+        bundle_id: Annotated[
+            int | None, Field(description="Bundle ID", default=None)
+        ],
     ) -> str:
         return await list_bundle_download(context, bundle_id)

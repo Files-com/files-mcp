@@ -1,4 +1,6 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
@@ -38,9 +40,12 @@ async def list_bundle_notification(context: Context) -> str:
 
 
 async def find_bundle_notification(
-    context: Context, id: int | None = None
+    context: Context,
+    id: Annotated[
+        int | None, Field(description="Bundle Notification ID.", default=None)
+    ],
 ) -> str:
-    """Show Bundle Notification
+    """Show Bundle (also called Share Link) Notification
 
     Args:
         id: Bundle Notification ID.
@@ -79,10 +84,15 @@ async def find_bundle_notification(
 
 async def create_bundle_notification(
     context: Context,
-    bundle_id: int | None = None,
-    notify_user_id: int | None = None,
+    bundle_id: Annotated[
+        int | None, Field(description="Bundle ID to notify on", default=None)
+    ],
+    notify_user_id: Annotated[
+        int | None,
+        Field(description="The id of the user to notify.", default=None),
+    ],
 ) -> str:
-    """Create Bundle Notification
+    """Create Bundle (also called Share Link) Notification
 
     Args:
         bundle_id: Bundle ID to notify on
@@ -130,11 +140,25 @@ async def create_bundle_notification(
 
 async def update_bundle_notification(
     context: Context,
-    id: int | None = None,
-    notify_on_registration: bool | None = None,
-    notify_on_upload: bool | None = None,
+    id: Annotated[
+        int | None, Field(description="Bundle Notification ID.", default=None)
+    ],
+    notify_on_registration: Annotated[
+        bool | None,
+        Field(
+            description="Triggers bundle notification when a registration action occurs for it.",
+            default=None,
+        ),
+    ],
+    notify_on_upload: Annotated[
+        bool | None,
+        Field(
+            description="Triggers bundle notification when a upload action occurs for it.",
+            default=None,
+        ),
+    ],
 ) -> str:
-    """Update Bundle Notification
+    """Update Bundle (also called Share Link) Notification
 
     Args:
         id: Bundle Notification ID.
@@ -178,9 +202,12 @@ async def update_bundle_notification(
 
 
 async def delete_bundle_notification(
-    context: Context, id: int | None = None
+    context: Context,
+    id: Annotated[
+        int | None, Field(description="Bundle Notification ID.", default=None)
+    ],
 ) -> str:
-    """Delete Bundle Notification
+    """Delete Bundle (also called Share Link) Notification
 
     Args:
         id: Bundle Notification ID.
@@ -218,39 +245,83 @@ async def delete_bundle_notification(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Bundle_Notification")
+    @mcp.tool(
+        name="List_Bundle_Notification",
+        description="List Bundle (also called Share Link) Notifications",
+    )
     async def list_bundle_notification_tool(context: Context) -> str:
         return await list_bundle_notification(context)
 
-    @mcp.tool(name="Find_Bundle_Notification")
+    @mcp.tool(
+        name="Find_Bundle_Notification",
+        description="Show Bundle (also called Share Link) Notification",
+    )
     async def find_bundle_notification_tool(
-        context: Context, id: int | None = None
+        context: Context,
+        id: Annotated[
+            int | None,
+            Field(description="Bundle Notification ID.", default=None),
+        ],
     ) -> str:
         return await find_bundle_notification(context, id)
 
-    @mcp.tool(name="Create_Bundle_Notification")
+    @mcp.tool(
+        name="Create_Bundle_Notification",
+        description="Create Bundle (also called Share Link) Notification",
+    )
     async def create_bundle_notification_tool(
         context: Context,
-        bundle_id: int | None = None,
-        notify_user_id: int | None = None,
+        bundle_id: Annotated[
+            int | None,
+            Field(description="Bundle ID to notify on", default=None),
+        ],
+        notify_user_id: Annotated[
+            int | None,
+            Field(description="The id of the user to notify.", default=None),
+        ],
     ) -> str:
         return await create_bundle_notification(
             context, bundle_id, notify_user_id
         )
 
-    @mcp.tool(name="Update_Bundle_Notification")
+    @mcp.tool(
+        name="Update_Bundle_Notification",
+        description="Update Bundle (also called Share Link) Notification",
+    )
     async def update_bundle_notification_tool(
         context: Context,
-        id: int | None = None,
-        notify_on_registration: bool | None = None,
-        notify_on_upload: bool | None = None,
+        id: Annotated[
+            int | None,
+            Field(description="Bundle Notification ID.", default=None),
+        ],
+        notify_on_registration: Annotated[
+            bool | None,
+            Field(
+                description="Triggers bundle notification when a registration action occurs for it.",
+                default=None,
+            ),
+        ],
+        notify_on_upload: Annotated[
+            bool | None,
+            Field(
+                description="Triggers bundle notification when a upload action occurs for it.",
+                default=None,
+            ),
+        ],
     ) -> str:
         return await update_bundle_notification(
             context, id, notify_on_registration, notify_on_upload
         )
 
-    @mcp.tool(name="Delete_Bundle_Notification")
+    @mcp.tool(
+        name="Delete_Bundle_Notification",
+        description="Delete Bundle (also called Share Link) Notification",
+    )
     async def delete_bundle_notification_tool(
-        context: Context, id: int | None = None
+        context: Context,
+        id: Annotated[
+            int | None,
+            Field(description="Bundle Notification ID.", default=None),
+        ],
     ) -> str:
         return await delete_bundle_notification(context, id)

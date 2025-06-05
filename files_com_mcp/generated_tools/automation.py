@@ -1,4 +1,6 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
@@ -69,7 +71,12 @@ async def list_automation(context: Context) -> str:
         return f"General Exception: {ex}"
 
 
-async def find_automation(context: Context, id: int | None = None) -> str:
+async def find_automation(
+    context: Context,
+    id: Annotated[
+        int | None, Field(description="Automation ID.", default=None)
+    ],
+) -> str:
     """Show Automation
 
     Args:
@@ -140,12 +147,15 @@ async def find_automation(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Automation")
+    @mcp.tool(name="List_Automation", description="List Automations")
     async def list_automation_tool(context: Context) -> str:
         return await list_automation(context)
 
-    @mcp.tool(name="Find_Automation")
+    @mcp.tool(name="Find_Automation", description="Show Automation")
     async def find_automation_tool(
-        context: Context, id: int | None = None
+        context: Context,
+        id: Annotated[
+            int | None, Field(description="Automation ID.", default=None)
+        ],
     ) -> str:
         return await find_automation(context, id)

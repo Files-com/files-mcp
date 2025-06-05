@@ -1,13 +1,22 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
 
 async def list_bundle_recipient(
-    context: Context, bundle_id: int | None = None
+    context: Context,
+    bundle_id: Annotated[
+        int | None,
+        Field(
+            description="List recipients for the bundle with this ID.",
+            default=None,
+        ),
+    ],
 ) -> str:
-    """List Bundle Recipients
+    """List Bundle (also called Share Link) Recipients
 
     Args:
         bundle_id: List recipients for the bundle with this ID.
@@ -41,13 +50,28 @@ async def list_bundle_recipient(
 
 async def create_bundle_recipient(
     context: Context,
-    bundle_id: int | None = None,
-    recipient: str | None = None,
-    name: str | None = None,
-    company: str | None = None,
-    note: str | None = None,
+    bundle_id: Annotated[
+        int | None, Field(description="Bundle to share.", default=None)
+    ],
+    recipient: Annotated[
+        str | None,
+        Field(
+            description="Email addresses to share this bundle with.",
+            default=None,
+        ),
+    ],
+    name: Annotated[
+        str | None, Field(description="Name of recipient.", default=None)
+    ],
+    company: Annotated[
+        str | None, Field(description="Company of recipient.", default=None)
+    ],
+    note: Annotated[
+        str | None,
+        Field(description="Note to include in email.", default=None),
+    ],
 ) -> str:
-    """Create Bundle Recipient
+    """Create Bundle (also called Share Link) Recipient
 
     Args:
         bundle_id: Bundle to share.
@@ -94,20 +118,49 @@ async def create_bundle_recipient(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Bundle_Recipient")
+    @mcp.tool(
+        name="List_Bundle_Recipient",
+        description="List Bundle (also called Share Link) Recipients",
+    )
     async def list_bundle_recipient_tool(
-        context: Context, bundle_id: int | None = None
+        context: Context,
+        bundle_id: Annotated[
+            int | None,
+            Field(
+                description="List recipients for the bundle with this ID.",
+                default=None,
+            ),
+        ],
     ) -> str:
         return await list_bundle_recipient(context, bundle_id)
 
-    @mcp.tool(name="Create_Bundle_Recipient")
+    @mcp.tool(
+        name="Create_Bundle_Recipient",
+        description="Create Bundle (also called Share Link) Recipient",
+    )
     async def create_bundle_recipient_tool(
         context: Context,
-        bundle_id: int | None = None,
-        recipient: str | None = None,
-        name: str | None = None,
-        company: str | None = None,
-        note: str | None = None,
+        bundle_id: Annotated[
+            int | None, Field(description="Bundle to share.", default=None)
+        ],
+        recipient: Annotated[
+            str | None,
+            Field(
+                description="Email addresses to share this bundle with.",
+                default=None,
+            ),
+        ],
+        name: Annotated[
+            str | None, Field(description="Name of recipient.", default=None)
+        ],
+        company: Annotated[
+            str | None,
+            Field(description="Company of recipient.", default=None),
+        ],
+        note: Annotated[
+            str | None,
+            Field(description="Note to include in email.", default=None),
+        ],
     ) -> str:
         return await create_bundle_recipient(
             context, bundle_id, recipient, name, company, note

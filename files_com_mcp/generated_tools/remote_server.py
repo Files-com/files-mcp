@@ -1,4 +1,6 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
@@ -30,7 +32,12 @@ async def list_remote_server(context: Context) -> str:
         return f"General Exception: {ex}"
 
 
-async def find_remote_server(context: Context, id: int | None = None) -> str:
+async def find_remote_server(
+    context: Context,
+    id: Annotated[
+        int | None, Field(description="Remote Server ID.", default=None)
+    ],
+) -> str:
     """Show Remote Server
 
     Args:
@@ -62,12 +69,15 @@ async def find_remote_server(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Remote_Server")
+    @mcp.tool(name="List_Remote_Server", description="List Remote Servers")
     async def list_remote_server_tool(context: Context) -> str:
         return await list_remote_server(context)
 
-    @mcp.tool(name="Find_Remote_Server")
+    @mcp.tool(name="Find_Remote_Server", description="Show Remote Server")
     async def find_remote_server_tool(
-        context: Context, id: int | None = None
+        context: Context,
+        id: Annotated[
+            int | None, Field(description="Remote Server ID.", default=None)
+        ],
     ) -> str:
         return await find_remote_server(context, id)

@@ -1,4 +1,6 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
@@ -6,9 +8,15 @@ import files_sdk.error
 
 async def list_permission(
     context: Context,
-    path: str | None = None,
-    group_id: str | None = None,
-    user_id: str | None = None,
+    path: Annotated[
+        str | None,
+        Field(
+            description="Permission path.  If provided, will scope all permissions(including upward) to this path.",
+            default=None,
+        ),
+    ],
+    group_id: Annotated[str | None, Field(description="", default=None)],
+    user_id: Annotated[str | None, Field(description="", default=None)],
 ) -> str:
     """List Permissions
 
@@ -49,10 +57,30 @@ async def list_permission(
 
 async def create_permission(
     context: Context,
-    path: str | None = None,
-    group_id: int | None = None,
-    permission: str | None = None,
-    user_id: int | None = None,
+    path: Annotated[
+        str | None, Field(description="Folder path", default=None)
+    ],
+    group_id: Annotated[
+        int | None,
+        Field(
+            description="Group ID. Provide `group_name` or `group_id`",
+            default=None,
+        ),
+    ],
+    permission: Annotated[
+        str | None,
+        Field(
+            description="Permission type.  Can be `admin`, `full`, `readonly`, `writeonly`, `list`, or `history`",
+            default=None,
+        ),
+    ],
+    user_id: Annotated[
+        int | None,
+        Field(
+            description="User ID.  Provide `username` or `user_id`",
+            default=None,
+        ),
+    ],
 ) -> str:
     """Create Permission
 
@@ -93,7 +121,12 @@ async def create_permission(
         return f"General Exception: {ex}"
 
 
-async def delete_permission(context: Context, id: int | None = None) -> str:
+async def delete_permission(
+    context: Context,
+    id: Annotated[
+        int | None, Field(description="Permission ID.", default=None)
+    ],
+) -> str:
     """Delete Permission
 
     Args:
@@ -125,29 +158,58 @@ async def delete_permission(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Permission")
+    @mcp.tool(name="List_Permission", description="List Permissions")
     async def list_permission_tool(
         context: Context,
-        path: str | None = None,
-        group_id: str | None = None,
-        user_id: str | None = None,
+        path: Annotated[
+            str | None,
+            Field(
+                description="Permission path.  If provided, will scope all permissions(including upward) to this path.",
+                default=None,
+            ),
+        ],
+        group_id: Annotated[str | None, Field(description="", default=None)],
+        user_id: Annotated[str | None, Field(description="", default=None)],
     ) -> str:
         return await list_permission(context, path, group_id, user_id)
 
-    @mcp.tool(name="Create_Permission")
+    @mcp.tool(name="Create_Permission", description="Create Permission")
     async def create_permission_tool(
         context: Context,
-        path: str | None = None,
-        group_id: int | None = None,
-        permission: str | None = None,
-        user_id: int | None = None,
+        path: Annotated[
+            str | None, Field(description="Folder path", default=None)
+        ],
+        group_id: Annotated[
+            int | None,
+            Field(
+                description="Group ID. Provide `group_name` or `group_id`",
+                default=None,
+            ),
+        ],
+        permission: Annotated[
+            str | None,
+            Field(
+                description="Permission type.  Can be `admin`, `full`, `readonly`, `writeonly`, `list`, or `history`",
+                default=None,
+            ),
+        ],
+        user_id: Annotated[
+            int | None,
+            Field(
+                description="User ID.  Provide `username` or `user_id`",
+                default=None,
+            ),
+        ],
     ) -> str:
         return await create_permission(
             context, path, group_id, permission, user_id
         )
 
-    @mcp.tool(name="Delete_Permission")
+    @mcp.tool(name="Delete_Permission", description="Delete Permission")
     async def delete_permission_tool(
-        context: Context, id: int | None = None
+        context: Context,
+        id: Annotated[
+            int | None, Field(description="Permission ID.", default=None)
+        ],
     ) -> str:
         return await delete_permission(context, id)

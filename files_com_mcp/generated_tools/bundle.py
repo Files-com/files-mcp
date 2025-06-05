@@ -1,4 +1,6 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
@@ -40,8 +42,11 @@ async def list_bundle(context: Context) -> str:
         return f"General Exception: {ex}"
 
 
-async def find_bundle(context: Context, id: int | None = None) -> str:
-    """Show Bundle
+async def find_bundle(
+    context: Context,
+    id: Annotated[int | None, Field(description="Bundle ID.", default=None)],
+) -> str:
+    """Show Bundle (also called Share Link)
 
     Args:
         id: Bundle ID.
@@ -83,15 +88,43 @@ async def find_bundle(context: Context, id: int | None = None) -> str:
 
 async def create_bundle(
     context: Context,
-    paths: list | None = None,
-    password: str | None = None,
-    expires_at: str | None = None,
-    max_uses: int | None = None,
-    description: str | None = None,
-    note: str | None = None,
-    require_registration: bool | None = None,
+    paths: Annotated[
+        list | None,
+        Field(
+            description="A list of paths to include in this bundle.",
+            default=None,
+        ),
+    ],
+    password: Annotated[
+        str | None,
+        Field(description="Password for this bundle.", default=None),
+    ],
+    expires_at: Annotated[
+        str | None,
+        Field(description="Bundle expiration date/time", default=None),
+    ],
+    max_uses: Annotated[
+        int | None,
+        Field(
+            description="Maximum number of times bundle can be accessed",
+            default=None,
+        ),
+    ],
+    description: Annotated[
+        str | None, Field(description="Public description", default=None)
+    ],
+    note: Annotated[
+        str | None, Field(description="Bundle internal note", default=None)
+    ],
+    require_registration: Annotated[
+        bool | None,
+        Field(
+            description="Show a registration page that captures the downloader's name and email address?",
+            default=None,
+        ),
+    ],
 ) -> str:
-    """Create Bundle
+    """Create Bundle (also called Share Link)
 
     Args:
         paths: A list of paths to include in this bundle.
@@ -153,9 +186,14 @@ async def create_bundle(
 
 
 async def update_bundle(
-    context: Context, id: int | None = None, expires_at: str | None = None
+    context: Context,
+    id: Annotated[int | None, Field(description="Bundle ID.", default=None)],
+    expires_at: Annotated[
+        str | None,
+        Field(description="Bundle expiration date/time", default=None),
+    ],
 ) -> str:
-    """Update Bundle
+    """Update Bundle (also called Share Link)
 
     Args:
         id: Bundle ID.
@@ -198,8 +236,11 @@ async def update_bundle(
         return f"General Exception: {ex}"
 
 
-async def delete_bundle(context: Context, id: int | None = None) -> str:
-    """Delete Bundle
+async def delete_bundle(
+    context: Context,
+    id: Annotated[int | None, Field(description="Bundle ID.", default=None)],
+) -> str:
+    """Delete Bundle (also called Share Link)
 
     Args:
         id: Bundle ID.
@@ -240,24 +281,65 @@ async def delete_bundle(context: Context, id: int | None = None) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Bundle")
+    @mcp.tool(
+        name="List_Bundle",
+        description="List Bundles (also called Share Links)",
+    )
     async def list_bundle_tool(context: Context) -> str:
         return await list_bundle(context)
 
-    @mcp.tool(name="Find_Bundle")
-    async def find_bundle_tool(context: Context, id: int | None = None) -> str:
+    @mcp.tool(
+        name="Find_Bundle", description="Show Bundle (also called Share Link)"
+    )
+    async def find_bundle_tool(
+        context: Context,
+        id: Annotated[
+            int | None, Field(description="Bundle ID.", default=None)
+        ],
+    ) -> str:
         return await find_bundle(context, id)
 
-    @mcp.tool(name="Create_Bundle")
+    @mcp.tool(
+        name="Create_Bundle",
+        description="Create Bundle (also called Share Link)",
+    )
     async def create_bundle_tool(
         context: Context,
-        paths: list | None = None,
-        password: str | None = None,
-        expires_at: str | None = None,
-        max_uses: int | None = None,
-        description: str | None = None,
-        note: str | None = None,
-        require_registration: bool | None = None,
+        paths: Annotated[
+            list | None,
+            Field(
+                description="A list of paths to include in this bundle.",
+                default=None,
+            ),
+        ],
+        password: Annotated[
+            str | None,
+            Field(description="Password for this bundle.", default=None),
+        ],
+        expires_at: Annotated[
+            str | None,
+            Field(description="Bundle expiration date/time", default=None),
+        ],
+        max_uses: Annotated[
+            int | None,
+            Field(
+                description="Maximum number of times bundle can be accessed",
+                default=None,
+            ),
+        ],
+        description: Annotated[
+            str | None, Field(description="Public description", default=None)
+        ],
+        note: Annotated[
+            str | None, Field(description="Bundle internal note", default=None)
+        ],
+        require_registration: Annotated[
+            bool | None,
+            Field(
+                description="Show a registration page that captures the downloader's name and email address?",
+                default=None,
+            ),
+        ],
     ) -> str:
         return await create_bundle(
             context,
@@ -270,14 +352,30 @@ def register_tools(mcp):
             require_registration,
         )
 
-    @mcp.tool(name="Update_Bundle")
+    @mcp.tool(
+        name="Update_Bundle",
+        description="Update Bundle (also called Share Link)",
+    )
     async def update_bundle_tool(
-        context: Context, id: int | None = None, expires_at: str | None = None
+        context: Context,
+        id: Annotated[
+            int | None, Field(description="Bundle ID.", default=None)
+        ],
+        expires_at: Annotated[
+            str | None,
+            Field(description="Bundle expiration date/time", default=None),
+        ],
     ) -> str:
         return await update_bundle(context, id, expires_at)
 
-    @mcp.tool(name="Delete_Bundle")
+    @mcp.tool(
+        name="Delete_Bundle",
+        description="Delete Bundle (also called Share Link)",
+    )
     async def delete_bundle_tool(
-        context: Context, id: int | None = None
+        context: Context,
+        id: Annotated[
+            int | None, Field(description="Bundle ID.", default=None)
+        ],
     ) -> str:
         return await delete_bundle(context, id)

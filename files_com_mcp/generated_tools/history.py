@@ -1,11 +1,16 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
 
 async def list_for_file_history(
-    context: Context, path: str | None = None
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
 ) -> str:
     """List history for specific file.
 
@@ -55,7 +60,10 @@ async def list_for_file_history(
 
 
 async def list_for_folder_history(
-    context: Context, path: str | None = None
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
 ) -> str:
     """List history for specific folder.
 
@@ -105,7 +113,10 @@ async def list_for_folder_history(
 
 
 async def list_for_user_history(
-    context: Context, user_id: int | None = None
+    context: Context,
+    user_id: Annotated[
+        int | None, Field(description="User ID.", default=None)
+    ],
 ) -> str:
     """List history for specific user.
 
@@ -237,28 +248,50 @@ async def list_history(context: Context) -> str:
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_For_File_History")
+    @mcp.tool(
+        name="List_For_File_History",
+        description="List history for specific file.",
+    )
     async def list_for_file_history_tool(
-        context: Context, path: str | None = None
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
     ) -> str:
         return await list_for_file_history(context, path)
 
-    @mcp.tool(name="List_For_Folder_History")
+    @mcp.tool(
+        name="List_For_Folder_History",
+        description="List history for specific folder.",
+    )
     async def list_for_folder_history_tool(
-        context: Context, path: str | None = None
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
     ) -> str:
         return await list_for_folder_history(context, path)
 
-    @mcp.tool(name="List_For_User_History")
+    @mcp.tool(
+        name="List_For_User_History",
+        description="List history for specific user.",
+    )
     async def list_for_user_history_tool(
-        context: Context, user_id: int | None = None
+        context: Context,
+        user_id: Annotated[
+            int | None, Field(description="User ID.", default=None)
+        ],
     ) -> str:
         return await list_for_user_history(context, user_id)
 
-    @mcp.tool(name="List_Logins_History")
+    @mcp.tool(
+        name="List_Logins_History", description="List site login history."
+    )
     async def list_logins_history_tool(context: Context) -> str:
         return await list_logins_history(context)
 
-    @mcp.tool(name="List_History")
+    @mcp.tool(
+        name="List_History", description="List site full action history."
+    )
     async def list_history_tool(context: Context) -> str:
         return await list_history(context)

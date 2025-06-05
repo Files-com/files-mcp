@@ -1,13 +1,19 @@
 from fastmcp import Context
+from typing_extensions import Annotated
+from pydantic import Field
 from files_com_mcp.utils import object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
 
 async def list_bundle_registration(
-    context: Context, bundle_id: int | None = None
+    context: Context,
+    bundle_id: Annotated[
+        int | None,
+        Field(description="ID of the associated Bundle", default=None),
+    ],
 ) -> str:
-    """List Bundle Registrations
+    """List Bundle (also called Share Link) Registrations
 
     Args:
         bundle_id: ID of the associated Bundle
@@ -37,8 +43,15 @@ async def list_bundle_registration(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Bundle_Registration")
+    @mcp.tool(
+        name="List_Bundle_Registration",
+        description="List Bundle (also called Share Link) Registrations",
+    )
     async def list_bundle_registration_tool(
-        context: Context, bundle_id: int | None = None
+        context: Context,
+        bundle_id: Annotated[
+            int | None,
+            Field(description="ID of the associated Bundle", default=None),
+        ],
     ) -> str:
         return await list_bundle_registration(context, bundle_id)
