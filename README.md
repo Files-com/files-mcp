@@ -295,3 +295,5 @@ npx @modelcontextprotocol/inspector
   }
 }
 ```
+
+[comment]: # (mcp-name: com.files/python-mcp)
