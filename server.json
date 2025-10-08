@@ -4,7 +4,7 @@
   "description": "Securely give LLMs controlled access to real-world operations inside your Files.com environment",
   "repository": {
     "url": "https://github.com/Files-com/files-mcp",
-    "source": "git"
+    "source": "github"
   },
   "version": "1.0.0",
   "packages": [
