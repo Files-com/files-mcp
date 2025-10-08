@@ -273,7 +273,6 @@ Launch the inspector
 npx @modelcontextprotocol/inspector
 ```
 
-
 ### Development Claude Config
 
 ```
