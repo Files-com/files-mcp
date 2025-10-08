@@ -296,4 +296,8 @@ npx @modelcontextprotocol/inspector
 }
 ```
 
-[comment]: # (mcp-name: com.files/python-mcp)
+## MCP Registry Metadata
+
+```
+mcp-name: com.files/python-mcp
+```
