@@ -1,11 +1,6 @@
 import importlib
 from files_com_mcp import patches  # noqa: F401
 from fastmcp import FastMCP
-from fastmcp import settings
-
-# Enable JSON argument parsing for tools. Claude notoriously sends JSON encoded Strings instead
-#   of proper JSON list and objects, so this is a workaround to allow the MCP to use those arguments.
-settings.tool_attempt_parse_json_args = True
 
 mcp = FastMCP("filescom")
 

@@ -20,7 +20,9 @@ async def list_for_file_history(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if path is None:
@@ -73,7 +75,9 @@ async def list_for_folder_history(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if path is None:
@@ -126,7 +130,9 @@ async def list_for_user_history(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if user_id is None:
@@ -170,7 +176,9 @@ async def list_logins_history(context: Context) -> str:
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
 
@@ -211,7 +219,9 @@ async def list_history(context: Context) -> str:
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
 

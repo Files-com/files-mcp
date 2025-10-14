@@ -24,7 +24,9 @@ async def list_bundle_recipient(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if bundle_id is None:
@@ -83,7 +85,9 @@ async def create_bundle_recipient(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if bundle_id is None:

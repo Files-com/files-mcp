@@ -20,7 +20,9 @@ async def delete_file(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if path is None:
@@ -56,7 +58,9 @@ async def find_file(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if path is None:
@@ -96,7 +100,9 @@ async def copy_file(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if path is None:
@@ -139,7 +145,9 @@ async def move_file(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if path is None:

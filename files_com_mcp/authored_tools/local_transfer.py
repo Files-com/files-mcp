@@ -18,7 +18,9 @@ async def download_file_to_local(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
 
         files_sdk.file.download_file(remote_path, local_path, options)
@@ -46,7 +48,9 @@ async def upload_file_from_local(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
 

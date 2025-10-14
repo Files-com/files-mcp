@@ -11,7 +11,9 @@ async def list_remote_server(context: Context) -> str:
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
 
@@ -46,7 +48,9 @@ async def find_remote_server(
 
     try:
         options = {
-            "api_key": context.request_context.session._files_com_api_key
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
         }
         params = {}
         if id is None:
