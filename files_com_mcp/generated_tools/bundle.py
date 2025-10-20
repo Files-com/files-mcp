@@ -7,7 +7,7 @@ import files_sdk.error
 
 
 async def list_bundle(context: Context) -> str:
-    """List Bundles"""
+    """List Share Links"""
 
     try:
         options = {
@@ -48,7 +48,7 @@ async def find_bundle(
     context: Context,
     id: Annotated[int | None, Field(description="Bundle ID.", default=None)],
 ) -> str:
-    """Show Bundle (also called Share Link)
+    """Show Share Link
 
     Args:
         id: Bundle ID.
@@ -128,7 +128,7 @@ async def create_bundle(
         ),
     ],
 ) -> str:
-    """Create Bundle (also called Share Link)
+    """Create Share Link
 
     Args:
         paths: A list of paths to include in this bundle.
@@ -199,7 +199,7 @@ async def update_bundle(
         Field(description="Bundle expiration date/time", default=None),
     ],
 ) -> str:
-    """Update Bundle (also called Share Link)
+    """Update Share Link
 
     Args:
         id: Bundle ID.
@@ -248,7 +248,7 @@ async def delete_bundle(
     context: Context,
     id: Annotated[int | None, Field(description="Bundle ID.", default=None)],
 ) -> str:
-    """Delete Bundle (also called Share Link)
+    """Delete Share Link
 
     Args:
         id: Bundle ID.
@@ -291,16 +291,11 @@ async def delete_bundle(
 
 
 def register_tools(mcp):
-    @mcp.tool(
-        name="List_Bundle",
-        description="List Bundles (also called Share Links)",
-    )
+    @mcp.tool(name="List_Bundle", description="List Share Links")
     async def list_bundle_tool(context: Context) -> str:
         return await list_bundle(context)
 
-    @mcp.tool(
-        name="Find_Bundle", description="Show Bundle (also called Share Link)"
-    )
+    @mcp.tool(name="Find_Bundle", description="Show Share Link")
     async def find_bundle_tool(
         context: Context,
         id: Annotated[
@@ -309,10 +304,7 @@ def register_tools(mcp):
     ) -> str:
         return await find_bundle(context, id)
 
-    @mcp.tool(
-        name="Create_Bundle",
-        description="Create Bundle (also called Share Link)",
-    )
+    @mcp.tool(name="Create_Bundle", description="Create Share Link")
     async def create_bundle_tool(
         context: Context,
         paths: Annotated[
@@ -362,10 +354,7 @@ def register_tools(mcp):
             require_registration,
         )
 
-    @mcp.tool(
-        name="Update_Bundle",
-        description="Update Bundle (also called Share Link)",
-    )
+    @mcp.tool(name="Update_Bundle", description="Update Share Link")
     async def update_bundle_tool(
         context: Context,
         id: Annotated[
@@ -378,10 +367,7 @@ def register_tools(mcp):
     ) -> str:
         return await update_bundle(context, id, expires_at)
 
-    @mcp.tool(
-        name="Delete_Bundle",
-        description="Delete Bundle (also called Share Link)",
-    )
+    @mcp.tool(name="Delete_Bundle", description="Delete Share Link")
     async def delete_bundle_tool(
         context: Context,
         id: Annotated[

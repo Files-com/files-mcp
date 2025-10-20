@@ -16,7 +16,7 @@ async def list_bundle_recipient(
         ),
     ],
 ) -> str:
-    """List Bundle (also called Share Link) Recipients
+    """List Share Link Recipients
 
     Args:
         bundle_id: List recipients for the bundle with this ID.
@@ -73,7 +73,7 @@ async def create_bundle_recipient(
         Field(description="Note to include in email.", default=None),
     ],
 ) -> str:
-    """Create Bundle (also called Share Link) Recipient
+    """Create Share Link Recipient
 
     Args:
         bundle_id: Bundle to share.
@@ -123,8 +123,7 @@ async def create_bundle_recipient(
 
 def register_tools(mcp):
     @mcp.tool(
-        name="List_Bundle_Recipient",
-        description="List Bundle (also called Share Link) Recipients",
+        name="List_Bundle_Recipient", description="List Share Link Recipients"
     )
     async def list_bundle_recipient_tool(
         context: Context,
@@ -140,7 +139,7 @@ def register_tools(mcp):
 
     @mcp.tool(
         name="Create_Bundle_Recipient",
-        description="Create Bundle (also called Share Link) Recipient",
+        description="Create Share Link Recipient",
     )
     async def create_bundle_recipient_tool(
         context: Context,

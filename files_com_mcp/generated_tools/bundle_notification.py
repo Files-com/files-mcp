@@ -7,7 +7,7 @@ import files_sdk.error
 
 
 async def list_bundle_notification(context: Context) -> str:
-    """List Bundle Notifications"""
+    """List Share Link Notifications"""
 
     try:
         options = {
@@ -47,7 +47,7 @@ async def find_bundle_notification(
         int | None, Field(description="Bundle Notification ID.", default=None)
     ],
 ) -> str:
-    """Show Bundle (also called Share Link) Notification
+    """Show Share Link Notification
 
     Args:
         id: Bundle Notification ID.
@@ -96,7 +96,7 @@ async def create_bundle_notification(
         Field(description="The id of the user to notify.", default=None),
     ],
 ) -> str:
-    """Create Bundle (also called Share Link) Notification
+    """Create Share Link Notification
 
     Args:
         bundle_id: Bundle ID to notify on
@@ -164,7 +164,7 @@ async def update_bundle_notification(
         ),
     ],
 ) -> str:
-    """Update Bundle (also called Share Link) Notification
+    """Update Share Link Notification
 
     Args:
         id: Bundle Notification ID.
@@ -215,7 +215,7 @@ async def delete_bundle_notification(
         int | None, Field(description="Bundle Notification ID.", default=None)
     ],
 ) -> str:
-    """Delete Bundle (also called Share Link) Notification
+    """Delete Share Link Notification
 
     Args:
         id: Bundle Notification ID.
@@ -257,14 +257,14 @@ async def delete_bundle_notification(
 def register_tools(mcp):
     @mcp.tool(
         name="List_Bundle_Notification",
-        description="List Bundle (also called Share Link) Notifications",
+        description="List Share Link Notifications",
     )
     async def list_bundle_notification_tool(context: Context) -> str:
         return await list_bundle_notification(context)
 
     @mcp.tool(
         name="Find_Bundle_Notification",
-        description="Show Bundle (also called Share Link) Notification",
+        description="Show Share Link Notification",
     )
     async def find_bundle_notification_tool(
         context: Context,
@@ -277,7 +277,7 @@ def register_tools(mcp):
 
     @mcp.tool(
         name="Create_Bundle_Notification",
-        description="Create Bundle (also called Share Link) Notification",
+        description="Create Share Link Notification",
     )
     async def create_bundle_notification_tool(
         context: Context,
@@ -296,7 +296,7 @@ def register_tools(mcp):
 
     @mcp.tool(
         name="Update_Bundle_Notification",
-        description="Update Bundle (also called Share Link) Notification",
+        description="Update Share Link Notification",
     )
     async def update_bundle_notification_tool(
         context: Context,
@@ -325,7 +325,7 @@ def register_tools(mcp):
 
     @mcp.tool(
         name="Delete_Bundle_Notification",
-        description="Delete Bundle (also called Share Link) Notification",
+        description="Delete Share Link Notification",
     )
     async def delete_bundle_notification_tool(
         context: Context,

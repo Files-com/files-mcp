@@ -12,7 +12,7 @@ async def list_bundle_download(
         int | None, Field(description="Bundle ID", default=None)
     ],
 ) -> str:
-    """List Bundle (also called Share Link) Downloads
+    """List Share Link Downloads
 
     Args:
         bundle_id: Bundle ID
@@ -45,8 +45,7 @@ async def list_bundle_download(
 
 def register_tools(mcp):
     @mcp.tool(
-        name="List_Bundle_Download",
-        description="List Bundle (also called Share Link) Downloads",
+        name="List_Bundle_Download", description="List Share Link Downloads"
     )
     async def list_bundle_download_tool(
         context: Context,

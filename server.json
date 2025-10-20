@@ -12,7 +12,7 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "files-com-mcp",
-      "version": "1.0.35",
+      "version": "1.0.36",
       "transport": {
         "type": "stdio"
       },

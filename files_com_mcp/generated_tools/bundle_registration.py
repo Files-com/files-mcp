@@ -13,7 +13,7 @@ async def list_bundle_registration(
         Field(description="ID of the associated Bundle", default=None),
     ],
 ) -> str:
-    """List Bundle (also called Share Link) Registrations
+    """List Share Link Registrations
 
     Args:
         bundle_id: ID of the associated Bundle
@@ -47,7 +47,7 @@ async def list_bundle_registration(
 def register_tools(mcp):
     @mcp.tool(
         name="List_Bundle_Registration",
-        description="List Bundle (also called Share Link) Registrations",
+        description="List Share Link Registrations",
     )
     async def list_bundle_registration_tool(
         context: Context,
