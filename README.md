@@ -307,4 +307,3 @@ npx @modelcontextprotocol/inspector
 ```
 mcp-name: com.files/python-mcp
 ```
-
