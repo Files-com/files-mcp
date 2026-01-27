@@ -33,7 +33,7 @@ async def delete_file(
         retval = [retval]
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["path", "destination"]
+            retval, ["path", "destination", "paths"]
         )
         return f"File Response:\n{markdown_list}"
     except files_sdk.error.NotAuthenticatedError as err:
@@ -71,7 +71,46 @@ async def find_file(
         retval = [retval]
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["path", "destination"]
+            retval, ["path", "destination", "paths"]
+        )
+        return f"File Response:\n{markdown_list}"
+    except files_sdk.error.NotAuthenticatedError as err:
+        return f"Authentication Error: {err}"
+    except files_sdk.error.Error as err:
+        return f"Files.com Error: {err}"
+    except Exception as ex:
+        return f"General Exception: {ex}"
+
+
+async def zip_list_contents_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+) -> str:
+    """List the contents of a ZIP file.
+
+    Args:
+        path: Path to operate on.
+    """
+
+    try:
+        options = {
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
+        }
+        params = {}
+        if path is None:
+            return "Missing required parameter: path"
+        params["path"] = path
+
+        retval = files_sdk.file.zip_list_contents(path, params, options)
+        if not retval:
+            return "No fileactions found."
+
+        markdown_list = object_list_to_markdown_table(
+            retval, ["path", "destination", "paths"]
         )
         return f"File Response:\n{markdown_list}"
     except files_sdk.error.NotAuthenticatedError as err:
@@ -116,7 +155,7 @@ async def copy_file(
         retval = [retval]
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["path", "destination"]
+            retval, ["path", "destination", "paths"]
         )
         return f"File Response:\n{markdown_list}"
     except files_sdk.error.NotAuthenticatedError as err:
@@ -161,7 +200,104 @@ async def move_file(
         retval = [retval]
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["path", "destination"]
+            retval, ["path", "destination", "paths"]
+        )
+        return f"File Response:\n{markdown_list}"
+    except files_sdk.error.NotAuthenticatedError as err:
+        return f"Authentication Error: {err}"
+    except files_sdk.error.Error as err:
+        return f"Files.com Error: {err}"
+    except Exception as ex:
+        return f"General Exception: {ex}"
+
+
+async def unzip_file(
+    context: Context,
+    path: Annotated[
+        str | None,
+        Field(description="ZIP file path to extract.", default=None),
+    ],
+    destination: Annotated[
+        str | None,
+        Field(
+            description="Destination folder path for extracted files.",
+            default=None,
+        ),
+    ],
+) -> str:
+    """Extract a ZIP file to a destination folder.
+
+    Args:
+        path: ZIP file path to extract.
+        destination: Destination folder path for extracted files.
+    """
+
+    try:
+        options = {
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
+        }
+        params = {}
+        if path is None:
+            return "Missing required parameter: path"
+        params["path"] = path
+        if destination is None:
+            return "Missing required parameter: destination"
+        params["destination"] = destination
+
+        retval = files_sdk.file.unzip(path, params, options)
+        retval = [retval]
+
+        markdown_list = object_list_to_markdown_table(
+            retval, ["path", "destination", "paths"]
+        )
+        return f"File Response:\n{markdown_list}"
+    except files_sdk.error.NotAuthenticatedError as err:
+        return f"Authentication Error: {err}"
+    except files_sdk.error.Error as err:
+        return f"Files.com Error: {err}"
+    except Exception as ex:
+        return f"General Exception: {ex}"
+
+
+async def zip_file(
+    context: Context,
+    paths: Annotated[
+        list | None,
+        Field(description="Paths to include in the ZIP.", default=None),
+    ],
+    destination: Annotated[
+        str | None,
+        Field(description="Destination file path for the ZIP.", default=None),
+    ],
+) -> str:
+    """Create a ZIP from one or more paths and save it to a destination path.
+
+    Args:
+        paths: Paths to include in the ZIP.
+        destination: Destination file path for the ZIP.
+    """
+
+    try:
+        options = {
+            "api_key": getattr(
+                context.request_context.session, "_files_com_api_key", ""
+            )
+        }
+        params = {}
+        if paths is None:
+            return "Missing required parameter: paths"
+        params["paths"] = paths
+        if destination is None:
+            return "Missing required parameter: destination"
+        params["destination"] = destination
+
+        retval = files_sdk.file.zip(params, options)
+        retval = [retval]
+
+        markdown_list = object_list_to_markdown_table(
+            retval, ["path", "destination", "paths"]
         )
         return f"File Response:\n{markdown_list}"
     except files_sdk.error.NotAuthenticatedError as err:
@@ -191,6 +327,18 @@ def register_tools(mcp):
     ) -> str:
         return await find_file(context, path)
 
+    @mcp.tool(
+        name="Zip_List_Contents_File",
+        description="List the contents of a ZIP file.",
+    )
+    async def zip_list_contents_file_tool(
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
+    ) -> str:
+        return await zip_list_contents_file(context, path)
+
     @mcp.tool(name="Copy_File", description="Copy File/Folder")
     async def copy_file_tool(
         context: Context,
@@ -216,3 +364,42 @@ def register_tools(mcp):
         ],
     ) -> str:
         return await move_file(context, path, destination)
+
+    @mcp.tool(
+        name="Unzip_File",
+        description="Extract a ZIP file to a destination folder.",
+    )
+    async def unzip_file_tool(
+        context: Context,
+        path: Annotated[
+            str | None,
+            Field(description="ZIP file path to extract.", default=None),
+        ],
+        destination: Annotated[
+            str | None,
+            Field(
+                description="Destination folder path for extracted files.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await unzip_file(context, path, destination)
+
+    @mcp.tool(
+        name="Zip_File",
+        description="Create a ZIP from one or more paths and save it to a destination path.",
+    )
+    async def zip_file_tool(
+        context: Context,
+        paths: Annotated[
+            list | None,
+            Field(description="Paths to include in the ZIP.", default=None),
+        ],
+        destination: Annotated[
+            str | None,
+            Field(
+                description="Destination file path for the ZIP.", default=None
+            ),
+        ],
+    ) -> str:
+        return await zip_file(context, paths, destination)
