@@ -270,8 +270,11 @@ FILES_COM_API_KEY="dummyKey" npx @modelcontextprotocol/inspector uv run -m files
 ### Development - SSE
 
 ```
-FILES_COM_API_KEY="dummyKey" uv run -m files_com_mcp --mode server --port 12345
+uv run -m files_com_mcp --mode server --port 12345
 ```
+
+When calling the SSE server, include `x-filesapi-key: <your-api-key>` as an HTTP header.
+You can still set `FILES_COM_API_KEY` as a fallback when a header is not provided.
 
 Launch the inspector
 

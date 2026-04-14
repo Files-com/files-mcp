@@ -6,20 +6,20 @@
     "url": "https://github.com/Files-com/files-mcp",
     "source": "github"
   },
-  "version": "1.0.42",
+  "version": "1.0.43",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "files-com-mcp",
-      "version": "1.0.42",
+      "version": "1.0.43",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
-          "description": "Files.com API Key. Create at <your-site>.files.com/ui/apiKeys.",
-          "isRequired": true,
+          "description": "Optional fallback Files.com API Key. In HTTP/SSE mode, you can pass x-filesapi-key per request.",
+          "isRequired": false,
           "format": "string",
           "isSecret": true,
           "name": "FILES_COM_API_KEY"
