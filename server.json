@@ -6,13 +6,13 @@
     "url": "https://github.com/Files-com/files-mcp",
     "source": "github"
   },
-  "version": "1.0.43",
+  "version": "1.0.44",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "files-com-mcp",
-      "version": "1.0.43",
+      "version": "1.0.44",
       "transport": {
         "type": "stdio"
       },

@@ -2,6 +2,7 @@ import os
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import Field
+from files_com_mcp.utils import context_api_key
 import files_sdk
 import files_sdk.error
 
@@ -17,11 +18,7 @@ async def download_file_to_local(
     """
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
 
         files_sdk.file.download_file(remote_path, local_path, options)
         return (
@@ -47,11 +44,7 @@ async def upload_file_from_local(
     """
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
         params = {}
 
         # Smart Default(s)

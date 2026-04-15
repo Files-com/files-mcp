@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import Any, List
 
 
 def object_list_to_markdown_table(
@@ -26,3 +26,16 @@ def object_list_to_markdown_table(
         table_lines.append("| " + " | ".join(values) + " |")
 
     return "\n".join(table_lines)
+
+
+def context_api_key(context: Any) -> str:
+    """Safely extract the Files.com API key from an MCP request context."""
+    request_context = getattr(context, "request_context", None)
+    if request_context is None:
+        return ""
+
+    session = getattr(request_context, "session", None)
+    if session is None:
+        return ""
+
+    return str(getattr(session, "_files_com_api_key", "") or "")

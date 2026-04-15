@@ -1,7 +1,7 @@
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import Field
-from files_com_mcp.utils import object_list_to_markdown_table
+from files_com_mcp.utils import context_api_key, object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
@@ -10,11 +10,7 @@ async def list_automation(context: Context) -> str:
     """List Automations"""
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
         params = {}
 
         retval = files_sdk.automation.list(params, options)
@@ -86,11 +82,7 @@ async def find_automation(
     """
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
         params = {}
         if id is None:
             return "Missing required parameter: id"

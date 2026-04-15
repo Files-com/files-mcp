@@ -1,6 +1,6 @@
 import unittest
 import logging
-import json
+from types import SimpleNamespace
 
 import files_com_mcp
 import files_sdk
@@ -22,6 +22,23 @@ class TestPathUtil(unittest.TestCase):
         expected_table = "| path |\n| --- |\n| path1 |\n| path2 |"
         self.assertEqual(table, expected_table)
 
+    def test_context_api_key_with_missing_request_context(self):
+        context = SimpleNamespace(request_context=None)
+
+        api_key = files_com_mcp.utils.context_api_key(context)
+
+        self.assertEqual(api_key, "")
+
+    def test_context_api_key_reads_session_snapshot(self):
+        context = SimpleNamespace(
+            request_context=SimpleNamespace(
+                session=SimpleNamespace(_files_com_api_key="test-api-key")
+            )
+        )
+
+        api_key = files_com_mcp.utils.context_api_key(context)
+
+        self.assertEqual(api_key, "test-api-key")
+
 if __name__ == '__main__':
     unittest.main()
-

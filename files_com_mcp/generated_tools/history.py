@@ -1,7 +1,7 @@
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import Field
-from files_com_mcp.utils import object_list_to_markdown_table
+from files_com_mcp.utils import context_api_key, object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
@@ -19,11 +19,7 @@ async def list_for_file_history(
     """
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -74,11 +70,7 @@ async def list_for_folder_history(
     """
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -129,11 +121,7 @@ async def list_for_user_history(
     """
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
         params = {}
         if user_id is None:
             return "Missing required parameter: user_id"
@@ -175,11 +163,7 @@ async def list_logins_history(context: Context) -> str:
     """List site login history."""
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
         params = {}
 
         retval = files_sdk.history.list_logins(params, options)
@@ -218,11 +202,7 @@ async def list_history(context: Context) -> str:
     """List site full action history."""
 
     try:
-        options = {
-            "api_key": getattr(
-                context.request_context.session, "_files_com_api_key", ""
-            )
-        }
+        options = {"api_key": context_api_key(context)}
         params = {}
 
         retval = files_sdk.history.list(params, options)
