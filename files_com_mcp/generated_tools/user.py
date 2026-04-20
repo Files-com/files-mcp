@@ -6,15 +6,25 @@ import files_sdk
 import files_sdk.error
 
 
-async def list_user(context: Context) -> str:
+async def list_user(
+    context: Context,
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
+) -> str:
     """List Users"""
 
     try:
         options = {"api_key": context_api_key(context)}
         params = {}
 
-        retval = files_sdk.user.list(params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.user.list(params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No users found."
 
@@ -23,19 +33,86 @@ async def list_user(context: Context) -> str:
             [
                 "id",
                 "username",
-                "email",
-                "group_ids",
-                "password",
+                "admin_group_ids",
+                "allowed_ips",
+                "attachments_permission",
+                "api_keys_count",
+                "authenticate_until",
                 "authentication_method",
+                "avatar_url",
+                "billable",
+                "billing_permission",
+                "bypass_site_allowed_ips",
+                "bypass_user_lifecycle_rules",
+                "created_at",
+                "dav_permission",
+                "disabled",
+                "disabled_expired_or_inactive",
+                "desktop_configuration_profile_id",
+                "email",
+                "filesystem_layout",
+                "first_login_at",
+                "ftp_permission",
+                "group_ids",
+                "header_text",
+                "language",
+                "last_login_at",
+                "last_web_login_at",
+                "last_ftp_login_at",
+                "last_sftp_login_at",
+                "last_dav_login_at",
+                "last_desktop_login_at",
+                "last_restapi_login_at",
+                "last_api_use_at",
+                "last_active_at",
+                "last_protocol_cipher",
+                "lockout_expires",
                 "name",
                 "company",
                 "notes",
+                "notification_daily_send_time",
+                "office_integration_enabled",
+                "partner_admin",
+                "partner_id",
+                "partner_name",
+                "password_set_at",
+                "password_validity_days",
+                "primary_group_id",
+                "public_keys_count",
+                "receive_admin_alerts",
+                "require_2fa",
+                "require_login_by",
+                "active_2fa",
                 "require_password_change",
+                "password_expired",
+                "readonly_site_admin",
+                "restapi_permission",
+                "self_managed",
+                "sftp_permission",
+                "site_admin",
+                "workspace_admin",
+                "site_id",
+                "workspace_id",
+                "skip_welcome_screen",
+                "ssl_required",
+                "sso_strategy_id",
+                "subscribe_to_newsletter",
+                "externally_managed",
+                "tags",
+                "time_zone",
+                "type_of_2fa",
+                "type_of_2fa_for_display",
                 "user_root",
                 "user_home",
+                "days_remaining_until_password_expire",
+                "password_expire_at",
             ],
+            fields=fields,
         )
-        return f"User Response:\n{markdown_list}"
+        response = f"User Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -63,25 +140,92 @@ async def find_user(
 
         retval = files_sdk.user.find(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
                 "id",
                 "username",
-                "email",
-                "group_ids",
-                "password",
+                "admin_group_ids",
+                "allowed_ips",
+                "attachments_permission",
+                "api_keys_count",
+                "authenticate_until",
                 "authentication_method",
+                "avatar_url",
+                "billable",
+                "billing_permission",
+                "bypass_site_allowed_ips",
+                "bypass_user_lifecycle_rules",
+                "created_at",
+                "dav_permission",
+                "disabled",
+                "disabled_expired_or_inactive",
+                "desktop_configuration_profile_id",
+                "email",
+                "filesystem_layout",
+                "first_login_at",
+                "ftp_permission",
+                "group_ids",
+                "header_text",
+                "language",
+                "last_login_at",
+                "last_web_login_at",
+                "last_ftp_login_at",
+                "last_sftp_login_at",
+                "last_dav_login_at",
+                "last_desktop_login_at",
+                "last_restapi_login_at",
+                "last_api_use_at",
+                "last_active_at",
+                "last_protocol_cipher",
+                "lockout_expires",
                 "name",
                 "company",
                 "notes",
+                "notification_daily_send_time",
+                "office_integration_enabled",
+                "partner_admin",
+                "partner_id",
+                "partner_name",
+                "password_set_at",
+                "password_validity_days",
+                "primary_group_id",
+                "public_keys_count",
+                "receive_admin_alerts",
+                "require_2fa",
+                "require_login_by",
+                "active_2fa",
                 "require_password_change",
+                "password_expired",
+                "readonly_site_admin",
+                "restapi_permission",
+                "self_managed",
+                "sftp_permission",
+                "site_admin",
+                "workspace_admin",
+                "site_id",
+                "workspace_id",
+                "skip_welcome_screen",
+                "ssl_required",
+                "sso_strategy_id",
+                "subscribe_to_newsletter",
+                "externally_managed",
+                "tags",
+                "time_zone",
+                "type_of_2fa",
+                "type_of_2fa_for_display",
                 "user_root",
                 "user_home",
+                "days_remaining_until_password_expire",
+                "password_expire_at",
             ],
         )
-        return f"User Response:\n{markdown_list}"
+        response = f"User Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -201,25 +345,92 @@ async def create_user(
 
         retval = files_sdk.user.create(params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
                 "id",
                 "username",
-                "email",
-                "group_ids",
-                "password",
+                "admin_group_ids",
+                "allowed_ips",
+                "attachments_permission",
+                "api_keys_count",
+                "authenticate_until",
                 "authentication_method",
+                "avatar_url",
+                "billable",
+                "billing_permission",
+                "bypass_site_allowed_ips",
+                "bypass_user_lifecycle_rules",
+                "created_at",
+                "dav_permission",
+                "disabled",
+                "disabled_expired_or_inactive",
+                "desktop_configuration_profile_id",
+                "email",
+                "filesystem_layout",
+                "first_login_at",
+                "ftp_permission",
+                "group_ids",
+                "header_text",
+                "language",
+                "last_login_at",
+                "last_web_login_at",
+                "last_ftp_login_at",
+                "last_sftp_login_at",
+                "last_dav_login_at",
+                "last_desktop_login_at",
+                "last_restapi_login_at",
+                "last_api_use_at",
+                "last_active_at",
+                "last_protocol_cipher",
+                "lockout_expires",
                 "name",
                 "company",
                 "notes",
+                "notification_daily_send_time",
+                "office_integration_enabled",
+                "partner_admin",
+                "partner_id",
+                "partner_name",
+                "password_set_at",
+                "password_validity_days",
+                "primary_group_id",
+                "public_keys_count",
+                "receive_admin_alerts",
+                "require_2fa",
+                "require_login_by",
+                "active_2fa",
                 "require_password_change",
+                "password_expired",
+                "readonly_site_admin",
+                "restapi_permission",
+                "self_managed",
+                "sftp_permission",
+                "site_admin",
+                "workspace_admin",
+                "site_id",
+                "workspace_id",
+                "skip_welcome_screen",
+                "ssl_required",
+                "sso_strategy_id",
+                "subscribe_to_newsletter",
+                "externally_managed",
+                "tags",
+                "time_zone",
+                "type_of_2fa",
+                "type_of_2fa_for_display",
                 "user_root",
                 "user_home",
+                "days_remaining_until_password_expire",
+                "password_expire_at",
             ],
         )
-        return f"User Response:\n{markdown_list}"
+        response = f"User Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -343,25 +554,92 @@ async def update_user(
 
         retval = files_sdk.user.update(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
                 "id",
                 "username",
-                "email",
-                "group_ids",
-                "password",
+                "admin_group_ids",
+                "allowed_ips",
+                "attachments_permission",
+                "api_keys_count",
+                "authenticate_until",
                 "authentication_method",
+                "avatar_url",
+                "billable",
+                "billing_permission",
+                "bypass_site_allowed_ips",
+                "bypass_user_lifecycle_rules",
+                "created_at",
+                "dav_permission",
+                "disabled",
+                "disabled_expired_or_inactive",
+                "desktop_configuration_profile_id",
+                "email",
+                "filesystem_layout",
+                "first_login_at",
+                "ftp_permission",
+                "group_ids",
+                "header_text",
+                "language",
+                "last_login_at",
+                "last_web_login_at",
+                "last_ftp_login_at",
+                "last_sftp_login_at",
+                "last_dav_login_at",
+                "last_desktop_login_at",
+                "last_restapi_login_at",
+                "last_api_use_at",
+                "last_active_at",
+                "last_protocol_cipher",
+                "lockout_expires",
                 "name",
                 "company",
                 "notes",
+                "notification_daily_send_time",
+                "office_integration_enabled",
+                "partner_admin",
+                "partner_id",
+                "partner_name",
+                "password_set_at",
+                "password_validity_days",
+                "primary_group_id",
+                "public_keys_count",
+                "receive_admin_alerts",
+                "require_2fa",
+                "require_login_by",
+                "active_2fa",
                 "require_password_change",
+                "password_expired",
+                "readonly_site_admin",
+                "restapi_permission",
+                "self_managed",
+                "sftp_permission",
+                "site_admin",
+                "workspace_admin",
+                "site_id",
+                "workspace_id",
+                "skip_welcome_screen",
+                "ssl_required",
+                "sso_strategy_id",
+                "subscribe_to_newsletter",
+                "externally_managed",
+                "tags",
+                "time_zone",
+                "type_of_2fa",
+                "type_of_2fa_for_display",
                 "user_root",
                 "user_home",
+                "days_remaining_until_password_expire",
+                "password_expire_at",
             ],
         )
-        return f"User Response:\n{markdown_list}"
+        response = f"User Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -389,25 +667,92 @@ async def delete_user(
 
         retval = files_sdk.user.delete(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
                 "id",
                 "username",
-                "email",
-                "group_ids",
-                "password",
+                "admin_group_ids",
+                "allowed_ips",
+                "attachments_permission",
+                "api_keys_count",
+                "authenticate_until",
                 "authentication_method",
+                "avatar_url",
+                "billable",
+                "billing_permission",
+                "bypass_site_allowed_ips",
+                "bypass_user_lifecycle_rules",
+                "created_at",
+                "dav_permission",
+                "disabled",
+                "disabled_expired_or_inactive",
+                "desktop_configuration_profile_id",
+                "email",
+                "filesystem_layout",
+                "first_login_at",
+                "ftp_permission",
+                "group_ids",
+                "header_text",
+                "language",
+                "last_login_at",
+                "last_web_login_at",
+                "last_ftp_login_at",
+                "last_sftp_login_at",
+                "last_dav_login_at",
+                "last_desktop_login_at",
+                "last_restapi_login_at",
+                "last_api_use_at",
+                "last_active_at",
+                "last_protocol_cipher",
+                "lockout_expires",
                 "name",
                 "company",
                 "notes",
+                "notification_daily_send_time",
+                "office_integration_enabled",
+                "partner_admin",
+                "partner_id",
+                "partner_name",
+                "password_set_at",
+                "password_validity_days",
+                "primary_group_id",
+                "public_keys_count",
+                "receive_admin_alerts",
+                "require_2fa",
+                "require_login_by",
+                "active_2fa",
                 "require_password_change",
+                "password_expired",
+                "readonly_site_admin",
+                "restapi_permission",
+                "self_managed",
+                "sftp_permission",
+                "site_admin",
+                "workspace_admin",
+                "site_id",
+                "workspace_id",
+                "skip_welcome_screen",
+                "ssl_required",
+                "sso_strategy_id",
+                "subscribe_to_newsletter",
+                "externally_managed",
+                "tags",
+                "time_zone",
+                "type_of_2fa",
+                "type_of_2fa_for_display",
                 "user_root",
                 "user_home",
+                "days_remaining_until_password_expire",
+                "password_expire_at",
             ],
         )
-        return f"User Response:\n{markdown_list}"
+        response = f"User Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -418,8 +763,17 @@ async def delete_user(
 
 def register_tools(mcp):
     @mcp.tool(name="List_User", description="List Users")
-    async def list_user_tool(context: Context) -> str:
-        return await list_user(context)
+    async def list_user_tool(
+        context: Context,
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await list_user(context, fields=fields)
 
     @mcp.tool(name="Find_User", description="Show User")
     async def find_user_tool(

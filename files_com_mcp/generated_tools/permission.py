@@ -17,6 +17,13 @@ async def list_permission(
     ],
     group_id: Annotated[str | None, Field(description="", default=None)],
     user_id: Annotated[str | None, Field(description="", default=None)],
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """List Permissions
 
@@ -36,15 +43,35 @@ async def list_permission(
         if user_id is not None:
             params["user_id"] = user_id
 
-        retval = files_sdk.permission.list(params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.permission.list(params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No permissions found."
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["path", "group_id", "user_id", "permission", "id"]
+            retval,
+            [
+                "id",
+                "path",
+                "user_id",
+                "username",
+                "group_id",
+                "group_name",
+                "group_ids",
+                "group_names",
+                "partner_id",
+                "partner_name",
+                "permission",
+                "recursive",
+                "site_id",
+            ],
+            fields=fields,
         )
-        return f"Permission Response:\n{markdown_list}"
+        response = f"Permission Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -104,11 +131,30 @@ async def create_permission(
 
         retval = files_sdk.permission.create(params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["path", "group_id", "user_id", "permission", "id"]
+            retval,
+            [
+                "id",
+                "path",
+                "user_id",
+                "username",
+                "group_id",
+                "group_name",
+                "group_ids",
+                "group_names",
+                "partner_id",
+                "partner_name",
+                "permission",
+                "recursive",
+                "site_id",
+            ],
         )
-        return f"Permission Response:\n{markdown_list}"
+        response = f"Permission Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -138,11 +184,30 @@ async def delete_permission(
 
         retval = files_sdk.permission.delete(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["path", "group_id", "user_id", "permission", "id"]
+            retval,
+            [
+                "id",
+                "path",
+                "user_id",
+                "username",
+                "group_id",
+                "group_name",
+                "group_ids",
+                "group_names",
+                "partner_id",
+                "partner_name",
+                "permission",
+                "recursive",
+                "site_id",
+            ],
         )
-        return f"Permission Response:\n{markdown_list}"
+        response = f"Permission Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -164,8 +229,17 @@ def register_tools(mcp):
         ],
         group_id: Annotated[str | None, Field(description="", default=None)],
         user_id: Annotated[str | None, Field(description="", default=None)],
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
     ) -> str:
-        return await list_permission(context, path, group_id, user_id)
+        return await list_permission(
+            context, path, group_id, user_id, fields=fields
+        )
 
     @mcp.tool(name="Create_Permission", description="Create Permission")
     async def create_permission_tool(

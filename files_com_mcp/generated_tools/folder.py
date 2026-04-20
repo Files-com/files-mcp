@@ -11,6 +11,13 @@ async def list_for_folder(
     path: Annotated[
         str | None, Field(description="Path to operate on.", default=None)
     ],
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """List Folders by Path
 
@@ -25,13 +32,57 @@ async def list_for_folder(
             return "Missing required parameter: path"
         params["path"] = path
 
-        retval = files_sdk.folder.list_for(path, params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.folder.list_for(path, params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No folders found."
 
-        markdown_list = object_list_to_markdown_table(retval, ["path"])
-        return f"Folder Response:\n{markdown_list}"
+        markdown_list = object_list_to_markdown_table(
+            retval,
+            [
+                "path",
+                "created_by_id",
+                "created_by_api_key_id",
+                "created_by_as2_incoming_message_id",
+                "created_by_automation_id",
+                "created_by_bundle_registration_id",
+                "created_by_inbox_id",
+                "created_by_remote_server_id",
+                "created_by_sync_id",
+                "custom_metadata",
+                "display_name",
+                "type",
+                "size",
+                "created_at",
+                "last_modified_by_id",
+                "last_modified_by_api_key_id",
+                "last_modified_by_automation_id",
+                "last_modified_by_bundle_registration_id",
+                "last_modified_by_remote_server_id",
+                "last_modified_by_sync_id",
+                "mtime",
+                "provided_mtime",
+                "crc32",
+                "md5",
+                "sha1",
+                "sha256",
+                "mime_type",
+                "region",
+                "permissions",
+                "subfolders_locked?",
+                "is_locked",
+                "download_uri",
+                "priority_color",
+                "preview_id",
+                "preview",
+            ],
+            fields=fields,
+        )
+        response = f"Folder Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -64,9 +115,52 @@ async def create_folder(
 
         retval = files_sdk.folder.create(path, params, options)
         retval = [retval]
+        next_cursor = None
 
-        markdown_list = object_list_to_markdown_table(retval, ["path"])
-        return f"Folder Response:\n{markdown_list}"
+        markdown_list = object_list_to_markdown_table(
+            retval,
+            [
+                "path",
+                "created_by_id",
+                "created_by_api_key_id",
+                "created_by_as2_incoming_message_id",
+                "created_by_automation_id",
+                "created_by_bundle_registration_id",
+                "created_by_inbox_id",
+                "created_by_remote_server_id",
+                "created_by_sync_id",
+                "custom_metadata",
+                "display_name",
+                "type",
+                "size",
+                "created_at",
+                "last_modified_by_id",
+                "last_modified_by_api_key_id",
+                "last_modified_by_automation_id",
+                "last_modified_by_bundle_registration_id",
+                "last_modified_by_remote_server_id",
+                "last_modified_by_sync_id",
+                "mtime",
+                "provided_mtime",
+                "crc32",
+                "md5",
+                "sha1",
+                "sha256",
+                "mime_type",
+                "region",
+                "permissions",
+                "subfolders_locked?",
+                "is_locked",
+                "download_uri",
+                "priority_color",
+                "preview_id",
+                "preview",
+            ],
+        )
+        response = f"Folder Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -82,8 +176,15 @@ def register_tools(mcp):
         path: Annotated[
             str | None, Field(description="Path to operate on.", default=None)
         ],
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
     ) -> str:
-        return await list_for_folder(context, path)
+        return await list_for_folder(context, path, fields=fields)
 
     @mcp.tool(name="Create_Folder", description="Create Folder")
     async def create_folder_tool(

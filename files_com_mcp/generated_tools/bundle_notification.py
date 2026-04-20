@@ -6,29 +6,44 @@ import files_sdk
 import files_sdk.error
 
 
-async def list_bundle_notification(context: Context) -> str:
+async def list_bundle_notification(
+    context: Context,
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
+) -> str:
     """List Share Link Notifications"""
 
     try:
         options = {"api_key": context_api_key(context)}
         params = {}
 
-        retval = files_sdk.bundle_notification.list(params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.bundle_notification.list(params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No bundlenotifications found."
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
                 "bundle_id",
-                "notify_user_id",
+                "id",
                 "notify_on_registration",
                 "notify_on_upload",
+                "notify_user_id",
+                "workspace_id",
             ],
+            fields=fields,
         )
-        return f"BundleNotification Response:\n{markdown_list}"
+        response = f"BundleNotification Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -58,18 +73,23 @@ async def find_bundle_notification(
 
         retval = files_sdk.bundle_notification.find(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
                 "bundle_id",
-                "notify_user_id",
+                "id",
                 "notify_on_registration",
                 "notify_on_upload",
+                "notify_user_id",
+                "workspace_id",
             ],
         )
-        return f"BundleNotification Response:\n{markdown_list}"
+        response = f"BundleNotification Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -112,18 +132,23 @@ async def create_bundle_notification(
 
         retval = files_sdk.bundle_notification.create(params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
                 "bundle_id",
-                "notify_user_id",
+                "id",
                 "notify_on_registration",
                 "notify_on_upload",
+                "notify_user_id",
+                "workspace_id",
             ],
         )
-        return f"BundleNotification Response:\n{markdown_list}"
+        response = f"BundleNotification Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -173,18 +198,23 @@ async def update_bundle_notification(
 
         retval = files_sdk.bundle_notification.update(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
                 "bundle_id",
-                "notify_user_id",
+                "id",
                 "notify_on_registration",
                 "notify_on_upload",
+                "notify_user_id",
+                "workspace_id",
             ],
         )
-        return f"BundleNotification Response:\n{markdown_list}"
+        response = f"BundleNotification Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -214,18 +244,23 @@ async def delete_bundle_notification(
 
         retval = files_sdk.bundle_notification.delete(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
                 "bundle_id",
-                "notify_user_id",
+                "id",
                 "notify_on_registration",
                 "notify_on_upload",
+                "notify_user_id",
+                "workspace_id",
             ],
         )
-        return f"BundleNotification Response:\n{markdown_list}"
+        response = f"BundleNotification Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -239,8 +274,17 @@ def register_tools(mcp):
         name="List_Bundle_Notification",
         description="List Share Link Notifications",
     )
-    async def list_bundle_notification_tool(context: Context) -> str:
-        return await list_bundle_notification(context)
+    async def list_bundle_notification_tool(
+        context: Context,
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await list_bundle_notification(context, fields=fields)
 
     @mcp.tool(
         name="Find_Bundle_Notification",

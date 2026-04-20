@@ -6,15 +6,25 @@ import files_sdk
 import files_sdk.error
 
 
-async def list_automation(context: Context) -> str:
+async def list_automation(
+    context: Context,
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
+) -> str:
     """List Automations"""
 
     try:
         options = {"api_key": context_api_key(context)}
         params = {}
 
-        retval = files_sdk.automation.list(params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.automation.list(params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No automations found."
 
@@ -22,6 +32,8 @@ async def list_automation(context: Context) -> str:
             retval,
             [
                 "id",
+                "workspace_id",
+                "always_serialize_jobs",
                 "always_overwrite_size_matching_files",
                 "automation",
                 "deleted",
@@ -51,6 +63,7 @@ async def list_automation(context: Context) -> str:
                 "schedule_times_of_day",
                 "schedule_time_zone",
                 "source",
+                "legacy_sync_ids",
                 "sync_ids",
                 "trigger_actions",
                 "trigger",
@@ -58,9 +71,14 @@ async def list_automation(context: Context) -> str:
                 "user_ids",
                 "value",
                 "webhook_url",
+                "holiday_region",
             ],
+            fields=fields,
         )
-        return f"Automation Response:\n{markdown_list}"
+        response = f"Automation Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -90,11 +108,14 @@ async def find_automation(
 
         retval = files_sdk.automation.find(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
                 "id",
+                "workspace_id",
+                "always_serialize_jobs",
                 "always_overwrite_size_matching_files",
                 "automation",
                 "deleted",
@@ -124,6 +145,7 @@ async def find_automation(
                 "schedule_times_of_day",
                 "schedule_time_zone",
                 "source",
+                "legacy_sync_ids",
                 "sync_ids",
                 "trigger_actions",
                 "trigger",
@@ -131,9 +153,13 @@ async def find_automation(
                 "user_ids",
                 "value",
                 "webhook_url",
+                "holiday_region",
             ],
         )
-        return f"Automation Response:\n{markdown_list}"
+        response = f"Automation Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -144,8 +170,17 @@ async def find_automation(
 
 def register_tools(mcp):
     @mcp.tool(name="List_Automation", description="List Automations")
-    async def list_automation_tool(context: Context) -> str:
-        return await list_automation(context)
+    async def list_automation_tool(
+        context: Context,
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await list_automation(context, fields=fields)
 
     @mcp.tool(name="Find_Automation", description="Show Automation")
     async def find_automation_tool(

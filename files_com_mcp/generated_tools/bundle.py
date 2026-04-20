@@ -6,32 +6,80 @@ import files_sdk
 import files_sdk.error
 
 
-async def list_bundle(context: Context) -> str:
+async def list_bundle(
+    context: Context,
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
+) -> str:
     """List Share Links"""
 
     try:
         options = {"api_key": context_api_key(context)}
         params = {}
 
-        retval = files_sdk.bundle.list(params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.bundle.list(params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No bundles found."
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
-                "paths",
-                "password",
-                "expires_at",
-                "max_uses",
+                "code",
+                "color_left",
+                "color_link",
+                "color_text",
+                "color_top",
+                "color_top_text",
+                "url",
                 "description",
-                "note",
+                "expires_at",
+                "password_protected",
+                "permissions",
+                "preview_only",
                 "require_registration",
+                "require_share_recipient",
+                "require_logout",
+                "clickwrap_body",
+                "form_field_set",
+                "skip_name",
+                "skip_email",
+                "start_access_on_date",
+                "skip_company",
+                "id",
+                "created_at",
+                "dont_separate_submissions_by_folder",
+                "max_uses",
+                "note",
+                "path_template",
+                "path_template_time_zone",
+                "send_email_receipt_to_uploader",
+                "snapshot_id",
+                "user_id",
+                "username",
+                "clickwrap_id",
+                "inbox_id",
+                "watermark_attachment",
+                "watermark_value",
+                "send_one_time_password_to_recipient_at_registration",
+                "workspace_id",
+                "has_inbox",
+                "dont_allow_folders_in_uploads",
+                "paths",
+                "bundlepaths",
             ],
+            fields=fields,
         )
-        return f"Bundle Response:\n{markdown_list}"
+        response = f"Bundle Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -59,21 +107,59 @@ async def find_bundle(
 
         retval = files_sdk.bundle.find(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
-                "paths",
-                "password",
-                "expires_at",
-                "max_uses",
+                "code",
+                "color_left",
+                "color_link",
+                "color_text",
+                "color_top",
+                "color_top_text",
+                "url",
                 "description",
-                "note",
+                "expires_at",
+                "password_protected",
+                "permissions",
+                "preview_only",
                 "require_registration",
+                "require_share_recipient",
+                "require_logout",
+                "clickwrap_body",
+                "form_field_set",
+                "skip_name",
+                "skip_email",
+                "start_access_on_date",
+                "skip_company",
+                "id",
+                "created_at",
+                "dont_separate_submissions_by_folder",
+                "max_uses",
+                "note",
+                "path_template",
+                "path_template_time_zone",
+                "send_email_receipt_to_uploader",
+                "snapshot_id",
+                "user_id",
+                "username",
+                "clickwrap_id",
+                "inbox_id",
+                "watermark_attachment",
+                "watermark_value",
+                "send_one_time_password_to_recipient_at_registration",
+                "workspace_id",
+                "has_inbox",
+                "dont_allow_folders_in_uploads",
+                "paths",
+                "bundlepaths",
             ],
         )
-        return f"Bundle Response:\n{markdown_list}"
+        response = f"Bundle Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -156,21 +242,59 @@ async def create_bundle(
 
         retval = files_sdk.bundle.create(params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
-                "paths",
-                "password",
-                "expires_at",
-                "max_uses",
+                "code",
+                "color_left",
+                "color_link",
+                "color_text",
+                "color_top",
+                "color_top_text",
+                "url",
                 "description",
-                "note",
+                "expires_at",
+                "password_protected",
+                "permissions",
+                "preview_only",
                 "require_registration",
+                "require_share_recipient",
+                "require_logout",
+                "clickwrap_body",
+                "form_field_set",
+                "skip_name",
+                "skip_email",
+                "start_access_on_date",
+                "skip_company",
+                "id",
+                "created_at",
+                "dont_separate_submissions_by_folder",
+                "max_uses",
+                "note",
+                "path_template",
+                "path_template_time_zone",
+                "send_email_receipt_to_uploader",
+                "snapshot_id",
+                "user_id",
+                "username",
+                "clickwrap_id",
+                "inbox_id",
+                "watermark_attachment",
+                "watermark_value",
+                "send_one_time_password_to_recipient_at_registration",
+                "workspace_id",
+                "has_inbox",
+                "dont_allow_folders_in_uploads",
+                "paths",
+                "bundlepaths",
             ],
         )
-        return f"Bundle Response:\n{markdown_list}"
+        response = f"Bundle Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -205,21 +329,59 @@ async def update_bundle(
 
         retval = files_sdk.bundle.update(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
-                "paths",
-                "password",
-                "expires_at",
-                "max_uses",
+                "code",
+                "color_left",
+                "color_link",
+                "color_text",
+                "color_top",
+                "color_top_text",
+                "url",
                 "description",
-                "note",
+                "expires_at",
+                "password_protected",
+                "permissions",
+                "preview_only",
                 "require_registration",
+                "require_share_recipient",
+                "require_logout",
+                "clickwrap_body",
+                "form_field_set",
+                "skip_name",
+                "skip_email",
+                "start_access_on_date",
+                "skip_company",
+                "id",
+                "created_at",
+                "dont_separate_submissions_by_folder",
+                "max_uses",
+                "note",
+                "path_template",
+                "path_template_time_zone",
+                "send_email_receipt_to_uploader",
+                "snapshot_id",
+                "user_id",
+                "username",
+                "clickwrap_id",
+                "inbox_id",
+                "watermark_attachment",
+                "watermark_value",
+                "send_one_time_password_to_recipient_at_registration",
+                "workspace_id",
+                "has_inbox",
+                "dont_allow_folders_in_uploads",
+                "paths",
+                "bundlepaths",
             ],
         )
-        return f"Bundle Response:\n{markdown_list}"
+        response = f"Bundle Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -247,21 +409,59 @@ async def delete_bundle(
 
         retval = files_sdk.bundle.delete(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
             retval,
             [
-                "id",
-                "paths",
-                "password",
-                "expires_at",
-                "max_uses",
+                "code",
+                "color_left",
+                "color_link",
+                "color_text",
+                "color_top",
+                "color_top_text",
+                "url",
                 "description",
-                "note",
+                "expires_at",
+                "password_protected",
+                "permissions",
+                "preview_only",
                 "require_registration",
+                "require_share_recipient",
+                "require_logout",
+                "clickwrap_body",
+                "form_field_set",
+                "skip_name",
+                "skip_email",
+                "start_access_on_date",
+                "skip_company",
+                "id",
+                "created_at",
+                "dont_separate_submissions_by_folder",
+                "max_uses",
+                "note",
+                "path_template",
+                "path_template_time_zone",
+                "send_email_receipt_to_uploader",
+                "snapshot_id",
+                "user_id",
+                "username",
+                "clickwrap_id",
+                "inbox_id",
+                "watermark_attachment",
+                "watermark_value",
+                "send_one_time_password_to_recipient_at_registration",
+                "workspace_id",
+                "has_inbox",
+                "dont_allow_folders_in_uploads",
+                "paths",
+                "bundlepaths",
             ],
         )
-        return f"Bundle Response:\n{markdown_list}"
+        response = f"Bundle Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -272,8 +472,17 @@ async def delete_bundle(
 
 def register_tools(mcp):
     @mcp.tool(name="List_Bundle", description="List Share Links")
-    async def list_bundle_tool(context: Context) -> str:
-        return await list_bundle(context)
+    async def list_bundle_tool(
+        context: Context,
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await list_bundle(context, fields=fields)
 
     @mcp.tool(name="Find_Bundle", description="Show Share Link")
     async def find_bundle_tool(

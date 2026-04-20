@@ -15,6 +15,13 @@ async def list_bundle_recipient(
             default=None,
         ),
     ],
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """List Share Link Recipients
 
@@ -29,15 +36,28 @@ async def list_bundle_recipient(
             return "Missing required parameter: bundle_id"
         params["bundle_id"] = bundle_id
 
-        retval = files_sdk.bundle_recipient.list(params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.bundle_recipient.list(params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No bundlerecipients found."
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["bundle_id", "recipient", "name", "company", "note"]
+            retval,
+            [
+                "company",
+                "name",
+                "note",
+                "recipient",
+                "sent_at",
+                "workspace_id",
+            ],
+            fields=fields,
         )
-        return f"BundleRecipient Response:\n{markdown_list}"
+        response = f"BundleRecipient Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -100,11 +120,23 @@ async def create_bundle_recipient(
 
         retval = files_sdk.bundle_recipient.create(params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["bundle_id", "recipient", "name", "company", "note"]
+            retval,
+            [
+                "company",
+                "name",
+                "note",
+                "recipient",
+                "sent_at",
+                "workspace_id",
+            ],
         )
-        return f"BundleRecipient Response:\n{markdown_list}"
+        response = f"BundleRecipient Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -126,8 +158,15 @@ def register_tools(mcp):
                 default=None,
             ),
         ],
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
     ) -> str:
-        return await list_bundle_recipient(context, bundle_id)
+        return await list_bundle_recipient(context, bundle_id, fields=fields)
 
     @mcp.tool(
         name="Create_Bundle_Recipient",

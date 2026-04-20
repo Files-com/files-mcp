@@ -6,22 +6,51 @@ import files_sdk
 import files_sdk.error
 
 
-async def list_group(context: Context) -> str:
+async def list_group(
+    context: Context,
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
+) -> str:
     """List Groups"""
 
     try:
         options = {"api_key": context_api_key(context)}
         params = {}
 
-        retval = files_sdk.group.list(params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.group.list(params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No groups found."
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["id", "name", "notes", "user_ids", "admin_ids"]
+            retval,
+            [
+                "id",
+                "name",
+                "allowed_ips",
+                "admin_ids",
+                "notes",
+                "user_ids",
+                "usernames",
+                "ftp_permission",
+                "sftp_permission",
+                "dav_permission",
+                "restapi_permission",
+                "site_id",
+                "workspace_id",
+            ],
+            fields=fields,
         )
-        return f"Group Response:\n{markdown_list}"
+        response = f"Group Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -49,11 +78,30 @@ async def find_group(
 
         retval = files_sdk.group.find(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["id", "name", "notes", "user_ids", "admin_ids"]
+            retval,
+            [
+                "id",
+                "name",
+                "allowed_ips",
+                "admin_ids",
+                "notes",
+                "user_ids",
+                "usernames",
+                "ftp_permission",
+                "sftp_permission",
+                "dav_permission",
+                "restapi_permission",
+                "site_id",
+                "workspace_id",
+            ],
         )
-        return f"Group Response:\n{markdown_list}"
+        response = f"Group Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -109,11 +157,30 @@ async def create_group(
 
         retval = files_sdk.group.create(params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["id", "name", "notes", "user_ids", "admin_ids"]
+            retval,
+            [
+                "id",
+                "name",
+                "allowed_ips",
+                "admin_ids",
+                "notes",
+                "user_ids",
+                "usernames",
+                "ftp_permission",
+                "sftp_permission",
+                "dav_permission",
+                "restapi_permission",
+                "site_id",
+                "workspace_id",
+            ],
         )
-        return f"Group Response:\n{markdown_list}"
+        response = f"Group Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -173,11 +240,30 @@ async def update_group(
 
         retval = files_sdk.group.update(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["id", "name", "notes", "user_ids", "admin_ids"]
+            retval,
+            [
+                "id",
+                "name",
+                "allowed_ips",
+                "admin_ids",
+                "notes",
+                "user_ids",
+                "usernames",
+                "ftp_permission",
+                "sftp_permission",
+                "dav_permission",
+                "restapi_permission",
+                "site_id",
+                "workspace_id",
+            ],
         )
-        return f"Group Response:\n{markdown_list}"
+        response = f"Group Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -205,11 +291,30 @@ async def delete_group(
 
         retval = files_sdk.group.delete(id, params, options)
         retval = [retval]
+        next_cursor = None
 
         markdown_list = object_list_to_markdown_table(
-            retval, ["id", "name", "notes", "user_ids", "admin_ids"]
+            retval,
+            [
+                "id",
+                "name",
+                "allowed_ips",
+                "admin_ids",
+                "notes",
+                "user_ids",
+                "usernames",
+                "ftp_permission",
+                "sftp_permission",
+                "dav_permission",
+                "restapi_permission",
+                "site_id",
+                "workspace_id",
+            ],
         )
-        return f"Group Response:\n{markdown_list}"
+        response = f"Group Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -220,8 +325,17 @@ async def delete_group(
 
 def register_tools(mcp):
     @mcp.tool(name="List_Group", description="List Groups")
-    async def list_group_tool(context: Context) -> str:
-        return await list_group(context)
+    async def list_group_tool(
+        context: Context,
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await list_group(context, fields=fields)
 
     @mcp.tool(name="Find_Group", description="Show Group")
     async def find_group_tool(

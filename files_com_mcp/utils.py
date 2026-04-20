@@ -1,18 +1,48 @@
-from typing import Any, List
+from typing import Any, List, Optional
+
+# Cap each markdown table cell at this many characters. Log entities include
+# fields like `request_json`, `response_json`, `body`, `changes`, and `message`
+# that can hold kilobytes of free-form text and would otherwise destroy the
+# table layout and blow up the LLM's token budget.
+MAX_CELL_LEN = 200
+
+
+def _format_cell(value: Any) -> str:
+    """Render a single attribute value as a safe markdown table cell."""
+    text = str(value) if value is not None else ""
+    # Escape pipe (column separator) and collapse newlines so each row stays on one line.
+    text = (
+        text.replace("\\", "\\\\")
+        .replace("|", "\\|")
+        .replace("\r", " ")
+        .replace("\n", " ")
+    )
+    if len(text) > MAX_CELL_LEN:
+        text = text[: MAX_CELL_LEN - 1] + "…"
+    return text
 
 
 def object_list_to_markdown_table(
-    items: List[Any], attributes: List[str]
+    items: List[Any],
+    default_attributes: List[str],
+    fields: Optional[List[str]] = None,
 ) -> str:
     """
-    Convert a list of objects into a Markdown table using selected attributes.
+    Convert a list of objects into a Markdown table.
 
     :param items: List of objects (same type) to convert.
-    :param attributes: List of attribute names (strings) to include as columns.
+    :param default_attributes: Attribute names used when `fields` is not provided.
+    :param fields: Optional caller-supplied subset of attribute names. When set
+        and non-empty, overrides `default_attributes`. Attributes the item does
+        not define render as empty cells.
     :return: A string containing the Markdown-formatted table.
     """
     if not items:
         return "*(no data)*"
+
+    attributes = fields if fields else default_attributes
+    if not attributes:
+        return "*(no columns selected)*"
 
     # Header row
     table_lines = ["| " + " | ".join(attributes) + " |"]
@@ -22,7 +52,7 @@ def object_list_to_markdown_table(
 
     # Data rows
     for obj in items:
-        values = [str(getattr(obj, attr, "")) for attr in attributes]
+        values = [_format_cell(getattr(obj, attr, "")) for attr in attributes]
         table_lines.append("| " + " | ".join(values) + " |")
 
     return "\n".join(table_lines)

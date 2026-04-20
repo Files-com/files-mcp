@@ -12,6 +12,13 @@ async def list_bundle_registration(
         int | None,
         Field(description="ID of the associated Bundle", default=None),
     ],
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """List Share Link Registrations
 
@@ -25,13 +32,36 @@ async def list_bundle_registration(
         if bundle_id is not None:
             params["bundle_id"] = bundle_id
 
-        retval = files_sdk.bundle_registration.list(params, options)
-        retval = [item for item in retval.auto_paging_iter()]
+        list_obj = files_sdk.bundle_registration.list(params, options)
+        retval = list(list_obj)
+        next_cursor = getattr(list_obj, "cursor", None)
         if not retval:
             return "No bundleregistrations found."
 
-        markdown_list = object_list_to_markdown_table(retval, ["bundle_id"])
-        return f"BundleRegistration Response:\n{markdown_list}"
+        markdown_list = object_list_to_markdown_table(
+            retval,
+            [
+                "code",
+                "name",
+                "company",
+                "email",
+                "ip",
+                "inbox_code",
+                "clickwrap_body",
+                "form_field_set_id",
+                "form_field_data",
+                "bundle_code",
+                "bundle_id",
+                "bundle_recipient_id",
+                "workspace_id",
+                "created_at",
+            ],
+            fields=fields,
+        )
+        response = f"BundleRegistration Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -51,5 +81,14 @@ def register_tools(mcp):
             int | None,
             Field(description="ID of the associated Bundle", default=None),
         ],
+        fields: Annotated[
+            list[str] | None,
+            Field(
+                description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+                default=None,
+            ),
+        ],
     ) -> str:
-        return await list_bundle_registration(context, bundle_id)
+        return await list_bundle_registration(
+            context, bundle_id, fields=fields
+        )
