@@ -1,3 +1,4 @@
+import json
 from typing import Any, List, Optional
 
 # Cap each markdown table cell at this many characters. Log entities include
@@ -56,6 +57,19 @@ def object_list_to_markdown_table(
         table_lines.append("| " + " | ".join(values) + " |")
 
     return "\n".join(table_lines)
+
+
+def coerce_json(value: Any) -> Any:
+    # Some MCP clients (notably Claude Cowork) serialize object/array tool
+    # parameters as JSON strings instead of native JSON values, which breaks
+    # Pydantic validation of `dict`/`list` fields. Parse a JSON string back
+    # into its native shape; leave anything else untouched.
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except (json.JSONDecodeError, ValueError):
+            return value
+    return value
 
 
 def context_api_key(context: Any) -> str:

@@ -1,7 +1,11 @@
 from fastmcp import Context
 from typing_extensions import Annotated
-from pydantic import Field
-from files_com_mcp.utils import context_api_key, object_list_to_markdown_table
+from pydantic import BeforeValidator, Field
+from files_com_mcp.utils import (
+    coerce_json,
+    context_api_key,
+    object_list_to_markdown_table,
+)
 import files_sdk
 import files_sdk.error
 
@@ -28,6 +32,7 @@ async def list_file_migration_log(
             description="If set, return records where the specified field is equal to the supplied value. Valid fields are `file_migration_id`, `operation`, `status`, `type` or `created_at`.",
             default=None,
         ),
+        BeforeValidator(coerce_json),
     ],
     filter_gt: Annotated[
         dict | None,
@@ -35,6 +40,7 @@ async def list_file_migration_log(
             description="If set, return records where the specified field is greater than the supplied value. Valid fields are `created_at`.",
             default=None,
         ),
+        BeforeValidator(coerce_json),
     ],
     filter_gteq: Annotated[
         dict | None,
@@ -42,6 +48,7 @@ async def list_file_migration_log(
             description="If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `created_at`.",
             default=None,
         ),
+        BeforeValidator(coerce_json),
     ],
     filter_lt: Annotated[
         dict | None,
@@ -49,6 +56,7 @@ async def list_file_migration_log(
             description="If set, return records where the specified field is less than the supplied value. Valid fields are `created_at`.",
             default=None,
         ),
+        BeforeValidator(coerce_json),
     ],
     filter_lteq: Annotated[
         dict | None,
@@ -56,6 +64,7 @@ async def list_file_migration_log(
             description="If set, return records where the specified field is less than or equal the supplied value. Valid fields are `created_at`.",
             default=None,
         ),
+        BeforeValidator(coerce_json),
     ],
     fields: Annotated[
         list[str] | None,
@@ -63,6 +72,7 @@ async def list_file_migration_log(
             description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
             default=None,
         ),
+        BeforeValidator(coerce_json),
     ],
 ) -> str:
     """List File Migration Logs
@@ -154,6 +164,7 @@ def register_tools(mcp):
                 description="If set, return records where the specified field is equal to the supplied value. Valid fields are `file_migration_id`, `operation`, `status`, `type` or `created_at`.",
                 default=None,
             ),
+            BeforeValidator(coerce_json),
         ],
         filter_gt: Annotated[
             dict | None,
@@ -161,6 +172,7 @@ def register_tools(mcp):
                 description="If set, return records where the specified field is greater than the supplied value. Valid fields are `created_at`.",
                 default=None,
             ),
+            BeforeValidator(coerce_json),
         ],
         filter_gteq: Annotated[
             dict | None,
@@ -168,6 +180,7 @@ def register_tools(mcp):
                 description="If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `created_at`.",
                 default=None,
             ),
+            BeforeValidator(coerce_json),
         ],
         filter_lt: Annotated[
             dict | None,
@@ -175,6 +188,7 @@ def register_tools(mcp):
                 description="If set, return records where the specified field is less than the supplied value. Valid fields are `created_at`.",
                 default=None,
             ),
+            BeforeValidator(coerce_json),
         ],
         filter_lteq: Annotated[
             dict | None,
@@ -182,6 +196,7 @@ def register_tools(mcp):
                 description="If set, return records where the specified field is less than or equal the supplied value. Valid fields are `created_at`.",
                 default=None,
             ),
+            BeforeValidator(coerce_json),
         ],
         fields: Annotated[
             list[str] | None,
@@ -189,6 +204,7 @@ def register_tools(mcp):
                 description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
                 default=None,
             ),
+            BeforeValidator(coerce_json),
         ],
     ) -> str:
         return await list_file_migration_log(
