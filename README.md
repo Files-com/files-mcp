@@ -58,6 +58,10 @@ For LLMs that require a more detailed or technical setup, our MCP is implemented
 
 If your LLM client needs you to supply execution details for our MCP, we recommend using `uvx`, as demonstrated in the Claude example. This approach ensures a smooth, reproducible setup with minimal effort.
 
+### Hosted MCP Server
+
+Files.com also provides a hosted MCP server that lets AI agents connect to Files.com securely, without requiring you to run the Python package locally. For more information, see the [Files.com AI integrations](https://www.files.com/docs/integrations/ai) documentation.
+
 ### Using with Claude
 
 To install into Claude you have to add JSON to the `claude_desktop_config.json` file
@@ -88,6 +92,101 @@ These examples require `uv` which is a popular modern environment manager for ru
   }
 }
 ```
+
+### Available Tools
+
+The Files.com MCP provides tools for working with files, folders, sharing, users, logs, automations, and related Files.com resources.
+
+#### Automations
+
+| Tool | Description |
+| ---- | ----------- |
+| `Find_Automation` | Show Automation |
+| `List_Automation` | List Automations |
+
+#### File System
+
+| Tool | Description |
+| ---- | ----------- |
+| `Copy_File` | Copy File/Folder |
+| `Create_Folder` | Create Folder |
+| `Delete_File` | Delete File/Folder |
+| `Find_File` | Find File/Folder by Path |
+| `List_For_Folder` | List Folders by Path |
+| `Move_File` | Move File/Folder |
+| `Unzip_File` | Extract a ZIP file to a destination folder. |
+| `Zip_File` | Create a ZIP from one or more paths and save it to a destination path. |
+| `Zip_List_Contents_File` | List the contents of a ZIP file. |
+
+#### Integrations
+
+| Tool | Description |
+| ---- | ----------- |
+| `Find_Remote_Server` | Show Remote Server |
+| `List_Remote_Server` | List Remote Servers |
+
+#### Logging
+
+| Tool | Description |
+| ---- | ----------- |
+| `List_Action_Log` | List Action Logs |
+| `List_Api_Request_Log` | List API Request Logs |
+| `List_Automation_Log` | List Automation Logs |
+| `List_Email_Log` | List Email Logs |
+| `List_Exavault_Api_Request_Log` | List Exavault API Request Logs |
+| `List_External_Event` | List External Events |
+| `List_File_Migration_Log` | List File Migration Logs |
+| `List_For_File_History` | List history for specific file. |
+| `List_For_Folder_History` | List history for specific folder. |
+| `List_For_User_History` | List history for specific user. |
+| `List_Ftp_Action_Log` | List FTP Action Logs |
+| `List_History` | List site full action history. |
+| `List_Inbound_S3_Log` | List Inbound S3 Logs |
+| `List_Logins_History` | List site login history. |
+| `List_Outbound_Connection_Log` | List Outbound Connection Logs |
+| `List_Public_Hosting_Request_Log` | List Public Hosting Request Logs |
+| `List_Scim_Log` | List Scim Logs |
+| `List_Settings_Change` | List Settings Changes |
+| `List_Sftp_Action_Log` | List SFTP Action Logs |
+| `List_Sync_Log` | List Sync Logs |
+| `List_Web_Dav_Action_Log` | List WebDAV Action Logs |
+
+#### Sharing / Share Links
+
+| Tool | Description |
+| ---- | ----------- |
+| `Create_Bundle` | Create Share Link |
+| `Create_Bundle_Notification` | Create Share Link Notification |
+| `Create_Bundle_Recipient` | Create Share Link Recipient |
+| `Delete_Bundle` | Delete Share Link |
+| `Delete_Bundle_Notification` | Delete Share Link Notification |
+| `Find_Bundle` | Show Share Link |
+| `Find_Bundle_Notification` | Show Share Link Notification |
+| `List_Bundle` | List Share Links |
+| `List_Bundle_Download` | List Share Link Downloads |
+| `List_Bundle_Notification` | List Share Link Notifications |
+| `List_Bundle_Recipient` | List Share Link Recipients |
+| `List_Bundle_Registration` | List Share Link Registrations |
+| `Update_Bundle` | Update Share Link |
+| `Update_Bundle_Notification` | Update Share Link Notification |
+
+#### User Accounts
+
+| Tool | Description |
+| ---- | ----------- |
+| `Create_Group` | Create Group |
+| `Create_Permission` | Create Permission |
+| `Create_User` | Create User |
+| `Delete_Group` | Delete Group |
+| `Delete_Permission` | Delete Permission |
+| `Delete_User` | Delete User |
+| `Find_Group` | Show Group |
+| `Find_User` | Show User |
+| `List_Group` | List Groups |
+| `List_Permission` | List Permissions |
+| `List_User` | List Users |
+| `Update_Group` | Update Group |
+| `Update_User` | Update User |
 
 ## Authentication
 
