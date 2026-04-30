@@ -190,7 +190,7 @@ The Files.com MCP provides tools for working with files, folders, sharing, users
 
 ## Authentication
 
-There are two ways to authenticate: API Key authentication and Session-based authentication.
+The Files.com MCP uses API key authentication.
 
 ### Authenticate with an API Key
 
@@ -206,26 +206,6 @@ access to the entire API. If the user is not an administrator, you will only be 
 that user can access, and no access will be granted to site administration functions in the API.
 
 Don't forget to replace the placeholder, `YOUR_API_KEY`, with your actual API key.
-
-### Authenticate with a Session
-
-You can also authenticate by creating a user session using the username and
-password of an active user. If the user is an administrator, the session will have full access to
-all capabilities of Files.com. Sessions created from regular user accounts will only be able to access files that
-user can access, and no access will be granted to site administration functions.
-
-Sessions use the exact same session timeout settings as web interface sessions. When a
-session times out, simply create a new session and resume where you left off. This process is not
-automatically handled by our SDKs because we do not want to store password information in memory without
-your explicit consent.
-
-#### Logging In
-
-#### Using a Session
-
-#### Logging Out
-
-## Configuration
 
 ## Sort and Filter
 
