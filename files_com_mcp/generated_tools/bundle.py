@@ -206,6 +206,13 @@ async def create_bundle(
     note: Annotated[
         str | None, Field(description="Bundle internal note", default=None)
     ],
+    permissions: Annotated[
+        str | None,
+        Field(
+            description="Permissions that apply to Folders in this Share Link.",
+            default=None,
+        ),
+    ],
     require_registration: Annotated[
         bool | None,
         Field(
@@ -223,6 +230,7 @@ async def create_bundle(
         max_uses: Maximum number of times bundle can be accessed
         description: Public description
         note: Bundle internal note
+        permissions: Permissions that apply to Folders in this Share Link.
         require_registration: Show a registration page that captures the downloader's name and email address?
     """
 
@@ -242,11 +250,10 @@ async def create_bundle(
             params["description"] = description
         if note is not None:
             params["note"] = note
+        if permissions is not None:
+            params["permissions"] = permissions
         if require_registration is not None:
             params["require_registration"] = require_registration
-
-        # Smart Default(s)
-        params["permissions"] = "read"
 
         retval = files_sdk.bundle.create(params, options)
         retval = [retval]
@@ -319,12 +326,20 @@ async def update_bundle(
         str | None,
         Field(description="Bundle expiration date/time", default=None),
     ],
+    permissions: Annotated[
+        str | None,
+        Field(
+            description="Permissions that apply to Folders in this Share Link.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """Update Share Link
 
     Args:
         id: Bundle ID.
         expires_at: Bundle expiration date/time
+        permissions: Permissions that apply to Folders in this Share Link.
     """
 
     try:
@@ -335,6 +350,8 @@ async def update_bundle(
         params["id"] = id
         if expires_at is not None:
             params["expires_at"] = expires_at
+        if permissions is not None:
+            params["permissions"] = permissions
 
         retval = files_sdk.bundle.update(id, params, options)
         retval = [retval]
@@ -537,6 +554,13 @@ def register_tools(mcp):
         note: Annotated[
             str | None, Field(description="Bundle internal note", default=None)
         ],
+        permissions: Annotated[
+            str | None,
+            Field(
+                description="Permissions that apply to Folders in this Share Link.",
+                default=None,
+            ),
+        ],
         require_registration: Annotated[
             bool | None,
             Field(
@@ -553,6 +577,7 @@ def register_tools(mcp):
             max_uses,
             description,
             note,
+            permissions,
             require_registration,
         )
 
@@ -566,8 +591,15 @@ def register_tools(mcp):
             str | None,
             Field(description="Bundle expiration date/time", default=None),
         ],
+        permissions: Annotated[
+            str | None,
+            Field(
+                description="Permissions that apply to Folders in this Share Link.",
+                default=None,
+            ),
+        ],
     ) -> str:
-        return await update_bundle(context, id, expires_at)
+        return await update_bundle(context, id, expires_at, permissions)
 
     @mcp.tool(name="Delete_Bundle", description="Delete Share Link")
     async def delete_bundle_tool(
