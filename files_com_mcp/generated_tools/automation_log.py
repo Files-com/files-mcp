@@ -22,7 +22,7 @@ async def list_automation_log(
     per_page: Annotated[
         int | None,
         Field(
-            description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+            description="Number of records to show per page.  (Max: 2000, 1,000 or less is recommended).",
             default=None,
         ),
     ],
@@ -87,7 +87,7 @@ async def list_automation_log(
 
     Args:
         cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
-        per_page: Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).
+        per_page: Number of records to show per page.  (Max: 2000, 1,000 or less is recommended).
         filter: If set, return records where the specified field is equal to the supplied value. Valid fields are `automation_id`, `automation_run_id`, `operation`, `path`, `status` or `created_at`.
         filter_gt: If set, return records where the specified field is greater than the supplied value. Valid fields are `created_at`.
         filter_gteq: If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `created_at`.
@@ -164,7 +164,7 @@ def register_tools(mcp):
         per_page: Annotated[
             int | None,
             Field(
-                description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+                description="Number of records to show per page.  (Max: 2000, 1,000 or less is recommended).",
                 default=None,
             ),
         ],

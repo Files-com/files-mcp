@@ -43,7 +43,7 @@ async def list_for_file_history(
     per_page: Annotated[
         int | None,
         Field(
-            description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
             default=None,
         ),
     ],
@@ -74,7 +74,7 @@ async def list_for_file_history(
         end_at: Leave blank or set to a date/time to filter later entries.
         display: Display format. Leave blank or set to `full` or `parent`.
         cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
-        per_page: Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
         sort_by: If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`.
         path: Path to operate on.
     """
@@ -168,7 +168,7 @@ async def list_for_folder_history(
     per_page: Annotated[
         int | None,
         Field(
-            description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
             default=None,
         ),
     ],
@@ -199,7 +199,7 @@ async def list_for_folder_history(
         end_at: Leave blank or set to a date/time to filter later entries.
         display: Display format. Leave blank or set to `full` or `parent`.
         cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
-        per_page: Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
         sort_by: If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`.
         path: Path to operate on.
     """
@@ -293,7 +293,7 @@ async def list_for_user_history(
     per_page: Annotated[
         int | None,
         Field(
-            description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
             default=None,
         ),
     ],
@@ -324,7 +324,7 @@ async def list_for_user_history(
         end_at: Leave blank or set to a date/time to filter later entries.
         display: Display format. Leave blank or set to `full` or `parent`.
         cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
-        per_page: Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
         sort_by: If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`.
         user_id: User ID.
     """
@@ -418,7 +418,7 @@ async def list_logins_history(
     per_page: Annotated[
         int | None,
         Field(
-            description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
             default=None,
         ),
     ],
@@ -446,7 +446,7 @@ async def list_logins_history(
         end_at: Leave blank or set to a date/time to filter later entries.
         display: Display format. Leave blank or set to `full` or `parent`.
         cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
-        per_page: Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
         sort_by: If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`.
     """
 
@@ -536,7 +536,7 @@ async def list_history(
     per_page: Annotated[
         int | None,
         Field(
-            description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
             default=None,
         ),
     ],
@@ -580,7 +580,7 @@ async def list_history(
         end_at: Leave blank or set to a date/time to filter later entries.
         display: Display format. Leave blank or set to `full` or `parent`.
         cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
-        per_page: Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
         sort_by: If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`.
         filter: If set, return records where the specified field is equal to the supplied value. Valid fields are `user_id`, `folder` or `path`.
         filter_prefix: If set, return records where the specified field is prefixed by the supplied value. Valid fields are `path`.
@@ -681,7 +681,7 @@ def register_tools(mcp):
         per_page: Annotated[
             int | None,
             Field(
-                description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
                 default=None,
             ),
         ],
@@ -754,7 +754,7 @@ def register_tools(mcp):
         per_page: Annotated[
             int | None,
             Field(
-                description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
                 default=None,
             ),
         ],
@@ -827,7 +827,7 @@ def register_tools(mcp):
         per_page: Annotated[
             int | None,
             Field(
-                description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
                 default=None,
             ),
         ],
@@ -899,7 +899,7 @@ def register_tools(mcp):
         per_page: Annotated[
             int | None,
             Field(
-                description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
                 default=None,
             ),
         ],
@@ -967,7 +967,7 @@ def register_tools(mcp):
         per_page: Annotated[
             int | None,
             Field(
-                description="Number of records to show per page.  (Max: 10,000, 1,000 or less is recommended).",
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
                 default=None,
             ),
         ],
