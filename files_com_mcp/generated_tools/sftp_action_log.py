@@ -165,7 +165,15 @@ async def list_sftp_action_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Sftp_Action_Log", description="List SFTP Action Logs")
+    @mcp.tool(
+        name="List_Sftp_Action_Log",
+        description="List SFTP Action Logs",
+        annotations={
+            "title": "List Sftp Action Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_sftp_action_log_tool(
         context: Context,
         cursor: Annotated[

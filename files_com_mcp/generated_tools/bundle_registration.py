@@ -79,6 +79,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="List_Bundle_Registration",
         description="List Share Link Registrations",
+        annotations={
+            "title": "List Bundle Registration",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_bundle_registration_tool(
         context: Context,

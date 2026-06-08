@@ -142,7 +142,15 @@ async def list_sync_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Sync_Log", description="List Sync Logs")
+    @mcp.tool(
+        name="List_Sync_Log",
+        description="List Sync Logs",
+        annotations={
+            "title": "List Sync Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_sync_log_tool(
         context: Context,
         cursor: Annotated[

@@ -812,7 +812,15 @@ async def delete_user(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_User", description="List Users")
+    @mcp.tool(
+        name="List_User",
+        description="List Users",
+        annotations={
+            "title": "List User",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_user_tool(
         context: Context,
         fields: Annotated[
@@ -826,14 +834,31 @@ def register_tools(mcp):
     ) -> str:
         return await list_user(context, fields=fields)
 
-    @mcp.tool(name="Find_User", description="Show User")
+    @mcp.tool(
+        name="Find_User",
+        description="Show User",
+        annotations={
+            "title": "Find User",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def find_user_tool(
         context: Context,
         id: Annotated[int | None, Field(description="User ID.", default=None)],
     ) -> str:
         return await find_user(context, id)
 
-    @mcp.tool(name="Create_User", description="Create User")
+    @mcp.tool(
+        name="Create_User",
+        description="Create User",
+        annotations={
+            "title": "Create User",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
     async def create_user_tool(
         context: Context,
         username: Annotated[
@@ -903,7 +928,16 @@ def register_tools(mcp):
             user_home,
         )
 
-    @mcp.tool(name="Update_User", description="Update User")
+    @mcp.tool(
+        name="Update_User",
+        description="Update User",
+        annotations={
+            "title": "Update User",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def update_user_tool(
         context: Context,
         id: Annotated[int | None, Field(description="User ID.", default=None)],
@@ -975,7 +1009,16 @@ def register_tools(mcp):
             username,
         )
 
-    @mcp.tool(name="Delete_User", description="Delete User")
+    @mcp.tool(
+        name="Delete_User",
+        description="Delete User",
+        annotations={
+            "title": "Delete User",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def delete_user_tool(
         context: Context,
         id: Annotated[int | None, Field(description="User ID.", default=None)],

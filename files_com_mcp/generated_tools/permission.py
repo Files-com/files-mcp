@@ -222,7 +222,15 @@ async def delete_permission(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Permission", description="List Permissions")
+    @mcp.tool(
+        name="List_Permission",
+        description="List Permissions",
+        annotations={
+            "title": "List Permission",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_permission_tool(
         context: Context,
         path: Annotated[
@@ -247,7 +255,16 @@ def register_tools(mcp):
             context, path, group_id, user_id, fields=fields
         )
 
-    @mcp.tool(name="Create_Permission", description="Create Permission")
+    @mcp.tool(
+        name="Create_Permission",
+        description="Create Permission",
+        annotations={
+            "title": "Create Permission",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
     async def create_permission_tool(
         context: Context,
         path: Annotated[
@@ -279,7 +296,16 @@ def register_tools(mcp):
             context, path, group_id, permission, user_id
         )
 
-    @mcp.tool(name="Delete_Permission", description="Delete Permission")
+    @mcp.tool(
+        name="Delete_Permission",
+        description="Delete Permission",
+        annotations={
+            "title": "Delete Permission",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def delete_permission_tool(
         context: Context,
         id: Annotated[

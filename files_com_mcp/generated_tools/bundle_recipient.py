@@ -152,7 +152,13 @@ async def create_bundle_recipient(
 
 def register_tools(mcp):
     @mcp.tool(
-        name="List_Bundle_Recipient", description="List Share Link Recipients"
+        name="List_Bundle_Recipient",
+        description="List Share Link Recipients",
+        annotations={
+            "title": "List Bundle Recipient",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_bundle_recipient_tool(
         context: Context,
@@ -177,6 +183,12 @@ def register_tools(mcp):
     @mcp.tool(
         name="Create_Bundle_Recipient",
         description="Create Share Link Recipient",
+        annotations={
+            "title": "Create Bundle Recipient",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
     )
     async def create_bundle_recipient_tool(
         context: Context,

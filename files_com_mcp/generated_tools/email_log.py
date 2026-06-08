@@ -140,7 +140,15 @@ async def list_email_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Email_Log", description="List Email Logs")
+    @mcp.tool(
+        name="List_Email_Log",
+        description="List Email Logs",
+        annotations={
+            "title": "List Email Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_email_log_tool(
         context: Context,
         cursor: Annotated[

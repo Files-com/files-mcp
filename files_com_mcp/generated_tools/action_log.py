@@ -155,7 +155,15 @@ async def list_action_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Action_Log", description="List Action Logs")
+    @mcp.tool(
+        name="List_Action_Log",
+        description="List Action Logs",
+        annotations={
+            "title": "List Action Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_action_log_tool(
         context: Context,
         cursor: Annotated[

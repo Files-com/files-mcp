@@ -174,7 +174,15 @@ async def find_automation(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Automation", description="List Automations")
+    @mcp.tool(
+        name="List_Automation",
+        description="List Automations",
+        annotations={
+            "title": "List Automation",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_automation_tool(
         context: Context,
         fields: Annotated[
@@ -188,7 +196,15 @@ def register_tools(mcp):
     ) -> str:
         return await list_automation(context, fields=fields)
 
-    @mcp.tool(name="Find_Automation", description="Show Automation")
+    @mcp.tool(
+        name="Find_Automation",
+        description="Show Automation",
+        annotations={
+            "title": "Find Automation",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def find_automation_tool(
         context: Context,
         id: Annotated[

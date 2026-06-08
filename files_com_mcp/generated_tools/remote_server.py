@@ -87,7 +87,15 @@ async def find_remote_server(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Remote_Server", description="List Remote Servers")
+    @mcp.tool(
+        name="List_Remote_Server",
+        description="List Remote Servers",
+        annotations={
+            "title": "List Remote Server",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_remote_server_tool(
         context: Context,
         fields: Annotated[
@@ -101,7 +109,15 @@ def register_tools(mcp):
     ) -> str:
         return await list_remote_server(context, fields=fields)
 
-    @mcp.tool(name="Find_Remote_Server", description="Show Remote Server")
+    @mcp.tool(
+        name="Find_Remote_Server",
+        description="Show Remote Server",
+        annotations={
+            "title": "Find Remote Server",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def find_remote_server_tool(
         context: Context,
         id: Annotated[

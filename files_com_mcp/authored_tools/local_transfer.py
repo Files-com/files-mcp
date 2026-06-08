@@ -67,6 +67,12 @@ def register_tools(mcp):
     @mcp.tool(
         name="Download_File_to_Local",
         description="Download a file from my Files.com site.",
+        annotations={
+            "title": "Download File to Local",
+            "readOnlyHint": False,
+            "destructiveHint": True,
+            "openWorldHint": False,
+        },
     )
     async def download_file_to_local_tool(
         context: Context,
@@ -88,6 +94,12 @@ def register_tools(mcp):
     @mcp.tool(
         name="Upload_File_from_Local",
         description="Upload a file to my Files.com site.",
+        annotations={
+            "title": "Upload File from Local",
+            "readOnlyHint": False,
+            "destructiveHint": True,
+            "openWorldHint": False,
+        },
     )
     async def upload_file_from_local_tool(
         context: Context,

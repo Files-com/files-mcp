@@ -156,6 +156,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="List_Exavault_Api_Request_Log",
         description="List Exavault API Request Logs",
+        annotations={
+            "title": "List Exavault Api Request Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_exavault_api_request_log_tool(
         context: Context,

@@ -140,7 +140,15 @@ async def list_external_event(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_External_Event", description="List External Events")
+    @mcp.tool(
+        name="List_External_Event",
+        description="List External Events",
+        annotations={
+            "title": "List External Event",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_external_event_tool(
         context: Context,
         cursor: Annotated[

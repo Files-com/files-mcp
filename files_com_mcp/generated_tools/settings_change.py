@@ -104,7 +104,15 @@ async def list_settings_change(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Settings_Change", description="List Settings Changes")
+    @mcp.tool(
+        name="List_Settings_Change",
+        description="List Settings Changes",
+        annotations={
+            "title": "List Settings Change",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_settings_change_tool(
         context: Context,
         cursor: Annotated[

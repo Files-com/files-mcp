@@ -151,7 +151,15 @@ async def list_automation_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Automation_Log", description="List Automation Logs")
+    @mcp.tool(
+        name="List_Automation_Log",
+        description="List Automation Logs",
+        annotations={
+            "title": "List Automation Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_automation_log_tool(
         context: Context,
         cursor: Annotated[

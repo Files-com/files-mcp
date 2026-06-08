@@ -334,7 +334,15 @@ async def delete_group(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Group", description="List Groups")
+    @mcp.tool(
+        name="List_Group",
+        description="List Groups",
+        annotations={
+            "title": "List Group",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_group_tool(
         context: Context,
         fields: Annotated[
@@ -348,7 +356,15 @@ def register_tools(mcp):
     ) -> str:
         return await list_group(context, fields=fields)
 
-    @mcp.tool(name="Find_Group", description="Show Group")
+    @mcp.tool(
+        name="Find_Group",
+        description="Show Group",
+        annotations={
+            "title": "Find Group",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def find_group_tool(
         context: Context,
         id: Annotated[
@@ -357,7 +373,16 @@ def register_tools(mcp):
     ) -> str:
         return await find_group(context, id)
 
-    @mcp.tool(name="Create_Group", description="Create Group")
+    @mcp.tool(
+        name="Create_Group",
+        description="Create Group",
+        annotations={
+            "title": "Create Group",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
     async def create_group_tool(
         context: Context,
         name: Annotated[
@@ -383,7 +408,16 @@ def register_tools(mcp):
     ) -> str:
         return await create_group(context, name, notes, user_ids, admin_ids)
 
-    @mcp.tool(name="Update_Group", description="Update Group")
+    @mcp.tool(
+        name="Update_Group",
+        description="Update Group",
+        annotations={
+            "title": "Update Group",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def update_group_tool(
         context: Context,
         id: Annotated[
@@ -414,7 +448,16 @@ def register_tools(mcp):
             context, id, notes, user_ids, admin_ids, name
         )
 
-    @mcp.tool(name="Delete_Group", description="Delete Group")
+    @mcp.tool(
+        name="Delete_Group",
+        description="Delete Group",
+        annotations={
+            "title": "Delete Group",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def delete_group_tool(
         context: Context,
         id: Annotated[

@@ -647,6 +647,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="List_For_File_History",
         description="List history for specific file.",
+        annotations={
+            "title": "List For File History",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_for_file_history_tool(
         context: Context,
@@ -720,6 +725,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="List_For_Folder_History",
         description="List history for specific folder.",
+        annotations={
+            "title": "List For Folder History",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_for_folder_history_tool(
         context: Context,
@@ -793,6 +803,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="List_For_User_History",
         description="List history for specific user.",
+        annotations={
+            "title": "List For User History",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_for_user_history_tool(
         context: Context,
@@ -864,7 +879,13 @@ def register_tools(mcp):
         )
 
     @mcp.tool(
-        name="List_Logins_History", description="List site login history."
+        name="List_Logins_History",
+        description="List site login history.",
+        annotations={
+            "title": "List Logins History",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_logins_history_tool(
         context: Context,
@@ -932,7 +953,13 @@ def register_tools(mcp):
         )
 
     @mcp.tool(
-        name="List_History", description="List site full action history."
+        name="List_History",
+        description="List site full action history.",
+        annotations={
+            "title": "List History",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_history_tool(
         context: Context,

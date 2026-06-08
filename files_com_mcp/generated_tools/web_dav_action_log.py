@@ -160,7 +160,13 @@ async def list_web_dav_action_log(
 
 def register_tools(mcp):
     @mcp.tool(
-        name="List_Web_Dav_Action_Log", description="List WebDAV Action Logs"
+        name="List_Web_Dav_Action_Log",
+        description="List WebDAV Action Logs",
+        annotations={
+            "title": "List Web Dav Action Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_web_dav_action_log_tool(
         context: Context,

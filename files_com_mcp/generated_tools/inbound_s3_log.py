@@ -152,7 +152,15 @@ async def list_inbound_s3_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Inbound_S3_Log", description="List Inbound S3 Logs")
+    @mcp.tool(
+        name="List_Inbound_S3_Log",
+        description="List Inbound S3 Logs",
+        annotations={
+            "title": "List Inbound S3 Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_inbound_s3_log_tool(
         context: Context,
         cursor: Annotated[

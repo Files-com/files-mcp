@@ -67,7 +67,13 @@ async def list_bundle_download(
 
 def register_tools(mcp):
     @mcp.tool(
-        name="List_Bundle_Download", description="List Share Link Downloads"
+        name="List_Bundle_Download",
+        description="List Share Link Downloads",
+        annotations={
+            "title": "List Bundle Download",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_bundle_download_tool(
         context: Context,

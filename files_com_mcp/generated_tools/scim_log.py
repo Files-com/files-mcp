@@ -94,7 +94,15 @@ async def list_scim_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Scim_Log", description="List Scim Logs")
+    @mcp.tool(
+        name="List_Scim_Log",
+        description="List Scim Logs",
+        annotations={
+            "title": "List Scim Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_scim_log_tool(
         context: Context,
         cursor: Annotated[

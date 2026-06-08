@@ -175,7 +175,15 @@ async def create_folder(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_For_Folder", description="List Folders by Path")
+    @mcp.tool(
+        name="List_For_Folder",
+        description="List Folders by Path",
+        annotations={
+            "title": "List For Folder",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_for_folder_tool(
         context: Context,
         path: Annotated[
@@ -192,7 +200,16 @@ def register_tools(mcp):
     ) -> str:
         return await list_for_folder(context, path, fields=fields)
 
-    @mcp.tool(name="Create_Folder", description="Create Folder")
+    @mcp.tool(
+        name="Create_Folder",
+        description="Create Folder",
+        annotations={
+            "title": "Create Folder",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
     async def create_folder_tool(
         context: Context,
         path: Annotated[

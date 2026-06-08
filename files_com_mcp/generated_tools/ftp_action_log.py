@@ -161,7 +161,15 @@ async def list_ftp_action_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Ftp_Action_Log", description="List FTP Action Logs")
+    @mcp.tool(
+        name="List_Ftp_Action_Log",
+        description="List FTP Action Logs",
+        annotations={
+            "title": "List Ftp Action Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_ftp_action_log_tool(
         context: Context,
         cursor: Annotated[

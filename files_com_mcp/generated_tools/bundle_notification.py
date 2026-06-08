@@ -278,6 +278,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="List_Bundle_Notification",
         description="List Share Link Notifications",
+        annotations={
+            "title": "List Bundle Notification",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_bundle_notification_tool(
         context: Context,
@@ -295,6 +300,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="Find_Bundle_Notification",
         description="Show Share Link Notification",
+        annotations={
+            "title": "Find Bundle Notification",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def find_bundle_notification_tool(
         context: Context,
@@ -308,6 +318,12 @@ def register_tools(mcp):
     @mcp.tool(
         name="Create_Bundle_Notification",
         description="Create Share Link Notification",
+        annotations={
+            "title": "Create Bundle Notification",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
     )
     async def create_bundle_notification_tool(
         context: Context,
@@ -327,6 +343,12 @@ def register_tools(mcp):
     @mcp.tool(
         name="Update_Bundle_Notification",
         description="Update Share Link Notification",
+        annotations={
+            "title": "Update Bundle Notification",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
     )
     async def update_bundle_notification_tool(
         context: Context,
@@ -356,6 +378,12 @@ def register_tools(mcp):
     @mcp.tool(
         name="Delete_Bundle_Notification",
         description="Delete Share Link Notification",
+        annotations={
+            "title": "Delete Bundle Notification",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
     )
     async def delete_bundle_notification_tool(
         context: Context,

@@ -161,6 +161,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="List_Outbound_Connection_Log",
         description="List Outbound Connection Logs",
+        annotations={
+            "title": "List Outbound Connection Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_outbound_connection_log_tool(
         context: Context,

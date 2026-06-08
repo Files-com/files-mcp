@@ -155,6 +155,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="List_Public_Hosting_Request_Log",
         description="List Public Hosting Request Logs",
+        annotations={
+            "title": "List Public Hosting Request Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_public_hosting_request_log_tool(
         context: Context,

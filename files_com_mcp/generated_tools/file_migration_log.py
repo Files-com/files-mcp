@@ -140,7 +140,13 @@ async def list_file_migration_log(
 
 def register_tools(mcp):
     @mcp.tool(
-        name="List_File_Migration_Log", description="List File Migration Logs"
+        name="List_File_Migration_Log",
+        description="List File Migration Logs",
+        annotations={
+            "title": "List File Migration Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def list_file_migration_log_tool(
         context: Context,

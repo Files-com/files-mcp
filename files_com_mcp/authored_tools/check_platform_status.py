@@ -22,6 +22,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="Check_Platform_Status",
         description="Check Files.com platform status at status.files.com.",
+        annotations={
+            "title": "Check Platform Status",
+            "readOnlyHint": True,
+            "openWorldHint": False,
+        },
     )
     async def check_platform_status_tool() -> str:
         return await check_platform_status()

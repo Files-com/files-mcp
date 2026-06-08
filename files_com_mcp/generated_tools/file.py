@@ -582,7 +582,16 @@ async def zip_file(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="Delete_File", description="Delete File/Folder")
+    @mcp.tool(
+        name="Delete_File",
+        description="Delete File/Folder",
+        annotations={
+            "title": "Delete File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def delete_file_tool(
         context: Context,
         path: Annotated[
@@ -591,7 +600,15 @@ def register_tools(mcp):
     ) -> str:
         return await delete_file(context, path)
 
-    @mcp.tool(name="Find_File", description="Find File/Folder by Path")
+    @mcp.tool(
+        name="Find_File",
+        description="Find File/Folder by Path",
+        annotations={
+            "title": "Find File",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def find_file_tool(
         context: Context,
         path: Annotated[
@@ -603,6 +620,11 @@ def register_tools(mcp):
     @mcp.tool(
         name="Zip_List_Contents_File",
         description="List the contents of a ZIP file.",
+        annotations={
+            "title": "Zip List Contents File",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
     )
     async def zip_list_contents_file_tool(
         context: Context,
@@ -620,7 +642,16 @@ def register_tools(mcp):
     ) -> str:
         return await zip_list_contents_file(context, path, fields=fields)
 
-    @mcp.tool(name="Copy_File", description="Copy File/Folder")
+    @mcp.tool(
+        name="Copy_File",
+        description="Copy File/Folder",
+        annotations={
+            "title": "Copy File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def copy_file_tool(
         context: Context,
         path: Annotated[
@@ -633,7 +664,16 @@ def register_tools(mcp):
     ) -> str:
         return await copy_file(context, path, destination)
 
-    @mcp.tool(name="Move_File", description="Move File/Folder")
+    @mcp.tool(
+        name="Move_File",
+        description="Move File/Folder",
+        annotations={
+            "title": "Move File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def move_file_tool(
         context: Context,
         path: Annotated[
@@ -649,6 +689,12 @@ def register_tools(mcp):
     @mcp.tool(
         name="Unzip_File",
         description="Extract a ZIP file to a destination folder.",
+        annotations={
+            "title": "Unzip File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
     )
     async def unzip_file_tool(
         context: Context,
@@ -669,6 +715,12 @@ def register_tools(mcp):
     @mcp.tool(
         name="Zip_File",
         description="Create a ZIP from one or more paths and save it to a destination path.",
+        annotations={
+            "title": "Zip File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
     )
     async def zip_file_tool(
         context: Context,

@@ -514,7 +514,15 @@ async def delete_bundle(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Bundle", description="List Share Links")
+    @mcp.tool(
+        name="List_Bundle",
+        description="List Share Links",
+        annotations={
+            "title": "List Bundle",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_bundle_tool(
         context: Context,
         fields: Annotated[
@@ -528,7 +536,15 @@ def register_tools(mcp):
     ) -> str:
         return await list_bundle(context, fields=fields)
 
-    @mcp.tool(name="Find_Bundle", description="Show Share Link")
+    @mcp.tool(
+        name="Find_Bundle",
+        description="Show Share Link",
+        annotations={
+            "title": "Find Bundle",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def find_bundle_tool(
         context: Context,
         id: Annotated[
@@ -537,7 +553,16 @@ def register_tools(mcp):
     ) -> str:
         return await find_bundle(context, id)
 
-    @mcp.tool(name="Create_Bundle", description="Create Share Link")
+    @mcp.tool(
+        name="Create_Bundle",
+        description="Create Share Link",
+        annotations={
+            "title": "Create Bundle",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
     async def create_bundle_tool(
         context: Context,
         paths: Annotated[
@@ -596,7 +621,16 @@ def register_tools(mcp):
             require_registration,
         )
 
-    @mcp.tool(name="Update_Bundle", description="Update Share Link")
+    @mcp.tool(
+        name="Update_Bundle",
+        description="Update Share Link",
+        annotations={
+            "title": "Update Bundle",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def update_bundle_tool(
         context: Context,
         id: Annotated[
@@ -616,7 +650,16 @@ def register_tools(mcp):
     ) -> str:
         return await update_bundle(context, id, expires_at, permissions)
 
-    @mcp.tool(name="Delete_Bundle", description="Delete Share Link")
+    @mcp.tool(
+        name="Delete_Bundle",
+        description="Delete Share Link",
+        annotations={
+            "title": "Delete Bundle",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
     async def delete_bundle_tool(
         context: Context,
         id: Annotated[

@@ -162,7 +162,15 @@ async def list_api_request_log(
 
 
 def register_tools(mcp):
-    @mcp.tool(name="List_Api_Request_Log", description="List API Request Logs")
+    @mcp.tool(
+        name="List_Api_Request_Log",
+        description="List API Request Logs",
+        annotations={
+            "title": "List Api Request Log",
+            "openWorldHint": False,
+            "readOnlyHint": True,
+        },
+    )
     async def list_api_request_log_tool(
         context: Context,
         cursor: Annotated[
