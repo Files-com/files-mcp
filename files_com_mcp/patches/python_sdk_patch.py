@@ -7,8 +7,10 @@ _original_request_headers = ApiClient.request_headers
 _original_send_request = ApiClient.send_request
 
 
-def patched_request_headers(self, api_key, session_id, language):
-    headers = _original_request_headers(self, api_key, session_id, language)
+def patched_request_headers(self, api_key, session_id, language, workspace_id):
+    headers = _original_request_headers(
+        self, api_key, session_id, language, workspace_id
+    )
     headers["User-Agent"] = "Files.com Python MCP SDK v{version}".format(
         version=files_com_mcp.__version__
     )
@@ -23,6 +25,7 @@ def patched_send_request(
     api_key=None,
     session_id=None,
     language=None,
+    workspace_id=None,
     headers=None,
     params=None,
 ):
@@ -44,6 +47,7 @@ def patched_send_request(
         api_key=api_key,
         session_id=session_id,
         language=language,
+        workspace_id=workspace_id,
         headers=request_headers,
         params=params,
     )
