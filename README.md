@@ -311,11 +311,6 @@ Customers commonly group resources by project, department, client, or region. Wo
 
 Every Site has an implicit Default workspace (ID `0`). Resources that are not explicitly assigned to a named workspace are considered part of the Default workspace.
 
-### SDK Support
-
-We are still in the process of adding Workspaces support to each SDK. If you require Workspaces support right now, you need to use the REST API or the CLI.
-<div></div>
-
 ### Using Workspaces with the REST API
 
 To use Workspaces with the REST API, send the following request header:
