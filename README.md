@@ -112,6 +112,8 @@ The Files.com MCP provides tools for working with files, folders, sharing, users
 | `Create_Folder` | Create Folder |
 | `Delete_File` | Delete File/Folder |
 | `Find_File` | Find File/Folder by Path |
+| `Gpg_Decrypt_File` | Decrypt a GPG-encrypted file and save it to a destination path. |
+| `Gpg_Encrypt_File` | Encrypt a file with GPG and save it to a destination path. |
 | `List_For_Folder` | List Folders by Path |
 | `Move_File` | Move File/Folder |
 | `Unzip_File` | Extract a ZIP file to a destination folder. |

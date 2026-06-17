@@ -409,6 +409,178 @@ async def move_file(
         return f"General Exception: {ex}"
 
 
+async def gpg_decrypt_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+    destination: Annotated[
+        str | None,
+        Field(
+            description="Destination file path for the decrypted file.",
+            default=None,
+        ),
+    ],
+) -> str:
+    """Decrypt a GPG-encrypted file and save it to a destination path.
+
+    Args:
+        path: Path to operate on.
+        destination: Destination file path for the decrypted file.
+    """
+
+    try:
+        options = {"api_key": context_api_key(context)}
+        params = {}
+        if path is None:
+            return "Missing required parameter: path"
+        params["path"] = path
+        if destination is None:
+            return "Missing required parameter: destination"
+        params["destination"] = destination
+
+        retval = files_sdk.file.gpg_decrypt(path, params, options)
+        retval = [retval]
+        next_cursor = None
+
+        markdown_list = object_list_to_markdown_table(
+            retval,
+            [
+                "path",
+                "created_by_id",
+                "created_by_api_key_id",
+                "created_by_as2_incoming_message_id",
+                "created_by_automation_id",
+                "created_by_bundle_registration_id",
+                "created_by_inbox_id",
+                "created_by_remote_server_id",
+                "created_by_sync_id",
+                "custom_metadata",
+                "display_name",
+                "type",
+                "size",
+                "created_at",
+                "last_modified_by_id",
+                "last_modified_by_api_key_id",
+                "last_modified_by_automation_id",
+                "last_modified_by_bundle_registration_id",
+                "last_modified_by_remote_server_id",
+                "last_modified_by_sync_id",
+                "mtime",
+                "provided_mtime",
+                "crc32",
+                "md5",
+                "sha1",
+                "sha256",
+                "mime_type",
+                "region",
+                "permissions",
+                "subfolders_locked?",
+                "is_locked",
+                "download_uri",
+                "priority_color",
+                "preview_id",
+                "preview",
+            ],
+        )
+        response = f"File Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
+    except files_sdk.error.NotAuthenticatedError as err:
+        return f"Authentication Error: {err}"
+    except files_sdk.error.Error as err:
+        return f"Files.com Error: {err}"
+    except Exception as ex:
+        return f"General Exception: {ex}"
+
+
+async def gpg_encrypt_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+    destination: Annotated[
+        str | None,
+        Field(
+            description="Destination file path for the encrypted file.",
+            default=None,
+        ),
+    ],
+) -> str:
+    """Encrypt a file with GPG and save it to a destination path.
+
+    Args:
+        path: Path to operate on.
+        destination: Destination file path for the encrypted file.
+    """
+
+    try:
+        options = {"api_key": context_api_key(context)}
+        params = {}
+        if path is None:
+            return "Missing required parameter: path"
+        params["path"] = path
+        if destination is None:
+            return "Missing required parameter: destination"
+        params["destination"] = destination
+
+        retval = files_sdk.file.gpg_encrypt(path, params, options)
+        retval = [retval]
+        next_cursor = None
+
+        markdown_list = object_list_to_markdown_table(
+            retval,
+            [
+                "path",
+                "created_by_id",
+                "created_by_api_key_id",
+                "created_by_as2_incoming_message_id",
+                "created_by_automation_id",
+                "created_by_bundle_registration_id",
+                "created_by_inbox_id",
+                "created_by_remote_server_id",
+                "created_by_sync_id",
+                "custom_metadata",
+                "display_name",
+                "type",
+                "size",
+                "created_at",
+                "last_modified_by_id",
+                "last_modified_by_api_key_id",
+                "last_modified_by_automation_id",
+                "last_modified_by_bundle_registration_id",
+                "last_modified_by_remote_server_id",
+                "last_modified_by_sync_id",
+                "mtime",
+                "provided_mtime",
+                "crc32",
+                "md5",
+                "sha1",
+                "sha256",
+                "mime_type",
+                "region",
+                "permissions",
+                "subfolders_locked?",
+                "is_locked",
+                "download_uri",
+                "priority_color",
+                "preview_id",
+                "preview",
+            ],
+        )
+        response = f"File Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
+    except files_sdk.error.NotAuthenticatedError as err:
+        return f"Authentication Error: {err}"
+    except files_sdk.error.Error as err:
+        return f"Files.com Error: {err}"
+    except Exception as ex:
+        return f"General Exception: {ex}"
+
+
 async def unzip_file(
     context: Context,
     path: Annotated[
@@ -685,6 +857,56 @@ def register_tools(mcp):
         ],
     ) -> str:
         return await move_file(context, path, destination)
+
+    @mcp.tool(
+        name="Gpg_Decrypt_File",
+        description="Decrypt a GPG-encrypted file and save it to a destination path.",
+        annotations={
+            "title": "Gpg Decrypt File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
+    async def gpg_decrypt_file_tool(
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
+        destination: Annotated[
+            str | None,
+            Field(
+                description="Destination file path for the decrypted file.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await gpg_decrypt_file(context, path, destination)
+
+    @mcp.tool(
+        name="Gpg_Encrypt_File",
+        description="Encrypt a file with GPG and save it to a destination path.",
+        annotations={
+            "title": "Gpg Encrypt File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
+    async def gpg_encrypt_file_tool(
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
+        destination: Annotated[
+            str | None,
+            Field(
+                description="Destination file path for the encrypted file.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await gpg_encrypt_file(context, path, destination)
 
     @mcp.tool(
         name="Unzip_File",
