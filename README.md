@@ -116,6 +116,7 @@ The Files.com MCP provides tools for working with files, folders, sharing, users
 | `Gpg_Encrypt_File` | Encrypt a file with GPG and save it to a destination path. |
 | `List_For_Folder` | List Folders by Path |
 | `Move_File` | Move File/Folder |
+| `Transform_File` | Transform a file and save the output to a destination path. |
 | `Unzip_File` | Extract a ZIP file to a destination folder. |
 | `Zip_File` | Create a ZIP from one or more paths and save it to a destination path. |
 | `Zip_List_Contents_File` | List the contents of a ZIP file. |

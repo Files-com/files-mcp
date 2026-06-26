@@ -409,6 +409,111 @@ async def move_file(
         return f"General Exception: {ex}"
 
 
+async def transform_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+    destination: Annotated[
+        str | None,
+        Field(
+            description="Destination file path for the transformed output.",
+            default=None,
+        ),
+    ],
+    transform_type: Annotated[
+        str | None,
+        Field(
+            description="Transform type. Supported values are `image_convert` and `document_convert`.",
+            default=None,
+        ),
+    ],
+    target_format: Annotated[
+        str | None,
+        Field(description="Destination format to create.", default=None),
+    ],
+) -> str:
+    """Transform a file and save the output to a destination path.
+
+    Args:
+        path: Path to operate on.
+        destination: Destination file path for the transformed output.
+        transform_type: Transform type. Supported values are `image_convert` and `document_convert`.
+        target_format: Destination format to create.
+    """
+
+    try:
+        options = {"api_key": context_api_key(context)}
+        params = {}
+        if path is None:
+            return "Missing required parameter: path"
+        params["path"] = path
+        if destination is None:
+            return "Missing required parameter: destination"
+        params["destination"] = destination
+        if transform_type is None:
+            return "Missing required parameter: transform_type"
+        params["transform_type"] = transform_type
+        if target_format is None:
+            return "Missing required parameter: target_format"
+        params["target_format"] = target_format
+
+        retval = files_sdk.file.transform(path, params, options)
+        retval = [retval]
+        next_cursor = None
+
+        markdown_list = object_list_to_markdown_table(
+            retval,
+            [
+                "path",
+                "created_by_id",
+                "created_by_api_key_id",
+                "created_by_as2_incoming_message_id",
+                "created_by_automation_id",
+                "created_by_bundle_registration_id",
+                "created_by_inbox_id",
+                "created_by_remote_server_id",
+                "created_by_sync_id",
+                "custom_metadata",
+                "display_name",
+                "type",
+                "size",
+                "created_at",
+                "last_modified_by_id",
+                "last_modified_by_api_key_id",
+                "last_modified_by_automation_id",
+                "last_modified_by_bundle_registration_id",
+                "last_modified_by_remote_server_id",
+                "last_modified_by_sync_id",
+                "mtime",
+                "provided_mtime",
+                "crc32",
+                "md5",
+                "sha1",
+                "sha256",
+                "mime_type",
+                "region",
+                "permissions",
+                "subfolders_locked?",
+                "is_locked",
+                "download_uri",
+                "priority_color",
+                "preview_id",
+                "preview",
+            ],
+        )
+        response = f"File Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
+    except files_sdk.error.NotAuthenticatedError as err:
+        return f"Authentication Error: {err}"
+    except files_sdk.error.Error as err:
+        return f"Files.com Error: {err}"
+    except Exception as ex:
+        return f"General Exception: {ex}"
+
+
 async def gpg_decrypt_file(
     context: Context,
     path: Annotated[
@@ -857,6 +962,44 @@ def register_tools(mcp):
         ],
     ) -> str:
         return await move_file(context, path, destination)
+
+    @mcp.tool(
+        name="Transform_File",
+        description="Transform a file and save the output to a destination path.",
+        annotations={
+            "title": "Transform File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
+    async def transform_file_tool(
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
+        destination: Annotated[
+            str | None,
+            Field(
+                description="Destination file path for the transformed output.",
+                default=None,
+            ),
+        ],
+        transform_type: Annotated[
+            str | None,
+            Field(
+                description="Transform type. Supported values are `image_convert` and `document_convert`.",
+                default=None,
+            ),
+        ],
+        target_format: Annotated[
+            str | None,
+            Field(description="Destination format to create.", default=None),
+        ],
+    ) -> str:
+        return await transform_file(
+            context, path, destination, transform_type, target_format
+        )
 
     @mcp.tool(
         name="Gpg_Decrypt_File",
