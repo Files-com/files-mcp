@@ -424,7 +424,7 @@ async def transform_file(
     transform_type: Annotated[
         str | None,
         Field(
-            description="Transform type. Supported values are `image_convert` and `document_convert`.",
+            description="Transform type. Supported values are `image_convert`, `document_convert`, and `files_transform_script_execute`.",
             default=None,
         ),
     ],
@@ -438,7 +438,7 @@ async def transform_file(
     Args:
         path: Path to operate on.
         destination: Destination file path for the transformed output.
-        transform_type: Transform type. Supported values are `image_convert` and `document_convert`.
+        transform_type: Transform type. Supported values are `image_convert`, `document_convert`, and `files_transform_script_execute`.
         target_format: Destination format to create.
     """
 
@@ -988,7 +988,7 @@ def register_tools(mcp):
         transform_type: Annotated[
             str | None,
             Field(
-                description="Transform type. Supported values are `image_convert` and `document_convert`.",
+                description="Transform type. Supported values are `image_convert`, `document_convert`, and `files_transform_script_execute`.",
                 default=None,
             ),
         ],
