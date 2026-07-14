@@ -29,7 +29,7 @@ async def list_automation_log(
     filter: Annotated[
         dict | None,
         Field(
-            description="If set, return records where the specified field is equal to the supplied value. Valid fields are `automation_id`, `automation_run_id`, `operation`, `path`, `status` or `created_at`.",
+            description="If set, return records where the specified field is equal to the supplied value. Valid fields are `automation_id`, `automation_run_id`, `correlation_id`, `error_type`, `flow_id`, `flow_version`, `node_id`, `node_type`, `operation`, `output`, `path`, `status` or `created_at`.",
             default=None,
         ),
         BeforeValidator(coerce_json),
@@ -37,7 +37,7 @@ async def list_automation_log(
     filter_gt: Annotated[
         dict | None,
         Field(
-            description="If set, return records where the specified field is greater than the supplied value. Valid fields are `created_at`.",
+            description="If set, return records where the specified field is greater than the supplied value. Valid fields are `flow_version` and `created_at`.",
             default=None,
         ),
         BeforeValidator(coerce_json),
@@ -45,7 +45,7 @@ async def list_automation_log(
     filter_gteq: Annotated[
         dict | None,
         Field(
-            description="If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `created_at`.",
+            description="If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `flow_version` and `created_at`.",
             default=None,
         ),
         BeforeValidator(coerce_json),
@@ -53,7 +53,7 @@ async def list_automation_log(
     filter_prefix: Annotated[
         dict | None,
         Field(
-            description="If set, return records where the specified field is prefixed by the supplied value. Valid fields are `path`.",
+            description="If set, return records where the specified field is prefixed by the supplied value. Valid fields are `correlation_id`, `error_type`, `node_id`, `node_type`, `output` or `path`.",
             default=None,
         ),
         BeforeValidator(coerce_json),
@@ -61,7 +61,7 @@ async def list_automation_log(
     filter_lt: Annotated[
         dict | None,
         Field(
-            description="If set, return records where the specified field is less than the supplied value. Valid fields are `created_at`.",
+            description="If set, return records where the specified field is less than the supplied value. Valid fields are `flow_version` and `created_at`.",
             default=None,
         ),
         BeforeValidator(coerce_json),
@@ -69,7 +69,7 @@ async def list_automation_log(
     filter_lteq: Annotated[
         dict | None,
         Field(
-            description="If set, return records where the specified field is less than or equal the supplied value. Valid fields are `created_at`.",
+            description="If set, return records where the specified field is less than or equal the supplied value. Valid fields are `flow_version` and `created_at`.",
             default=None,
         ),
         BeforeValidator(coerce_json),
@@ -88,12 +88,12 @@ async def list_automation_log(
     Args:
         cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
         per_page: Number of records to show per page.  (Max: 2000, 1,000 or less is recommended).
-        filter: If set, return records where the specified field is equal to the supplied value. Valid fields are `automation_id`, `automation_run_id`, `operation`, `path`, `status` or `created_at`.
-        filter_gt: If set, return records where the specified field is greater than the supplied value. Valid fields are `created_at`.
-        filter_gteq: If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `created_at`.
-        filter_prefix: If set, return records where the specified field is prefixed by the supplied value. Valid fields are `path`.
-        filter_lt: If set, return records where the specified field is less than the supplied value. Valid fields are `created_at`.
-        filter_lteq: If set, return records where the specified field is less than or equal the supplied value. Valid fields are `created_at`.
+        filter: If set, return records where the specified field is equal to the supplied value. Valid fields are `automation_id`, `automation_run_id`, `correlation_id`, `error_type`, `flow_id`, `flow_version`, `node_id`, `node_type`, `operation`, `output`, `path`, `status` or `created_at`.
+        filter_gt: If set, return records where the specified field is greater than the supplied value. Valid fields are `flow_version` and `created_at`.
+        filter_gteq: If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `flow_version` and `created_at`.
+        filter_prefix: If set, return records where the specified field is prefixed by the supplied value. Valid fields are `correlation_id`, `error_type`, `node_id`, `node_type`, `output` or `path`.
+        filter_lt: If set, return records where the specified field is less than the supplied value. Valid fields are `flow_version` and `created_at`.
+        filter_lteq: If set, return records where the specified field is less than or equal the supplied value. Valid fields are `flow_version` and `created_at`.
     """
 
     try:
@@ -128,10 +128,16 @@ async def list_automation_log(
                 "timestamp",
                 "automation_id",
                 "automation_run_id",
+                "correlation_id",
                 "dest_path",
                 "error_type",
+                "flow_id",
+                "flow_version",
                 "message",
+                "node_id",
+                "node_type",
                 "operation",
+                "output",
                 "path",
                 "status",
                 "created_at",
@@ -179,7 +185,7 @@ def register_tools(mcp):
         filter: Annotated[
             dict | None,
             Field(
-                description="If set, return records where the specified field is equal to the supplied value. Valid fields are `automation_id`, `automation_run_id`, `operation`, `path`, `status` or `created_at`.",
+                description="If set, return records where the specified field is equal to the supplied value. Valid fields are `automation_id`, `automation_run_id`, `correlation_id`, `error_type`, `flow_id`, `flow_version`, `node_id`, `node_type`, `operation`, `output`, `path`, `status` or `created_at`.",
                 default=None,
             ),
             BeforeValidator(coerce_json),
@@ -187,7 +193,7 @@ def register_tools(mcp):
         filter_gt: Annotated[
             dict | None,
             Field(
-                description="If set, return records where the specified field is greater than the supplied value. Valid fields are `created_at`.",
+                description="If set, return records where the specified field is greater than the supplied value. Valid fields are `flow_version` and `created_at`.",
                 default=None,
             ),
             BeforeValidator(coerce_json),
@@ -195,7 +201,7 @@ def register_tools(mcp):
         filter_gteq: Annotated[
             dict | None,
             Field(
-                description="If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `created_at`.",
+                description="If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `flow_version` and `created_at`.",
                 default=None,
             ),
             BeforeValidator(coerce_json),
@@ -203,7 +209,7 @@ def register_tools(mcp):
         filter_prefix: Annotated[
             dict | None,
             Field(
-                description="If set, return records where the specified field is prefixed by the supplied value. Valid fields are `path`.",
+                description="If set, return records where the specified field is prefixed by the supplied value. Valid fields are `correlation_id`, `error_type`, `node_id`, `node_type`, `output` or `path`.",
                 default=None,
             ),
             BeforeValidator(coerce_json),
@@ -211,7 +217,7 @@ def register_tools(mcp):
         filter_lt: Annotated[
             dict | None,
             Field(
-                description="If set, return records where the specified field is less than the supplied value. Valid fields are `created_at`.",
+                description="If set, return records where the specified field is less than the supplied value. Valid fields are `flow_version` and `created_at`.",
                 default=None,
             ),
             BeforeValidator(coerce_json),
@@ -219,7 +225,7 @@ def register_tools(mcp):
         filter_lteq: Annotated[
             dict | None,
             Field(
-                description="If set, return records where the specified field is less than or equal the supplied value. Valid fields are `created_at`.",
+                description="If set, return records where the specified field is less than or equal the supplied value. Valid fields are `flow_version` and `created_at`.",
                 default=None,
             ),
             BeforeValidator(coerce_json),
