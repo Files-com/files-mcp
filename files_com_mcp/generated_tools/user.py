@@ -307,14 +307,14 @@ async def create_user(
     user_root: Annotated[
         str | None,
         Field(
-            description="Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.",
+            description="If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.",
             default=None,
         ),
     ],
     user_home: Annotated[
         str | None,
         Field(
-            description="Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.",
+            description="Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.",
             default=None,
         ),
     ],
@@ -331,8 +331,8 @@ async def create_user(
         company: User's company
         notes: Any internal notes on the user
         require_password_change: Is a password change required upon next user login?
-        user_root: Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.
-        user_home: Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.
+        user_root: If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.
+        user_home: Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.
     """
 
     try:
@@ -523,14 +523,14 @@ async def update_user(
     user_root: Annotated[
         str | None,
         Field(
-            description="Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.",
+            description="If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.",
             default=None,
         ),
     ],
     user_home: Annotated[
         str | None,
         Field(
-            description="Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.",
+            description="Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.",
             default=None,
         ),
     ],
@@ -550,8 +550,8 @@ async def update_user(
         company: User's company
         notes: Any internal notes on the user
         require_password_change: Is a password change required upon next user login?
-        user_root: Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.
-        user_home: Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.
+        user_root: If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.
+        user_home: Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.
         username: User's username
     """
 
@@ -921,14 +921,14 @@ def register_tools(mcp):
         user_root: Annotated[
             str | None,
             Field(
-                description="Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.",
+                description="If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.",
                 default=None,
             ),
         ],
         user_home: Annotated[
             str | None,
             Field(
-                description="Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.",
+                description="Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.",
                 default=None,
             ),
         ],
@@ -998,14 +998,14 @@ def register_tools(mcp):
         user_root: Annotated[
             str | None,
             Field(
-                description="Root folder for FTP (and optionally SFTP if the appropriate site-wide setting is set).  Note that this is not used for API, Desktop, or Web interface.",
+                description="If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.",
                 default=None,
             ),
         ],
         user_home: Annotated[
             str | None,
             Field(
-                description="Home folder for FTP/SFTP.  Note that this is not used for API, Desktop, or Web interface.",
+                description="Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.",
                 default=None,
             ),
         ],
