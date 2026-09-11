@@ -6,6 +6,7 @@ from typing import Any, List, Optional
 # that can hold kilobytes of free-form text and would otherwise destroy the
 # table layout and blow up the LLM's token budget.
 MAX_CELL_LEN = 200
+BLOCKED_TABLE_ATTRIBUTES = {"__dict__", "options"}
 
 
 def _format_cell(value: Any) -> str:
@@ -33,15 +34,23 @@ def object_list_to_markdown_table(
 
     :param items: List of objects (same type) to convert.
     :param default_attributes: Attribute names used when `fields` is not provided.
-    :param fields: Optional caller-supplied subset of attribute names. When set
-        and non-empty, overrides `default_attributes`. Attributes the item does
-        not define render as empty cells.
+    :param fields: Optional caller-supplied attribute names. When set and
+        non-empty, overrides `default_attributes`. Credential-bearing internal
+        attributes are ignored; other missing attributes render as empty cells.
     :return: A string containing the Markdown-formatted table.
     """
     if not items:
         return "*(no data)*"
 
-    attributes = fields if fields else default_attributes
+    attributes = (
+        [
+            attribute
+            for attribute in fields
+            if attribute not in BLOCKED_TABLE_ATTRIBUTES
+        ]
+        if fields
+        else default_attributes
+    )
     if not attributes:
         return "*(no columns selected)*"
 

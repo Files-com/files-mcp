@@ -22,6 +22,31 @@ class TestPathUtil(unittest.TestCase):
         expected_table = "| path |\n| --- |\n| path1 |\n| path2 |"
         self.assertEqual(table, expected_table)
 
+    def test_selected_fields_exclude_sdk_options(self):
+        user = files_sdk.User(
+            {"id": 1, "username": "user@example.test"},
+            {"foo": "bar"},
+        )
+        user.non_default_field = "visible"  # type: ignore[attr-defined]
+
+        table = files_com_mcp.utils.object_list_to_markdown_table(
+            [user],
+            ["id", "username"],
+            fields=[
+                "username",
+                "non_default_field",
+                "options",
+                "__dict__",
+            ],
+        )
+
+        expected_table = (
+            "| username | non_default_field |\n"
+            "| --- | --- |\n"
+            "| user@example.test | visible |"
+        )
+        self.assertEqual(table, expected_table)
+
     def test_context_api_key_with_missing_request_context(self):
         context = SimpleNamespace(request_context=None)
 
