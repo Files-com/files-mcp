@@ -8,75 +8,72 @@ With universal SFTP, AS2, HTTPS, and 50+ native connectors backed by military-gr
 
 ## Introduction
 
-Modern AI models like ChatGPT and Claude are no longer just answering questions—they’re taking action. With Files.com MCP, you can securely give LLMs controlled access to real-world operations inside your Files.com environment.
+The Files.com MCP server lets an LLM client such as Claude or ChatGPT act inside your Files.com site: upload and download files, query folders and file metadata, create and manage users, and run automations. It works with the permissions of the API key you give it, and its actions are logged like those of any other API client.
 
-Whether it's uploading, downloading, querying folders, or managing users, MCP enables your AI agent to interact with your Files.com infrastructure as if it were an extension of your team—without compromising on security, auditability, or control.
+### What MCP Is
 
-### What Is MCP?
+The Model Context Protocol (MCP) is a standard interface through which a Large Language Model calls real APIs as part of its work. An MCP server hands the model a set of tools, and each Files.com tool is an authenticated operation in your site. With the server connected, the model can:
 
-Model Context Protocol (MCP) is a structured interface that lets Large Language Models call real APIs as part of their workflow. Think of it as a way to “hand tools” to the LLM—where the tools are real, authenticated functions from your Files.com environment.
-
-When integrated via MCP, your LLM can:
-
- - Transfer files between cloud and on-prem systems
-
- - Query folders or file metadata
-
- - Create and manage users
-
- - Automate workflows like archival or sharing
-
- - And much more
-
-MCP turns the LLM from a passive assistant into an active file operations agent.
-
-### What is Files.com?
-
-Files.com is the modern platform for secure file transfer, automation, and storage integration. Used by thousands of enterprises, Files.com connects cloud apps, on-prem systems, and human workflows—all through a single, powerful interface.
-
-With robust APIs, native protocol support (SFTP, FTPS, AS2, and more), and enterprise-grade access controls, Files.com is built to move your files—reliably, securely, and at scale.
+- Transfer files between cloud and on-premises systems
+- Query folders and file metadata
+- Create and manage users
+- Automate workflows such as archiving or sharing
 
 ### Common Use Cases
 
-*AI Assistants for Operations Teams:* Let your internal chatbot fetch or archive files on request.
+**Assistants for operations teams.** An internal chatbot fetches or archives files on request.
 
-*Automated LLM Workflows:* Build AI agents that react to incoming support requests, then retrieve or upload the necessary files from your environment.
+**Automated workflows.** An agent reacts to an incoming support request, then retrieves or uploads the files the case needs.
 
-*Developer Copilots:* Enable your dev-focused LLMs to create users, provision folders, or debug via real-time file access.
+**Developer copilots.** A development-focused LLM creates users, provisions folders, or reads files while debugging.
 
-### Important Information
+### Two Ways To Run It
 
-Large Language Models perform best when their toolset is focused. If you're integrating with Files.com MCP and noticing inconsistent tool usage, your LLM may be overloaded with too many available functions.
+The server ships as the `files-com-mcp` Python package, which runs locally inside your LLM client; [Installation](/python-mcp/overview/installation) covers the setup and [Using With Claude](/python-mcp/overview/using-with-claude) is a complete example. Files.com also operates a hosted MCP server, so an agent can connect without running the package; the [Files.com AI integrations](https://www.files.com/docs/integrations/ai) documentation describes it.
 
-Most LLM clients allow you to selectively enable or disable tools exposed through MCP. For best results, only include the specific tools your agent needs for its task. This reduces ambiguity and improves the model’s ability to pick the right operation every time.
+Install [uv](https://docs.astral.sh/uv/), register `uvx files-com-mcp` as an MCP server in your LLM client, and give it a Files.com API key in the `FILES_COM_API_KEY` environment variable.
 
-### Installation Into Your LLM
-
-Each LLM client has its own method for installing an MCP, and they typically provide specific instructions. Many clients follow a pattern similar to Claude, so our Claude example is a great starting point if you’re working with one of those.
-
-For LLMs that require a more detailed or technical setup, our MCP is implemented in Python and available on PyPI: https://pypi.org/project/files-com-mcp/
-
-If your LLM client needs you to supply execution details for our MCP, we recommend using `uvx`, as demonstrated in the Claude example. This approach ensures a smooth, reproducible setup with minimal effort.
-
-### Hosted MCP Server
-
-Files.com also provides a hosted MCP server that lets AI agents connect to Files.com securely, without requiring you to run the Python package locally. For more information, see the [Files.com AI integrations](https://www.files.com/docs/integrations/ai) documentation.
-
-### Using with Claude
-
-To install into Claude you have to add JSON to the `claude_desktop_config.json` file
-
-An official tutorial can found here: https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server
-
-To add the Files.com MCP, use the Claude Config JSON below (be sure to change the FILES_COM_API_KEY value)
-
-#### uv Required
-
-These examples require `uv` which is a popular modern environment manager for running isolated python tools. You will need to install it first. Using uvx is a huge improvement over older Python environment setup methods. It is simple, runs smoothly, and eliminates the need for manual configuration or unnecessary complexity.
-
-#### Claude Config
-
+```text title="Package"
+https://pypi.org/project/files-com-mcp/
 ```
+
+## Installation
+
+The Files.com MCP server is the [`files-com-mcp`](https://pypi.org/project/files-com-mcp/) package on PyPI. Every LLM client registers MCP servers in its own way and documents the steps; most follow the same shape as Claude Desktop, so [Using With Claude](/python-mcp/overview/using-with-claude) is the example to start from when your client is not covered here.
+
+### Requirements
+
+The examples run the server with `uvx`, which is part of [uv](https://docs.astral.sh/uv/). It runs a Python tool in an isolated environment of its own, so there is nothing to install or configure by hand beyond uv itself. Install uv first.
+
+### Registering The Server
+
+Where your client asks for the command that starts an MCP server, give it `uvx` with `files-com-mcp` as the argument, as on the right. `uvx` fetches the package the first time and starts the server on every launch.
+
+### Authentication
+
+The server authenticates to Files.com with an API key, read from the `FILES_COM_API_KEY` environment variable that your client passes to it. The model can do exactly what the key's user can do, so create a key for this purpose with the permissions the agent needs and no more.
+
+### The Hosted Server
+
+Files.com also operates a hosted MCP server. An agent connects to it directly, with nothing to run locally; the [Files.com AI integrations](https://www.files.com/docs/integrations/ai) documentation covers it.
+
+```shell title="Start the server"
+uvx files-com-mcp
+```
+
+```shell title="With the API key in the environment"
+FILES_COM_API_KEY=your-api-key uvx files-com-mcp
+```
+
+## Using With Claude
+
+Claude Desktop reads its MCP servers from `claude_desktop_config.json`. Add the entry on the right under `mcpServers`, replace the `FILES_COM_API_KEY` value with a Files.com API key, and restart Claude Desktop. The [MCP quickstart](https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server) shows where the file lives on each operating system, walking through the same steps for another server.
+
+The entry starts the server with `uvx`, so [uv](https://docs.astral.sh/uv/) has to be installed first; see [Installation](/python-mcp/overview/installation).
+
+Once Claude has restarted, the Files.com tools appear in its tool list. [Tools](/python-mcp/overview/tools) lists them by category and explains why it pays to enable only the ones a task needs.
+
+```json title="claude_desktop_config.json"
 {
   "mcpServers": {
     "Files.com": {
@@ -86,25 +83,29 @@ These examples require `uv` which is a popular modern environment manager for ru
         "files-com-mcp"
       ],
       "env": {
-        "FILES_COM_API_KEY": "CHangeME"
+        "FILES_COM_API_KEY": "your-api-key"
       }
     }
   }
 }
 ```
 
-### Available Tools
+## Tools
 
-The Files.com MCP provides tools for working with files, folders, sharing, users, logs, automations, and related Files.com resources.
+The Files.com MCP server exposes the tools below, grouped by category: files, folders, sharing, users, logs, automations and the other Files.com resources. Each tool is one operation in your site, run with the permissions of the API key the server holds.
 
-#### Automations
+### Keep The Toolset Focused
+
+A model picks the right tool more reliably from a short list. If the LLM uses Files.com tools inconsistently, it is most likely choosing among too many. Most clients let you enable and disable an MCP server's tools one by one; enable only the ones the agent's task needs.
+
+### Automations
 
 | Tool | Description |
 | ---- | ----------- |
 | `Find_Automation` | Show Automation |
 | `List_Automation` | List Automations |
 
-#### File System
+### File System
 
 | Tool | Description |
 | ---- | ----------- |
@@ -121,14 +122,14 @@ The Files.com MCP provides tools for working with files, folders, sharing, users
 | `Zip_File` | Create a ZIP from one or more paths and save it to a destination path. |
 | `Zip_List_Contents_File` | List the contents of a ZIP file. |
 
-#### Integrations
+### Integrations
 
 | Tool | Description |
 | ---- | ----------- |
 | `Find_Remote_Server` | Show Remote Server |
 | `List_Remote_Server` | List Remote Servers |
 
-#### Logging
+### Logging
 
 | Tool | Description |
 | ---- | ----------- |
@@ -154,7 +155,7 @@ The Files.com MCP provides tools for working with files, folders, sharing, users
 | `List_Sync_Log` | List Sync Logs |
 | `List_Web_Dav_Action_Log` | List WebDAV Action Logs |
 
-#### Sharing / Share Links
+### Sharing / Share Links
 
 | Tool | Description |
 | ---- | ----------- |
@@ -173,7 +174,7 @@ The Files.com MCP provides tools for working with files, folders, sharing, users
 | `Update_Bundle` | Update Share Link |
 | `Update_Bundle_Notification` | Update Share Link Notification |
 
-#### User Accounts
+### User Accounts
 
 | Tool | Description |
 | ---- | ----------- |
