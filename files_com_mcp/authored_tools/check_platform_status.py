@@ -5,7 +5,7 @@ async def check_platform_status() -> str:
     """Check Files.com platform status at status.files.com."""
     url = "https://status.files.com/api/v2/status.json"
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=(5, 10))
         if response.status_code == 200:
             return (
                 response.json()
