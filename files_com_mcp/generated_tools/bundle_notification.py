@@ -114,12 +114,28 @@ async def create_bundle_notification(
         int | None,
         Field(description="The id of the user to notify.", default=None),
     ],
+    notify_on_registration: Annotated[
+        bool | None,
+        Field(
+            description="Triggers bundle notification when a registration action occurs for it.",
+            default=None,
+        ),
+    ],
+    notify_on_upload: Annotated[
+        bool | None,
+        Field(
+            description="Triggers bundle notification when a upload action occurs for it.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """Create Share Link Notification
 
     Args:
         bundle_id: Bundle ID to notify on
         notify_user_id: The id of the user to notify.
+        notify_on_registration: Triggers bundle notification when a registration action occurs for it.
+        notify_on_upload: Triggers bundle notification when a upload action occurs for it.
     """
 
     try:
@@ -130,12 +146,10 @@ async def create_bundle_notification(
         params["bundle_id"] = bundle_id
         if notify_user_id is not None:
             params["notify_user_id"] = notify_user_id
-
-        # Smart Default(s)
-        params["notify_on_registration"] = True
-
-        # Smart Default(s)
-        params["notify_on_upload"] = True
+        if notify_on_registration is not None:
+            params["notify_on_registration"] = notify_on_registration
+        if notify_on_upload is not None:
+            params["notify_on_upload"] = notify_on_upload
 
         retval = files_sdk.bundle_notification.create(params, options)
         retval = [retval]
@@ -340,9 +354,27 @@ def register_tools(mcp):
             int | None,
             Field(description="The id of the user to notify.", default=None),
         ],
+        notify_on_registration: Annotated[
+            bool | None,
+            Field(
+                description="Triggers bundle notification when a registration action occurs for it.",
+                default=None,
+            ),
+        ],
+        notify_on_upload: Annotated[
+            bool | None,
+            Field(
+                description="Triggers bundle notification when a upload action occurs for it.",
+                default=None,
+            ),
+        ],
     ) -> str:
         return await create_bundle_notification(
-            context, bundle_id, notify_user_id
+            context,
+            bundle_id,
+            notify_user_id,
+            notify_on_registration,
+            notify_on_upload,
         )
 
     @mcp.tool(

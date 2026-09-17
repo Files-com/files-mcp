@@ -115,8 +115,7 @@ async def create_folder(
         if path is None:
             return "Missing required parameter: path"
         params["path"] = path
-
-        # Smart Default(s)
+        # Creating a nested folder also creates its missing parent directories.
         params["mkdir_parents"] = True
 
         retval = files_sdk.folder.create(path, params, options)

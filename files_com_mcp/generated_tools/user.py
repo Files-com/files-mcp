@@ -287,6 +287,14 @@ async def create_user(
         str | None,
         Field(description="How is this user authenticated?", default=None),
     ],
+    dav_permission: Annotated[
+        bool | None,
+        Field(description="Can the user connect with WebDAV?", default=None),
+    ],
+    ftp_permission: Annotated[
+        bool | None,
+        Field(description="Can the user access with FTP/FTPS?", default=None),
+    ],
     name: Annotated[
         str | None, Field(description="User's full name", default=None)
     ],
@@ -303,6 +311,17 @@ async def create_user(
             description="Is a password change required upon next user login?",
             default=None,
         ),
+    ],
+    restapi_permission: Annotated[
+        bool | None,
+        Field(
+            description="Can this user access the Web app, Desktop app, SDKs, or REST API?  (All of these tools use the API internally, so this is one unified permission set.)",
+            default=None,
+        ),
+    ],
+    sftp_permission: Annotated[
+        bool | None,
+        Field(description="Can the user access with SFTP?", default=None),
     ],
     user_root: Annotated[
         str | None,
@@ -327,10 +346,14 @@ async def create_user(
         group_ids: A list of group ids to associate this user with.  Comma delimited.
         password: User password.
         authentication_method: How is this user authenticated?
+        dav_permission: Can the user connect with WebDAV?
+        ftp_permission: Can the user access with FTP/FTPS?
         name: User's full name
         company: User's company
         notes: Any internal notes on the user
         require_password_change: Is a password change required upon next user login?
+        restapi_permission: Can this user access the Web app, Desktop app, SDKs, or REST API?  (All of these tools use the API internally, so this is one unified permission set.)
+        sftp_permission: Can the user access with SFTP?
         user_root: If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.
         user_home: Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.
     """
@@ -349,6 +372,10 @@ async def create_user(
             params["password"] = password
         if authentication_method is not None:
             params["authentication_method"] = authentication_method
+        if dav_permission is not None:
+            params["dav_permission"] = dav_permission
+        if ftp_permission is not None:
+            params["ftp_permission"] = ftp_permission
         if name is not None:
             params["name"] = name
         if company is not None:
@@ -357,22 +384,14 @@ async def create_user(
             params["notes"] = notes
         if require_password_change is not None:
             params["require_password_change"] = require_password_change
+        if restapi_permission is not None:
+            params["restapi_permission"] = restapi_permission
+        if sftp_permission is not None:
+            params["sftp_permission"] = sftp_permission
         if user_root is not None:
             params["user_root"] = user_root
         if user_home is not None:
             params["user_home"] = user_home
-
-        # Smart Default(s)
-        params["dav_permission"] = True
-
-        # Smart Default(s)
-        params["ftp_permission"] = True
-
-        # Smart Default(s)
-        params["restapi_permission"] = True
-
-        # Smart Default(s)
-        params["sftp_permission"] = True
 
         retval = files_sdk.user.create(params, options)
         retval = [retval]
@@ -503,6 +522,14 @@ async def update_user(
         str | None,
         Field(description="How is this user authenticated?", default=None),
     ],
+    dav_permission: Annotated[
+        bool | None,
+        Field(description="Can the user connect with WebDAV?", default=None),
+    ],
+    ftp_permission: Annotated[
+        bool | None,
+        Field(description="Can the user access with FTP/FTPS?", default=None),
+    ],
     name: Annotated[
         str | None, Field(description="User's full name", default=None)
     ],
@@ -519,6 +546,17 @@ async def update_user(
             description="Is a password change required upon next user login?",
             default=None,
         ),
+    ],
+    restapi_permission: Annotated[
+        bool | None,
+        Field(
+            description="Can this user access the Web app, Desktop app, SDKs, or REST API?  (All of these tools use the API internally, so this is one unified permission set.)",
+            default=None,
+        ),
+    ],
+    sftp_permission: Annotated[
+        bool | None,
+        Field(description="Can the user access with SFTP?", default=None),
     ],
     user_root: Annotated[
         str | None,
@@ -546,10 +584,14 @@ async def update_user(
         group_ids: A list of group ids to associate this user with.  Comma delimited.
         password: User password.
         authentication_method: How is this user authenticated?
+        dav_permission: Can the user connect with WebDAV?
+        ftp_permission: Can the user access with FTP/FTPS?
         name: User's full name
         company: User's company
         notes: Any internal notes on the user
         require_password_change: Is a password change required upon next user login?
+        restapi_permission: Can this user access the Web app, Desktop app, SDKs, or REST API?  (All of these tools use the API internally, so this is one unified permission set.)
+        sftp_permission: Can the user access with SFTP?
         user_root: If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.
         user_home: Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.
         username: User's username
@@ -569,6 +611,10 @@ async def update_user(
             params["password"] = password
         if authentication_method is not None:
             params["authentication_method"] = authentication_method
+        if dav_permission is not None:
+            params["dav_permission"] = dav_permission
+        if ftp_permission is not None:
+            params["ftp_permission"] = ftp_permission
         if name is not None:
             params["name"] = name
         if company is not None:
@@ -577,24 +623,16 @@ async def update_user(
             params["notes"] = notes
         if require_password_change is not None:
             params["require_password_change"] = require_password_change
+        if restapi_permission is not None:
+            params["restapi_permission"] = restapi_permission
+        if sftp_permission is not None:
+            params["sftp_permission"] = sftp_permission
         if user_root is not None:
             params["user_root"] = user_root
         if user_home is not None:
             params["user_home"] = user_home
         if username is not None:
             params["username"] = username
-
-        # Smart Default(s)
-        params["dav_permission"] = True
-
-        # Smart Default(s)
-        params["ftp_permission"] = True
-
-        # Smart Default(s)
-        params["restapi_permission"] = True
-
-        # Smart Default(s)
-        params["sftp_permission"] = True
 
         retval = files_sdk.user.update(id, params, options)
         retval = [retval]
@@ -901,6 +939,18 @@ def register_tools(mcp):
             str | None,
             Field(description="How is this user authenticated?", default=None),
         ],
+        dav_permission: Annotated[
+            bool | None,
+            Field(
+                description="Can the user connect with WebDAV?", default=None
+            ),
+        ],
+        ftp_permission: Annotated[
+            bool | None,
+            Field(
+                description="Can the user access with FTP/FTPS?", default=None
+            ),
+        ],
         name: Annotated[
             str | None, Field(description="User's full name", default=None)
         ],
@@ -917,6 +967,17 @@ def register_tools(mcp):
                 description="Is a password change required upon next user login?",
                 default=None,
             ),
+        ],
+        restapi_permission: Annotated[
+            bool | None,
+            Field(
+                description="Can this user access the Web app, Desktop app, SDKs, or REST API?  (All of these tools use the API internally, so this is one unified permission set.)",
+                default=None,
+            ),
+        ],
+        sftp_permission: Annotated[
+            bool | None,
+            Field(description="Can the user access with SFTP?", default=None),
         ],
         user_root: Annotated[
             str | None,
@@ -940,10 +1001,14 @@ def register_tools(mcp):
             group_ids,
             password,
             authentication_method,
+            dav_permission,
+            ftp_permission,
             name,
             company,
             notes,
             require_password_change,
+            restapi_permission,
+            sftp_permission,
             user_root,
             user_home,
         )
@@ -978,6 +1043,18 @@ def register_tools(mcp):
             str | None,
             Field(description="How is this user authenticated?", default=None),
         ],
+        dav_permission: Annotated[
+            bool | None,
+            Field(
+                description="Can the user connect with WebDAV?", default=None
+            ),
+        ],
+        ftp_permission: Annotated[
+            bool | None,
+            Field(
+                description="Can the user access with FTP/FTPS?", default=None
+            ),
+        ],
         name: Annotated[
             str | None, Field(description="User's full name", default=None)
         ],
@@ -994,6 +1071,17 @@ def register_tools(mcp):
                 description="Is a password change required upon next user login?",
                 default=None,
             ),
+        ],
+        restapi_permission: Annotated[
+            bool | None,
+            Field(
+                description="Can this user access the Web app, Desktop app, SDKs, or REST API?  (All of these tools use the API internally, so this is one unified permission set.)",
+                default=None,
+            ),
+        ],
+        sftp_permission: Annotated[
+            bool | None,
+            Field(description="Can the user access with SFTP?", default=None),
         ],
         user_root: Annotated[
             str | None,
@@ -1020,10 +1108,14 @@ def register_tools(mcp):
             group_ids,
             password,
             authentication_method,
+            dav_permission,
+            ftp_permission,
             name,
             company,
             notes,
             require_password_change,
+            restapi_permission,
+            sftp_permission,
             user_root,
             user_home,
             username,

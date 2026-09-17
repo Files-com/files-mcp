@@ -93,6 +93,13 @@ async def create_bundle_recipient(
         str | None,
         Field(description="Note to include in email.", default=None),
     ],
+    share_after_create: Annotated[
+        bool | None,
+        Field(
+            description="Set to true to share the link with the recipient upon creation.",
+            default=None,
+        ),
+    ],
 ) -> str:
     """Create Share Link Recipient
 
@@ -102,6 +109,7 @@ async def create_bundle_recipient(
         name: Name of recipient.
         company: Company of recipient.
         note: Note to include in email.
+        share_after_create: Set to true to share the link with the recipient upon creation.
     """
 
     try:
@@ -119,9 +127,8 @@ async def create_bundle_recipient(
             params["company"] = company
         if note is not None:
             params["note"] = note
-
-        # Smart Default(s)
-        params["share_after_create"] = True
+        if share_after_create is not None:
+            params["share_after_create"] = share_after_create
 
         retval = files_sdk.bundle_recipient.create(params, options)
         retval = [retval]
@@ -213,7 +220,20 @@ def register_tools(mcp):
             str | None,
             Field(description="Note to include in email.", default=None),
         ],
+        share_after_create: Annotated[
+            bool | None,
+            Field(
+                description="Set to true to share the link with the recipient upon creation.",
+                default=None,
+            ),
+        ],
     ) -> str:
         return await create_bundle_recipient(
-            context, bundle_id, recipient, name, company, note
+            context,
+            bundle_id,
+            recipient,
+            name,
+            company,
+            note,
+            share_after_create,
         )
