@@ -104,6 +104,7 @@ async def list_user(
                 "responsible_user_id",
                 "readonly_site_admin",
                 "restapi_permission",
+                "s3_compatible_endpoint_permission",
                 "self_managed",
                 "sftp_permission",
                 "site_admin",
@@ -231,6 +232,7 @@ async def find_user(
                 "responsible_user_id",
                 "readonly_site_admin",
                 "restapi_permission",
+                "s3_compatible_endpoint_permission",
                 "self_managed",
                 "sftp_permission",
                 "site_admin",
@@ -319,6 +321,13 @@ async def create_user(
             default=None,
         ),
     ],
+    s3_compatible_endpoint_permission: Annotated[
+        bool | None,
+        Field(
+            description="Can the user access the S3-compatible endpoint? Defaults to true.",
+            default=None,
+        ),
+    ],
     sftp_permission: Annotated[
         bool | None,
         Field(description="Can the user access with SFTP?", default=None),
@@ -353,6 +362,7 @@ async def create_user(
         notes: Any internal notes on the user
         require_password_change: Is a password change required upon next user login?
         restapi_permission: Can this user access the Web app, Desktop app, SDKs, or REST API?  (All of these tools use the API internally, so this is one unified permission set.)
+        s3_compatible_endpoint_permission: Can the user access the S3-compatible endpoint? Defaults to true.
         sftp_permission: Can the user access with SFTP?
         user_root: If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.
         user_home: Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.
@@ -386,6 +396,10 @@ async def create_user(
             params["require_password_change"] = require_password_change
         if restapi_permission is not None:
             params["restapi_permission"] = restapi_permission
+        if s3_compatible_endpoint_permission is not None:
+            params[
+                "s3_compatible_endpoint_permission"
+            ] = s3_compatible_endpoint_permission
         if sftp_permission is not None:
             params["sftp_permission"] = sftp_permission
         if user_root is not None:
@@ -468,6 +482,7 @@ async def create_user(
                 "responsible_user_id",
                 "readonly_site_admin",
                 "restapi_permission",
+                "s3_compatible_endpoint_permission",
                 "self_managed",
                 "sftp_permission",
                 "site_admin",
@@ -554,6 +569,13 @@ async def update_user(
             default=None,
         ),
     ],
+    s3_compatible_endpoint_permission: Annotated[
+        bool | None,
+        Field(
+            description="Can the user access the S3-compatible endpoint? Defaults to true.",
+            default=None,
+        ),
+    ],
     sftp_permission: Annotated[
         bool | None,
         Field(description="Can the user access with SFTP?", default=None),
@@ -591,6 +613,7 @@ async def update_user(
         notes: Any internal notes on the user
         require_password_change: Is a password change required upon next user login?
         restapi_permission: Can this user access the Web app, Desktop app, SDKs, or REST API?  (All of these tools use the API internally, so this is one unified permission set.)
+        s3_compatible_endpoint_permission: Can the user access the S3-compatible endpoint? Defaults to true.
         sftp_permission: Can the user access with SFTP?
         user_root: If filesystem layout is user_root, this path is the root path the user is fixed to for all interfaces. If the filesystem layout is site_root or partner_root, this acts as a root folder only for FTP and SFTP (SFTP applicability also requires a site-wide setting to be set). For partner_root layout, this path is relative to the Partner root folder for all callers and blank opts out of an additional protocol root. In this situation, this path is not applied to the API, Desktop, or Web interface.
         user_home: Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.
@@ -625,6 +648,10 @@ async def update_user(
             params["require_password_change"] = require_password_change
         if restapi_permission is not None:
             params["restapi_permission"] = restapi_permission
+        if s3_compatible_endpoint_permission is not None:
+            params[
+                "s3_compatible_endpoint_permission"
+            ] = s3_compatible_endpoint_permission
         if sftp_permission is not None:
             params["sftp_permission"] = sftp_permission
         if user_root is not None:
@@ -709,6 +736,7 @@ async def update_user(
                 "responsible_user_id",
                 "readonly_site_admin",
                 "restapi_permission",
+                "s3_compatible_endpoint_permission",
                 "self_managed",
                 "sftp_permission",
                 "site_admin",
@@ -835,6 +863,7 @@ async def delete_user(
                 "responsible_user_id",
                 "readonly_site_admin",
                 "restapi_permission",
+                "s3_compatible_endpoint_permission",
                 "self_managed",
                 "sftp_permission",
                 "site_admin",
@@ -975,6 +1004,13 @@ def register_tools(mcp):
                 default=None,
             ),
         ],
+        s3_compatible_endpoint_permission: Annotated[
+            bool | None,
+            Field(
+                description="Can the user access the S3-compatible endpoint? Defaults to true.",
+                default=None,
+            ),
+        ],
         sftp_permission: Annotated[
             bool | None,
             Field(description="Can the user access with SFTP?", default=None),
@@ -1008,6 +1044,7 @@ def register_tools(mcp):
             notes,
             require_password_change,
             restapi_permission,
+            s3_compatible_endpoint_permission,
             sftp_permission,
             user_root,
             user_home,
@@ -1079,6 +1116,13 @@ def register_tools(mcp):
                 default=None,
             ),
         ],
+        s3_compatible_endpoint_permission: Annotated[
+            bool | None,
+            Field(
+                description="Can the user access the S3-compatible endpoint? Defaults to true.",
+                default=None,
+            ),
+        ],
         sftp_permission: Annotated[
             bool | None,
             Field(description="Can the user access with SFTP?", default=None),
@@ -1115,6 +1159,7 @@ def register_tools(mcp):
             notes,
             require_password_change,
             restapi_permission,
+            s3_compatible_endpoint_permission,
             sftp_permission,
             user_root,
             user_home,
