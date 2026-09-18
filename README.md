@@ -1,6 +1,10 @@
 # Files.com MCP Server
 
-Files.com MCP allows your AI model, like ChatGPT or Claude, to use Files.com.
+The `files-com-mcp` Python package lets your AI application interact with Files.com. It is for local use only and supports STDIO only: your MCP client starts the package as a subprocess on the same machine.
+
+For MCP connections over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
+
+Set `FILES_COM_API_KEY` in the environment your client passes to the subprocess. The local package makes outbound requests to the Files.com API to perform site operations.
 
 Files.com is the cloud-native, next-gen MFT, SFTP, and secure file-sharing platform that replaces brittle legacy servers with one always-on, secure fabric. Automate mission-critical file flows—across any cloud, protocol, or partner—while supporting human collaboration and eliminating manual work.
 
@@ -8,7 +12,9 @@ With universal SFTP, AS2, HTTPS, and 50+ native connectors backed by military-gr
 
 ## Introduction
 
-The Files.com MCP server lets an LLM client such as Claude or ChatGPT act inside your Files.com site: upload and download files, query folders and file metadata, create and manage users, and run automations. It works with the permissions of the API key you give it, and its actions are logged like those of any other API client.
+The Files.com Python MCP package lets Claude Desktop and other local MCP clients upload and download files, query folders, manage users, and run automations on your Files.com site. It uses the permissions of your API key, and its actions are logged like those of any other API client.
+
+The Python package supports local use over STDIO (standard input and output) only. Your MCP client starts it on the same machine and communicates directly with that process, without a network listener. The package still needs outbound access to the Files.com API.
 
 ### What MCP Is
 
@@ -27,9 +33,11 @@ The Model Context Protocol (MCP) is a standard interface through which a Large L
 
 **Developer copilots.** A development-focused LLM creates users, provisions folders, or reads files while debugging.
 
-### Two Ways To Run It
+### Local vs. Hosted MCP
 
-The server ships as the `files-com-mcp` Python package, which runs locally inside your LLM client; [Installation](/python-mcp/overview/installation) covers the setup and [Using With Claude](/python-mcp/overview/using-with-claude) is a complete example. Files.com also operates a hosted MCP server, so an agent can connect without running the package; the [Files.com AI integrations](https://www.files.com/docs/integrations/ai) documentation describes it.
+Use the [local Python package](/python-mcp/overview/installation) with clients that launch STDIO servers, including [Claude Desktop](/python-mcp/overview/using-with-claude).
+
+For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server). Files.com operates the server, so you do not need to install the Python package. Running the Python package as an HTTP or SSE service is unsupported, including during development.
 
 Install [uv](https://docs.astral.sh/uv/), register `uvx files-com-mcp` as an MCP server in your LLM client, and give it a Files.com API key in the `FILES_COM_API_KEY` environment variable.
 
@@ -39,23 +47,23 @@ https://pypi.org/project/files-com-mcp/
 
 ## Installation
 
-The Files.com MCP server is the [`files-com-mcp`](https://pypi.org/project/files-com-mcp/) package on PyPI. Every LLM client registers MCP servers in its own way and documents the steps; most follow the same shape as Claude Desktop, so [Using With Claude](/python-mcp/overview/using-with-claude) is the example to start from when your client is not covered here.
+The [`files-com-mcp`](https://pypi.org/project/files-com-mcp/) Python package lets your MCP client call the Files.com API through a process running on your machine. It supports local use over STDIO (standard input and output) only. For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
 
 ### Requirements
+
+Your MCP client must be able to start a local STDIO server. Your machine needs outbound access to the Files.com API.
 
 The examples run the server with `uvx`, which is part of [uv](https://docs.astral.sh/uv/). It runs a Python tool in an isolated environment of its own, so there is nothing to install or configure by hand beyond uv itself. Install uv first.
 
 ### Registering The Server
 
-Where your client asks for the command that starts an MCP server, give it `uvx` with `files-com-mcp` as the argument, as on the right. `uvx` fetches the package the first time and starts the server on every launch.
+Set your client's local STDIO server command to `uvx` with `files-com-mcp` as the argument. `uvx` downloads the package on first use and starts it each time your client launches the server.
+
+The [Claude Desktop configuration](/python-mcp/overview/using-with-claude) shows these settings in JSON. For other clients, follow their instructions for adding a local STDIO server.
 
 ### Authentication
 
 The server authenticates to Files.com with an API key, read from the `FILES_COM_API_KEY` environment variable that your client passes to it. The model can do exactly what the key's user can do, so create a key for this purpose with the permissions the agent needs and no more.
-
-### The Hosted Server
-
-Files.com also operates a hosted MCP server. An agent connects to it directly, with nothing to run locally; the [Files.com AI integrations](https://www.files.com/docs/integrations/ai) documentation covers it.
 
 ```shell title="Start the server"
 uvx files-com-mcp
@@ -66,6 +74,8 @@ FILES_COM_API_KEY=your-api-key uvx files-com-mcp
 ```
 
 ## Using With Claude
+
+Claude Desktop uses the Files.com Python MCP package to call the Files.com API from your machine. This setup supports local use over STDIO (standard input and output) only. For a network connection to MCP, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
 
 Claude Desktop reads its MCP servers from `claude_desktop_config.json`. Add the entry on the right under `mcpServers`, replace the `FILES_COM_API_KEY` value with a Files.com API key, and restart Claude Desktop. The [MCP quickstart](https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server) shows where the file lives on each operating system, walking through the same steps for another server.
 
@@ -364,7 +374,7 @@ A README is available on the GitHub link.
 
 ## Development
 
-While our MCP works well out-of-the-box, some power users find value in modifying MCP code to suit their unique needs. For those power users, it is recommended to use STDIO mode. Upload and Download tools rely on the file system where the MCP is running.
+Run the Python MCP package locally over STDIO when developing or modifying tools. Upload and Download tools rely on the file system where the MCP is running. For network connections, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
 
 To test LLM tools we recommend a popular command-line program called `inspector`. This will start a WebUI on a local port, the output of the command will give you the link to the inspector GUI.
 Ex: http://127.0.0.1:6274
@@ -376,21 +386,6 @@ Ex: http://127.0.0.1:6274
 FILES_COM_API_KEY="dummyKey" npx @modelcontextprotocol/inspector uv run -m files_com_mcp
 ```
 
-
-### Development - SSE
-
-```
-uv run -m files_com_mcp --mode server --port 12345
-```
-
-When calling the SSE server, include `x-filesapi-key: <your-api-key>` as an HTTP header.
-You can still set `FILES_COM_API_KEY` as a fallback when a header is not provided.
-
-Launch the inspector
-
-```
-npx @modelcontextprotocol/inspector
-```
 
 ### Development Claude Config
 

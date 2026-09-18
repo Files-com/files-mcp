@@ -60,9 +60,3 @@ def run_stdio() -> None:
     """Run the MCP server in stdio mode."""
     mcp = create_mcp()
     mcp.run(transport="stdio")
-
-
-def run_server(port: int = 8000, host: str = "127.0.0.1") -> None:
-    """Run the MCP server in HTTP server mode."""
-    mcp = create_mcp()
-    mcp.run(transport="sse", host=host, port=port)

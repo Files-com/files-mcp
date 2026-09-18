@@ -42,21 +42,6 @@ class TestServerFactories(unittest.TestCase):
 
         self.assertEqual(dummy_mcp.run_calls, [{"transport": "stdio"}])
 
-    def test_run_server_accepts_host_and_port(self):
-        dummy_mcp = DummyMCP()
-
-        original_create_mcp = server.create_mcp
-        server.create_mcp = lambda: dummy_mcp
-        try:
-            server.run_server(port=12345, host="0.0.0.0")
-        finally:
-            server.create_mcp = original_create_mcp
-
-        self.assertEqual(
-            dummy_mcp.run_calls,
-            [{"transport": "sse", "host": "0.0.0.0", "port": 12345}],
-        )
-
 
 if __name__ == "__main__":
     unittest.main()

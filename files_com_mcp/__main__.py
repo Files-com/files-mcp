@@ -4,7 +4,7 @@ import os
 import files_sdk
 from files_sdk.api import Api
 
-from files_com_mcp.server import run_stdio, run_server
+from files_com_mcp.server import run_stdio
 
 
 def _get_bool_env(name: str) -> bool | None:
@@ -44,31 +44,13 @@ def main():
 
     _apply_ssl_verify_setting()
 
-    parser = argparse.ArgumentParser(description="Run MCP server")
-
-    parser.add_argument(
-        "--mode",
-        choices=["stdio", "server"],
-        default="stdio",
-        help="Transport mode: stdio or server (HTTP)",
+    parser = argparse.ArgumentParser(
+        description="Run the Files.com MCP server locally over STDIO. "
+        "For network connections, use the Files.com hosted MCP service."
     )
 
-    parser.add_argument(
-        "--port", type=int, default=8000, help="Port to use in server mode"
-    )
-
-    parser.add_argument(
-        "--host",
-        default="127.0.0.1",
-        help="Host to bind in server mode",
-    )
-
-    args = parser.parse_args()
-
-    if args.mode == "stdio":
-        run_stdio()
-    elif args.mode == "server":
-        run_server(port=args.port, host=args.host)
+    parser.parse_args()
+    run_stdio()
 
 
 if __name__ == "__main__":

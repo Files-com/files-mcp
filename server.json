@@ -1,25 +1,25 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.files/python-mcp",
-  "description": "Securely give LLMs controlled access to real-world operations inside your Files.com environment",
+  "description": "Local-only Python MCP server for the Files.com API.",
   "repository": {
     "url": "https://github.com/Files-com/files-mcp",
     "source": "github"
   },
-  "version": "1.0.85",
+  "version": "1.0.86",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "files-com-mcp",
-      "version": "1.0.85",
+      "version": "1.0.86",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
-          "description": "Optional fallback Files.com API Key. In HTTP/SSE mode, you can pass x-filesapi-key per request.",
-          "isRequired": false,
+          "description": "Files.com API key used by the local MCP server to authenticate API requests.",
+          "isRequired": true,
           "format": "string",
           "isSecret": true,
           "name": "FILES_COM_API_KEY"
