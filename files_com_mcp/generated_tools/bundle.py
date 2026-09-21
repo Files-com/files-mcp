@@ -63,6 +63,7 @@ async def list_bundle(
                 "deleted",
                 "deleted_at",
                 "dont_separate_submissions_by_folder",
+                "effective_expires_at",
                 "max_uses",
                 "internal_name",
                 "note",
@@ -150,6 +151,7 @@ async def find_bundle(
                 "deleted",
                 "deleted_at",
                 "dont_separate_submissions_by_folder",
+                "effective_expires_at",
                 "max_uses",
                 "internal_name",
                 "note",
@@ -201,7 +203,10 @@ async def create_bundle(
     ],
     expires_at: Annotated[
         str | None,
-        Field(description="Bundle expiration date/time", default=None),
+        Field(
+            description="Explicit Bundle expiration date/time. If not set, the site-wide expiration setting may apply.",
+            default=None,
+        ),
     ],
     max_uses: Annotated[
         int | None,
@@ -236,7 +241,7 @@ async def create_bundle(
     Args:
         paths: A list of paths to include in this bundle.
         password: Password for this bundle.
-        expires_at: Bundle expiration date/time
+        expires_at: Explicit Bundle expiration date/time. If not set, the site-wide expiration setting may apply.
         max_uses: Maximum number of times bundle can be accessed
         description: Public description
         note: Bundle internal note
@@ -299,6 +304,7 @@ async def create_bundle(
                 "deleted",
                 "deleted_at",
                 "dont_separate_submissions_by_folder",
+                "effective_expires_at",
                 "max_uses",
                 "internal_name",
                 "note",
@@ -339,7 +345,10 @@ async def update_bundle(
     id: Annotated[int | None, Field(description="Bundle ID.", default=None)],
     expires_at: Annotated[
         str | None,
-        Field(description="Bundle expiration date/time", default=None),
+        Field(
+            description="Explicit Bundle expiration date/time. If not set, the site-wide expiration setting may apply.",
+            default=None,
+        ),
     ],
     permissions: Annotated[
         str | None,
@@ -353,7 +362,7 @@ async def update_bundle(
 
     Args:
         id: Bundle ID.
-        expires_at: Bundle expiration date/time
+        expires_at: Explicit Bundle expiration date/time. If not set, the site-wide expiration setting may apply.
         permissions: Permissions that apply to Folders in this Share Link.
     """
 
@@ -402,6 +411,7 @@ async def update_bundle(
                 "deleted",
                 "deleted_at",
                 "dont_separate_submissions_by_folder",
+                "effective_expires_at",
                 "max_uses",
                 "internal_name",
                 "note",
@@ -488,6 +498,7 @@ async def delete_bundle(
                 "deleted",
                 "deleted_at",
                 "dont_separate_submissions_by_folder",
+                "effective_expires_at",
                 "max_uses",
                 "internal_name",
                 "note",
@@ -589,7 +600,10 @@ def register_tools(mcp):
         ],
         expires_at: Annotated[
             str | None,
-            Field(description="Bundle expiration date/time", default=None),
+            Field(
+                description="Explicit Bundle expiration date/time. If not set, the site-wide expiration setting may apply.",
+                default=None,
+            ),
         ],
         max_uses: Annotated[
             int | None,
@@ -648,7 +662,10 @@ def register_tools(mcp):
         ],
         expires_at: Annotated[
             str | None,
-            Field(description="Bundle expiration date/time", default=None),
+            Field(
+                description="Explicit Bundle expiration date/time. If not set, the site-wide expiration setting may apply.",
+                default=None,
+            ),
         ],
         permissions: Annotated[
             str | None,
