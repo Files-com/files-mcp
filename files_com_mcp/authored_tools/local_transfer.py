@@ -1,23 +1,34 @@
 import os
+from pathlib import Path
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import Field
 from files_com_mcp.utils import context_api_key
+from files_com_mcp.local_paths import (
+    LocalPathError,
+    configured_local_root,
+    resolve_local_path,
+)
 import files_sdk
 import files_sdk.error
 
 
 async def download_file_to_local(
-    context: Context, remote_path: str, local_path: str
+    context: Context,
+    remote_path: str,
+    local_path: str,
+    local_root: Path | None,
 ) -> str:
     """Download a file from my Files.com site. Specify the remote path of the file to download and a local path to save the file at.
 
     Args:
         remote_path: The full path on my Files.com site of the file to be downloaded.
-        local_path: The full path on my local system to save the downloaded file to. Must be a path that can be written to. When in doubt, use the `$HOME/Downloads` folder, or the `/tmp/` folder, as the destination for the downloaded file.
+        local_path: The path on my local system to save the downloaded file to.
+        local_root: The configured local directory restriction, if any.
     """
 
     try:
+        local_path = resolve_local_path(local_path, local_root)
         options = {"api_key": context_api_key(context)}
 
         files_sdk.file.download_file(remote_path, local_path, options)
@@ -25,6 +36,8 @@ async def download_file_to_local(
             f"File downloaded successfully to: {os.path.abspath(local_path)}"
         )
 
+    except LocalPathError as err:
+        return f"Local Path Error: {err}"
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -34,16 +47,21 @@ async def download_file_to_local(
 
 
 async def upload_file_from_local(
-    context: Context, local_path: str, remote_path: str
+    context: Context,
+    local_path: str,
+    remote_path: str,
+    local_root: Path | None,
 ) -> str:
     """Upload a file to my Files.com site. Specify the local path of the file to upload and a remote path to save the file at.
 
     Args:
         local_path: The full path on my local system of the file to be uploaded.
         remote_path: The full path on my Files.com site for the file to be uploaded to.
+        local_root: The configured local directory restriction, if any.
     """
 
     try:
+        local_path = resolve_local_path(local_path, local_root)
         options = {"api_key": context_api_key(context)}
         params = {}
 
@@ -55,6 +73,8 @@ async def upload_file_from_local(
             f"File uploaded successfully from: {os.path.abspath(local_path)}"
         )
 
+    except LocalPathError as err:
+        return f"Local Path Error: {err}"
     except files_sdk.error.NotAuthenticatedError as err:
         return f"Authentication Error: {err}"
     except files_sdk.error.Error as err:
@@ -64,6 +84,26 @@ async def upload_file_from_local(
 
 
 def register_tools(mcp):
+    local_root = configured_local_root()
+    download_path_description = (
+        "The full path on my local system to save the downloaded file to. "
+        "Must be a path that can be written to."
+    )
+    upload_path_description = (
+        "The full path on my local system of the file to be uploaded."
+    )
+    if local_root is not None:
+        restriction = (
+            f" Must resolve within {local_root} or its subdirectories."
+        )
+        download_path_description += restriction
+        upload_path_description += restriction
+    else:
+        download_path_description += (
+            " When in doubt, use the `$HOME/Downloads` folder, or the `/tmp/` "
+            "folder, as the destination for the downloaded file."
+        )
+
     @mcp.tool(
         name="Download_File_to_Local",
         description="Download a file from my Files.com site.",
@@ -84,12 +124,12 @@ def register_tools(mcp):
         ],
         local_path: Annotated[
             str,
-            Field(
-                description="The full path on my local system to save the downloaded file to. Must be a path that can be written to. When in doubt, use the `$HOME/Downloads` folder, or the `/tmp/` folder, as the destination for the downloaded file."
-            ),
+            Field(description=download_path_description),
         ],
     ) -> str:
-        return await download_file_to_local(context, remote_path, local_path)
+        return await download_file_to_local(
+            context, remote_path, local_path, local_root
+        )
 
     @mcp.tool(
         name="Upload_File_from_Local",
@@ -105,9 +145,7 @@ def register_tools(mcp):
         context: Context,
         local_path: Annotated[
             str,
-            Field(
-                description="The full path on my local system of the file to be uploaded."
-            ),
+            Field(description=upload_path_description),
         ],
         remote_path: Annotated[
             str,
@@ -116,4 +154,6 @@ def register_tools(mcp):
             ),
         ],
     ) -> str:
-        return await upload_file_from_local(context, local_path, remote_path)
+        return await upload_file_from_local(
+            context, local_path, remote_path, local_root
+        )

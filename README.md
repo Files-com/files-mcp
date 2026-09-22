@@ -65,12 +65,24 @@ The [Claude Desktop configuration](/python-mcp/overview/using-with-claude) shows
 
 The server authenticates to Files.com with an API key, read from the `FILES_COM_API_KEY` environment variable that your client passes to it. The model can do exactly what the key's user can do, so create a key for this purpose with the permissions the agent needs and no more.
 
+### Restricting Local File Transfers
+
+Optionally set `FILES_COM_LOCAL_ROOT` in your client's server environment to an existing absolute directory path, such as `/home/user/Documents`. Uploads can only read files within that directory and its children, and downloads can only write there. When the variable is omitted or empty, transfers can use any local path accessible to the server.
+
+The server resolves `..` and symbolic links before checking each path. Relative transfer paths are resolved from the server's working directory and must still stay inside the configured directory. A download can create a new file in an existing directory within the boundary. A nonempty value must name an existing absolute directory; otherwise, the server will not start.
+
+This setting applies to local transfer paths. Files.com paths continue to follow the API key's permissions.
+
 ```shell title="Start the server"
 uvx files-com-mcp
 ```
 
 ```shell title="With the API key in the environment"
 FILES_COM_API_KEY=your-api-key uvx files-com-mcp
+```
+
+```shell title="Restrict local uploads and downloads"
+FILES_COM_API_KEY=your-api-key FILES_COM_LOCAL_ROOT=/home/user/Documents uvx files-com-mcp
 ```
 
 ## Using With Claude
@@ -82,6 +94,8 @@ Claude Desktop reads its MCP servers from `claude_desktop_config.json`. Add the 
 The entry starts the server with `uvx`, so [uv](https://docs.astral.sh/uv/) has to be installed first; see [Installation](/python-mcp/overview/installation).
 
 Once Claude has restarted, the Files.com tools appear in its tool list. [Tools](/python-mcp/overview/tools) lists them by category and explains why it pays to enable only the ones a task needs.
+
+To restrict local uploads and downloads, optionally add `"FILES_COM_LOCAL_ROOT": "/home/user/Documents"` alongside `FILES_COM_API_KEY` in the `env` object, using an existing absolute directory on your machine. Restart Claude Desktop after changing it. See [Restricting Local File Transfers](/python-mcp/overview/installation#restricting-local-file-transfers) for details.
 
 ```json title="claude_desktop_config.json"
 {
