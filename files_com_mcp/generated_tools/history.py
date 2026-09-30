@@ -1,11 +1,7 @@
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
-from files_com_mcp.utils import (
-    coerce_json,
-    context_api_key,
-    object_list_to_markdown_table,
-)
+from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
@@ -80,7 +76,7 @@ async def list_for_file_history(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if start_at is not None:
             params["start_at"] = start_at
@@ -205,7 +201,7 @@ async def list_for_folder_history(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if start_at is not None:
             params["start_at"] = start_at
@@ -330,7 +326,7 @@ async def list_for_user_history(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if start_at is not None:
             params["start_at"] = start_at
@@ -451,7 +447,7 @@ async def list_logins_history(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if start_at is not None:
             params["start_at"] = start_at
@@ -587,7 +583,7 @@ async def list_history(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if start_at is not None:
             params["start_at"] = start_at

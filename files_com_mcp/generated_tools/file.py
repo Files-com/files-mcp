@@ -1,11 +1,7 @@
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
-from files_com_mcp.utils import (
-    coerce_json,
-    context_api_key,
-    object_list_to_markdown_table,
-)
+from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
@@ -23,7 +19,7 @@ async def delete_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -99,7 +95,7 @@ async def find_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -183,7 +179,7 @@ async def zip_list_contents_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -265,7 +261,7 @@ async def copy_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -348,7 +344,7 @@ async def move_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -448,7 +444,7 @@ async def transform_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -541,7 +537,7 @@ async def gpg_decrypt_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -628,7 +624,7 @@ async def gpg_encrypt_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -716,7 +712,7 @@ async def unzip_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -802,7 +798,7 @@ async def zip_file(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if paths is None:
             return "Missing required parameter: paths"

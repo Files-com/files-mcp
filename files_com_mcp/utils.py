@@ -79,16 +79,3 @@ def coerce_json(value: Any) -> Any:
         except (json.JSONDecodeError, ValueError):
             return value
     return value
-
-
-def context_api_key(context: Any) -> str:
-    """Safely extract the Files.com API key from an MCP request context."""
-    request_context = getattr(context, "request_context", None)
-    if request_context is None:
-        return ""
-
-    session = getattr(request_context, "session", None)
-    if session is None:
-        return ""
-
-    return str(getattr(session, "_files_com_api_key", "") or "")

@@ -1,11 +1,7 @@
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
-from files_com_mcp.utils import (
-    coerce_json,
-    context_api_key,
-    object_list_to_markdown_table,
-)
+from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
@@ -24,7 +20,7 @@ async def list_group(
     """List Groups"""
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
 
         list_obj = files_sdk.group.list(params, options)
@@ -79,7 +75,7 @@ async def find_group(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if id is None:
             return "Missing required parameter: id"
@@ -156,7 +152,7 @@ async def create_group(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if name is None:
             return "Missing required parameter: name"
@@ -241,7 +237,7 @@ async def update_group(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if id is None:
             return "Missing required parameter: id"
@@ -304,7 +300,7 @@ async def delete_group(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if id is None:
             return "Missing required parameter: id"

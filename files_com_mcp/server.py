@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import importlib
-from typing import TYPE_CHECKING, Any
+import os
+from typing import TYPE_CHECKING
+
+import files_sdk
 
 if TYPE_CHECKING:
     from fastmcp import FastMCP
@@ -10,11 +13,18 @@ if TYPE_CHECKING:
 _loaded_servers: set[int] = set()
 
 
+def _apply_api_key_setting() -> None:
+    api_key = os.getenv("FILES_COM_API_KEY", "").strip()
+    if api_key:
+        files_sdk.set_api_key(api_key)
+
+
 def create_mcp() -> FastMCP:
     """Create a configured FastMCP server instance."""
     from files_com_mcp import patches  # noqa: F401
     from fastmcp import FastMCP
 
+    _apply_api_key_setting()
     mcp = FastMCP("filescom")
     load_tools(mcp)
     return mcp
@@ -48,12 +58,6 @@ def load_tools(mcp: FastMCP) -> None:
             module.register_tools(mcp)
 
     _loaded_servers.add(id(mcp))
-
-
-def create_http_app(**http_app_kwargs: Any) -> Any:
-    """Create an ASGI app for HTTP deployments and wrappers."""
-    mcp = create_mcp()
-    return mcp.http_app(**http_app_kwargs)
 
 
 def run_stdio() -> None:

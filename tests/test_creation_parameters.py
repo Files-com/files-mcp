@@ -14,6 +14,8 @@ from files_com_mcp.generated_tools import (
     folder,
     user,
 )
+from files_com_mcp.patches import python_sdk_patch  # noqa: F401
+from files_com_mcp.sdk_request_mutator import set_sdk_request_mutator
 
 
 class TestCreationParameters(unittest.IsolatedAsyncioTestCase):
@@ -97,6 +99,34 @@ class TestCreationParameters(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             params, {"path": "parent/child", "mkdir_parents": True}
         )
+
+    async def test_configured_api_key_is_passed_to_request_mutator(self):
+        captured_api_keys = []
+
+        def capture_api_key(
+            _method,
+            _path,
+            api_key,
+            _session_id,
+            _language,
+            headers,
+            _params,
+        ):
+            captured_api_keys.append(api_key)
+            return headers
+
+        set_sdk_request_mutator(capture_api_key)
+        try:
+            await self.create(
+                user,
+                "Create_User",
+                {"username": "testuser"},
+                "/users",
+            )
+        finally:
+            set_sdk_request_mutator(None)
+
+        self.assertEqual(captured_api_keys, ["testapikey"])
 
 
 if __name__ == "__main__":

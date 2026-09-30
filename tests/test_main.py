@@ -24,6 +24,17 @@ class DummyClient:
 
 
 class TestMain(unittest.TestCase):
+    @patch.dict(
+        os.environ,
+        {},
+        clear=True,
+    )
+    @patch("files_com_mcp.__main__.run_stdio")
+    def test_main_runs_stdio(self, mock_run_stdio):
+        __main__.main()
+
+        mock_run_stdio.assert_called_once_with()
+
     @patch.dict(os.environ, {}, clear=True)
     def test_runtime_env_defaults_to_production(self):
         self.assertEqual(__main__._runtime_env(), "production")

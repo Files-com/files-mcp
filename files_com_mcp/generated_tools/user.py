@@ -1,11 +1,7 @@
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
-from files_com_mcp.utils import (
-    coerce_json,
-    context_api_key,
-    object_list_to_markdown_table,
-)
+from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
@@ -24,7 +20,7 @@ async def list_user(
     """List Users"""
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
 
         list_obj = files_sdk.user.list(params, options)
@@ -151,7 +147,7 @@ async def find_user(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if id is None:
             return "Missing required parameter: id"
@@ -369,7 +365,7 @@ async def create_user(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if username is None:
             return "Missing required parameter: username"
@@ -621,7 +617,7 @@ async def update_user(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if id is None:
             return "Missing required parameter: id"
@@ -782,7 +778,7 @@ async def delete_user(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if id is None:
             return "Missing required parameter: id"

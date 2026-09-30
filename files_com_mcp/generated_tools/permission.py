@@ -1,11 +1,7 @@
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
-from files_com_mcp.utils import (
-    coerce_json,
-    context_api_key,
-    object_list_to_markdown_table,
-)
+from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
 import files_sdk.error
 
@@ -39,7 +35,7 @@ async def list_permission(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is not None:
             params["path"] = path
@@ -122,7 +118,7 @@ async def create_permission(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if path is None:
             return "Missing required parameter: path"
@@ -181,7 +177,7 @@ async def delete_permission(
     """
 
     try:
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
         if id is None:
             return "Missing required parameter: id"

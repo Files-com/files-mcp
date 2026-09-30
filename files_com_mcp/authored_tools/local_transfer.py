@@ -3,7 +3,6 @@ from pathlib import Path
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import Field
-from files_com_mcp.utils import context_api_key
 from files_com_mcp.local_paths import (
     LocalPathError,
     configured_local_root,
@@ -29,7 +28,7 @@ async def download_file_to_local(
 
     try:
         local_path = resolve_local_path(local_path, local_root)
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
 
         files_sdk.file.download_file(remote_path, local_path, options)
         return (
@@ -62,7 +61,7 @@ async def upload_file_from_local(
 
     try:
         local_path = resolve_local_path(local_path, local_root)
-        options = {"api_key": context_api_key(context)}
+        options = {"api_key": files_sdk.get_api_key()}
         params = {}
 
         # Smart Default(s)

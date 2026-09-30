@@ -1,4 +1,3 @@
-import argparse
 import os
 
 import files_sdk
@@ -43,13 +42,6 @@ def main():
         files_sdk.base_url = os.getenv("FILES_COM_BASE_URL")
 
     _apply_ssl_verify_setting()
-
-    parser = argparse.ArgumentParser(
-        description="Run the Files.com MCP server locally over STDIO. "
-        "For network connections, use the Files.com hosted MCP service."
-    )
-
-    parser.parse_args()
     run_stdio()
 
 

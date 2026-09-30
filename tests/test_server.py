@@ -1,34 +1,32 @@
+import os
 import unittest
+from unittest.mock import patch
 
 from files_com_mcp import server
 
 
 class DummyMCP:
     def __init__(self):
-        self.http_app_calls = []
         self.run_calls = []
-
-    def http_app(self, **kwargs):
-        self.http_app_calls.append(kwargs)
-        return {"kind": "http_app", "kwargs": kwargs}
 
     def run(self, **kwargs):
         self.run_calls.append(kwargs)
 
 
 class TestServerFactories(unittest.TestCase):
-    def test_create_http_app_builds_http_app_from_factory(self):
-        dummy_mcp = DummyMCP()
+    @patch.dict(
+        os.environ,
+        {"FILES_COM_API_KEY": " test-api-key "},
+        clear=True,
+    )
+    @patch("files_com_mcp.server.load_tools")
+    @patch("files_com_mcp.server.files_sdk.set_api_key")
+    def test_create_mcp_configures_environment_api_key(
+        self, mock_set_api_key, _mock_load_tools
+    ):
+        server.create_mcp()
 
-        original_create_mcp = server.create_mcp
-        server.create_mcp = lambda: dummy_mcp
-        try:
-            app = server.create_http_app(path="/")
-        finally:
-            server.create_mcp = original_create_mcp
-
-        self.assertEqual(app, {"kind": "http_app", "kwargs": {"path": "/"}})
-        self.assertEqual(dummy_mcp.http_app_calls, [{"path": "/"}])
+        mock_set_api_key.assert_called_once_with("test-api-key")
 
     def test_run_stdio_uses_factory_instance(self):
         dummy_mcp = DummyMCP()
