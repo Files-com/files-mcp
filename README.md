@@ -326,30 +326,95 @@ Trailing whitespace is significant for comparison. `report.txt` and `report.txt 
 
 ## Workspaces
 
-A Workspace is a lightweight way to organize related resources inside a single Files.com Site.
+A Workspace groups files, users, groups, Partners, integrations, and workflows within a Files.com Site. An integration can provision a Workspace for a department or project and delegate its operation to a team without making that team Site Administrators. Every Site has a Default Workspace, with ID `0`; additional Workspaces have their own IDs and root folders.
 
-Customers commonly group resources by project, department, client, or region. Workspaces provide a built-in structure for that grouping, so the UI can operate within a clear "workspace context" and admins can delegate management for a subset of resources without requiring full site-level isolation.
+Account membership, request context, and permission grants serve different purposes. Creating an account in a Workspace determines where it belongs. Selecting a Workspace determines which resources a request operates on. A permission grant determines what the caller can do there. Selecting a Workspace never grants access to it.
 
-Every Site has an implicit Default workspace (ID `0`). Resources that are not explicitly assigned to a named workspace are considered part of the Default workspace.
+### Accounts and Administrative Access
 
-### Using Workspaces with the REST API
+A user's or group's `workspace_id` identifies the Workspace the account belongs to. Accounts belonging to a Custom Workspace stay within it. Default Workspace users and groups can receive permissions in one or more Custom Workspaces while keeping their existing accounts in Workspace `0`.
 
-To use Workspaces with the REST API, send the following request header:
+| Account | Workspace Administrator assignment | Scope |
+| --- | --- | --- |
+| User belonging to a Custom Workspace | Set the user's `workspace_admin` to `true`. | That user's own Custom Workspace. |
+| Default Workspace user | Create an `admin` Permission for the user on a Custom Workspace's root folder. | Each Custom Workspace with a root grant. |
+| Default Workspace group | Create an `admin` Permission for the group on a Custom Workspace's root folder. | Every member inherits administration of each Workspace with a root grant. |
 
-```http
-X-Files-Workspace-Id: <workspace_id>
+`workspace_admin` is not a summary of a user's effective administrative access. A Default Workspace user can administer a Custom Workspace through a direct or group root grant while their `workspace_admin` remains `false`. Groups have no `workspace_admin` field. See [Users](/python-mcp/resources/user-accounts/users) and [Groups](/python-mcp/resources/user-accounts/groups) for account fields.
+
+An `admin` grant on the **Custom Workspace root** provides full Workspace Administrator authority over its files, users, groups, Partners, workflows, and integrations. An `admin` grant on a subfolder provides Folder Admin authority over that folder and its descendants; it does not provide Workspace administration. Other permission levels provide their corresponding folder access without Workspace administration. [Permissions](/python-mcp/resources/user-accounts/permissions) defines the levels.
+
+Site Administrators manage cross-Workspace assignments to Default Workspace accounts. Workspace Administrators manage accounts and permissions within their own scope. Site Administrators retain access to every Workspace; adding a Workspace grant does not narrow Site Administrator authority. The [product documentation](https://www.files.com/docs/workspaces/workspace-administrators) explains the role's operational scope and site-wide controls.
+
+### Request Context and API Keys
+
+The REST header `X-Files-Workspace-Id` selects a Workspace for a request. SDK request options and CLI configuration send that same selection. Workspace-scoped resources are listed, created, and changed within the selected context, and ordinary paths are relative to its root.
+
+A resource's `workspace_id` request field describes the resource's Workspace membership. It is separate from the SDK's Workspace request option or REST header. Creating a Workspace-scoped resource in a Custom Workspace defaults its `workspace_id` to the selected Workspace; a mismatching membership value is rejected with `not-authorized/insufficient-permission-for-params`.
+
+Selecting another Workspace with an API key requires a **Full Access key created in the Default Workspace**. A user key follows that user's current access, including group permissions. A site-wide Full Access key created in the Default Workspace has Site Administrator authority in every Workspace. A Files Only key stays in its creation Workspace, even if its user has cross-Workspace access. Any key created in a Custom Workspace stays within that Workspace. Selecting another context with these confined keys is rejected with `bad-request/invalid-workspace-id-header`.
+
+An account belonging to a Custom Workspace is scoped there when it authenticates normally. For a Default Workspace user, explicitly select the intended Workspace for an integration rather than relying on an interactive login preference. [API Keys](/python-mcp/resources/developers/api-keys) and [Authentication](/python-mcp/overview/authentication) cover credentials.
+
+The adjacent request uses the member's own Default Workspace Full Access user key to list the root of Workspace `123`, after access has been assigned.
+
+```shell title="Request as the group member"
+curl 'https://YOUR_SUBDOMAIN.files.com/api/rest/v1/folders/' \
+  -H 'X-FilesAPI-Key: YOUR_MEMBER_API_KEY' \
+  -H 'X-Files-Workspace-Id: 123'
 ```
 
-This changes path mapping and "what you're looking at."
+### Delegating a Workspace to an Existing Group
 
-When the `X-Files-Workspace-Id` header is provided:
+An operations team already represented by a Default Workspace group can administer a Custom Workspace through one root Permission. The group and its members stay in the Default Workspace, so the same team can receive different access in other Workspaces.
 
-- List, show, update, and delete operations are constrained to that workspace for workspace-scoped models.
-- Create operations default `workspace_id` to the scoped workspace when not explicitly provided.
-- Attempts to provide a mismatching `workspace_id` are rejected with `not-authorized/insufficient-permission-for-params`.
+First retrieve the target [Workspace](/python-mcp/resources/settings/workspaces) and [Group](/python-mcp/resources/user-accounts/groups) IDs as a Site Administrator in Workspace `0`. The examples use Workspace `123`, group `456`, and member user `789`; replace them with your own IDs. Confirm that the group belongs to Workspace `0` and that the intended user is a member.
 
-This header only works for sitewide keys, or keys related to users with permissions to more than one workspace.
-<div></div>
+Create the Permission using a Default Workspace Full Access site-wide key or a Full Access user key belonging to a Site Administrator. Keep the request context at `0` and use the qualified root path `_/Workspaces/123`. Set `group_id` to the group's ID, `permission` to `admin`, and `recursive` to `true`. Save the returned Permission `id` for later removal. For an individual Default Workspace user, use `user_id` instead of `group_id`.
+
+For a Default Workspace group, a Site Administrator can also select Workspace `123` and use an empty `path` to grant access to its root. The qualified path in Workspace `0` works for both Default Workspace users and groups and keeps the account scope and target Workspace explicit. Appending a subfolder to the path would grant Folder Admin access instead of Workspace Administrator authority.
+
+After the grant, run the request-context example above with the member's own credential and Workspace `123` selected. That member can work with the Workspace's files and perform Workspace Administrator operations, such as managing its users, Partners, and integrations. A Site Administrator's successful request does not establish that the member has the intended access.
+
+```shell title="Find account and Workspace IDs"
+curl 'https://YOUR_SUBDOMAIN.files.com/api/rest/v1/workspaces' \
+  -H 'X-FilesAPI-Key: YOUR_SITE_ADMIN_API_KEY' \
+  -H 'X-Files-Workspace-Id: 0'
+curl 'https://YOUR_SUBDOMAIN.files.com/api/rest/v1/groups' \
+  -H 'X-FilesAPI-Key: YOUR_SITE_ADMIN_API_KEY' \
+  -H 'X-Files-Workspace-Id: 0'
+```
+
+```shell title="Grant group administration"
+curl 'https://YOUR_SUBDOMAIN.files.com/api/rest/v1/permissions' \
+  -X POST \
+  -H 'X-FilesAPI-Key: YOUR_SITE_ADMIN_API_KEY' \
+  -H 'X-Files-Workspace-Id: 0' \
+  -H 'Content-Type: application/json' \
+  -d '{"path":"_/Workspaces/123","group_id":456,"permission":"admin","recursive":true}'
+```
+
+### Permission Inspection and Removal
+
+List the member's Permissions with `user_id` and `include_groups=true` to include grants inherited through group membership. Listing only direct user grants can miss the Permission that provides Workspace administration. In Workspace `0`, the Custom Workspace root appears as `_/Workspaces/123`; in Workspace `123`, paths are relative to that root. Inspect the root path and `permission=admin`, rather than treating the user's `workspace_admin` field as their effective role.
+
+Permission lists show grants, rather than a single effective-role boolean. Membership in several groups combines their access. A Permission using `group_ids` instead of `group_id` requires membership in all the specified groups; it is not a shorthand for assigning the same grant to several independent groups.
+
+Removing a member ends access received through that group. Deleting the root Permission ends the group's Workspace Administrator grant for every member. These changes leave independent direct and other group grants in place, so review all applicable grants when withdrawing access. Default Workspace user API keys follow those permission changes without being recreated.
+
+Group membership maintained through SCIM follows the same rule. A Group Admin allowed to add members can give those users the group's existing Workspace Administrator access. Choose who manages the group with that authority in mind.
+
+Delete the Permission by its returned `id` as the Site Administrator in Workspace `0`. The removal examples use Permission ID `9001`; replace it with the ID returned by your create request. Permissions are created and deleted, rather than updated in place. If narrower folder access is still needed, assign it explicitly; deleting a broad grant does not restore narrower grants it previously replaced.
+
+```shell title="Inspect member grants and remove the group grant"
+curl 'https://YOUR_SUBDOMAIN.files.com/api/rest/v1/permissions?user_id=789&include_groups=true' \
+  -H 'X-FilesAPI-Key: YOUR_SITE_ADMIN_API_KEY' \
+  -H 'X-Files-Workspace-Id: 0'
+curl 'https://YOUR_SUBDOMAIN.files.com/api/rest/v1/permissions/9001' \
+  -X DELETE \
+  -H 'X-FilesAPI-Key: YOUR_SITE_ADMIN_API_KEY' \
+  -H 'X-Files-Workspace-Id: 0'
+```
 
 ## Foreign Language Support
 
