@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+.flake8
+pyrightconfig.json
+test.sh
+tests
+build
+dist
+*.egg-info
+.venv
+venv
+__pycache__
+*.py[cod]
+.pytest_cache

@@ -53,7 +53,7 @@ The [`files-com-mcp`](https://pypi.org/project/files-com-mcp/) Python package le
 
 Your MCP client must be able to start a local STDIO server. Your machine needs outbound access to the Files.com API.
 
-The examples run the server with `uvx`, which is part of [uv](https://docs.astral.sh/uv/). It runs a Python tool in an isolated environment of its own, so there is nothing to install or configure by hand beyond uv itself. Install uv first.
+The examples run the server with `uvx`, which is part of [uv](https://docs.astral.sh/uv/). It runs a Python tool in an isolated environment of its own, so there is nothing to install or configure by hand beyond uv itself. Install uv first. You can also [run the server in Docker](https://developers.files.com/python-mcp/overview/docker).
 
 ### Registering The Server
 
@@ -112,6 +112,76 @@ To restrict local uploads and downloads, optionally add `"FILES_COM_LOCAL_ROOT":
     }
   }
 }
+```
+
+## Running In Docker
+
+The [files-mcp repository](https://github.com/Files-com/files-mcp) includes a Dockerfile that packages the MCP server with Python 3.11 and every dependency it needs, so the machine running your MCP client needs Docker but not Python or uv.
+
+The container is still a local STDIO server. Your MCP client starts it with `docker run` and sends and receives protocol messages over standard input and output. The container stops when the client closes standard input. It does not listen on a port or start an HTTP server. For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
+
+### Building The Image
+
+Build the image once, and again when you want a newer release. By default, Docker builds the image for the builder's native architecture. Add `#v` and a release number to the repository address to build a specific release.
+
+The image contains the package from the repository you build and the latest release of the `files-com` Python SDK that it depends on. To install a specific SDK release instead, add `--build-arg FILES_COM_SDK_VERSION=` and the version number.
+
+### Registering The Server
+
+Set your client's local STDIO server command to `docker` with the arguments in the example, and put your API key in the server's environment as `FILES_COM_API_KEY`. Replace `501:20` with your own user and group IDs from `id -u` and `id -g`, and replace `/Users/you` with your home folder.
+
+- `-i` keeps the container's standard input open for the protocol. Do not add `-t`. A terminal combines the output streams and breaks the protocol.
+- `--rm` removes the container when the session ends. `--init` runs a small init process as the container's first process, which forwards stop signals to the server and reaps child processes.
+- `--user` runs the server with your user and group IDs, so it can write to the downloads folder you create and the files it downloads belong to you.
+- `-e FILES_COM_API_KEY`, without a value, copies the key from the environment your client passes, so the key does not appear in the command line.
+
+The server writes its logs to standard error.
+
+### Uploads And Downloads
+
+Mount host folders to make their files available inside the container. The image sets `FILES_COM_LOCAL_ROOT=/work` to restrict local uploads and downloads to `/work`. Create both host folders before starting the server, and make the downloads folder writable by the container's user. Mount the folder containing upload files at `/work/uploads` with read-only access and the downloads folder at `/work/downloads` with write access. Use their absolute host paths in the client configuration.
+
+Docker may create missing host folders with permissions that prevent downloads. Create the folders with `mkdir -p` first, as shown in the example, and make sure the container's user can write to the downloads folder.
+
+Transfer tools take paths inside the container, not paths on your machine. When you ask the model to transfer a file, give a container path under `/work/uploads` or `/work/downloads`, such as `/work/downloads/report.pdf`. The absolute host paths belong only in the `-v` mount arguments.
+
+```shell title="Build the image"
+docker build -t files-com-mcp https://github.com/Files-com/files-mcp.git
+```
+
+```shell title="Create the host folders"
+mkdir -p "$HOME/Files.com/uploads" "$HOME/Files.com/downloads"
+```
+
+```json title="claude_desktop_config.json"
+{
+  "mcpServers": {
+    "Files.com": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm", "--init",
+        "--user", "501:20",
+        "-e", "FILES_COM_API_KEY",
+        "-v", "/Users/you/Files.com/uploads:/work/uploads:ro",
+        "-v", "/Users/you/Files.com/downloads:/work/downloads",
+        "files-com-mcp"
+      ],
+      "env": {
+        "FILES_COM_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+```shell title="Start the server manually"
+FILES_COM_API_KEY=your-api-key docker run -i --rm --init \
+  --user "$(id -u):$(id -g)" \
+  -e FILES_COM_API_KEY \
+  -v "$HOME/Files.com/uploads:/work/uploads:ro" \
+  -v "$HOME/Files.com/downloads:/work/downloads" \
+  files-com-mcp
 ```
 
 ## Tools
