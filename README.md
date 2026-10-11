@@ -67,9 +67,11 @@ The server authenticates to Files.com with an API key, read from the `FILES_COM_
 
 ### Restricting Local File Transfers
 
-Optionally set `FILES_COM_LOCAL_ROOT` in your client's server environment to an existing absolute directory path, such as `/home/user/Documents`. Uploads can only read files within that directory and its children, and downloads can only write there. When the variable is omitted or empty, transfers can use any local path accessible to the server.
+Optionally set `FILES_COM_LOCAL_ROOT` in your client's server environment to an existing absolute directory path, such as `/home/user/Documents`. This limits the local paths the upload and download tools accept for your client's requests to that directory and its subdirectories. When the variable is omitted or empty, transfers can use any local path accessible to the server.
 
-The server resolves `..` and symbolic links before checking each path. Relative transfer paths are resolved from the server's working directory and must still stay inside the configured directory. A download can create a new file in an existing directory within the boundary. A nonempty value must name an existing absolute directory; otherwise, the server will not start.
+The server resolves `..` and symbolic links when checking each path and rejects paths that resolve outside the configured directory. Relative transfer paths are resolved from the server's working directory. A download can create a new file there if its parent directory exists. A nonempty value must name an existing absolute directory; otherwise, the server will not start.
+
+This setting does not separate operating-system accounts; operating-system permissions do that. Give only the account running the server write access to the configured directory and its subdirectories. Another account with write access there can redirect transfers outside the directory by placing or changing symbolic links, even after a path has been checked.
 
 This setting applies to local transfer paths. Files.com paths continue to follow the API key's permissions.
 
