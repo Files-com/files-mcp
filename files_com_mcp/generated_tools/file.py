@@ -244,6 +244,82 @@ async def zip_list_contents_file(
         return f"General Exception: {ex}"
 
 
+async def begin_delete_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+) -> str:
+    """Delete File/Folder and return its File Action.  A pending or processing deletion continues in the background after this returns; check its File Migration for completion.  Waiting for the File Migration does not cancel the deletion.
+
+    Args:
+        path: Path to operate on.
+    """
+
+    try:
+        options = {"api_key": files_sdk.get_api_key()}
+        params = {}
+        if path is None:
+            return "Missing required parameter: path"
+        params["path"] = path
+
+        retval = files_sdk.file.begin_delete(path, params, options)
+        retval = [retval]
+        next_cursor = None
+
+        markdown_list = object_list_to_markdown_table(
+            retval,
+            [
+                "path",
+                "created_by_id",
+                "created_by_api_key_id",
+                "created_by_as2_incoming_message_id",
+                "created_by_automation_id",
+                "created_by_bundle_registration_id",
+                "created_by_inbox_id",
+                "created_by_remote_server_id",
+                "created_by_sync_id",
+                "custom_metadata",
+                "display_name",
+                "type",
+                "size",
+                "created_at",
+                "last_modified_by_id",
+                "last_modified_by_api_key_id",
+                "last_modified_by_automation_id",
+                "last_modified_by_bundle_registration_id",
+                "last_modified_by_remote_server_id",
+                "last_modified_by_sync_id",
+                "mtime",
+                "provided_mtime",
+                "crc32",
+                "md5",
+                "sha1",
+                "sha256",
+                "mime_type",
+                "region",
+                "permissions",
+                "subfolders_locked?",
+                "is_locked",
+                "download_uri",
+                "direct_connection_info",
+                "priority_color",
+                "preview_id",
+                "preview",
+            ],
+        )
+        response = f"File Response:\n{markdown_list}"
+        if next_cursor:
+            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+        return response
+    except files_sdk.error.NotAuthenticatedError as err:
+        return f"Authentication Error: {err}"
+    except files_sdk.error.Error as err:
+        return f"Files.com Error: {err}"
+    except Exception as ex:
+        return f"General Exception: {ex}"
+
+
 async def copy_file(
     context: Context,
     path: Annotated[
@@ -924,6 +1000,24 @@ def register_tools(mcp):
         ],
     ) -> str:
         return await zip_list_contents_file(context, path, fields=fields)
+
+    @mcp.tool(
+        name="Begin_Delete_File",
+        description="Delete File/Folder and return its File Action.  A pending or processing deletion continues in the background after this returns; check its File Migration for completion.  Waiting for the File Migration does not cancel the deletion.",
+        annotations={
+            "title": "Begin Delete File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": False,
+        },
+    )
+    async def begin_delete_file_tool(
+        context: Context,
+        path: Annotated[
+            str | None, Field(description="Path to operate on.", default=None)
+        ],
+    ) -> str:
+        return await begin_delete_file(context, path)
 
     @mcp.tool(
         name="Copy_File",

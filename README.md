@@ -203,6 +203,7 @@ A model picks the right tool more reliably from a short list. If the LLM uses Fi
 
 | Tool | Description |
 | ---- | ----------- |
+| `Begin_Delete_File` | Delete File/Folder and return its File Action. A pending or processing deletion continues in the background after this returns; check its File Migration for completion. Waiting for the File Migration does not cancel the deletion. |
 | `Copy_File` | Copy File/Folder |
 | `Create_Folder` | Create Folder |
 | `Delete_File` | Delete File/Folder |
