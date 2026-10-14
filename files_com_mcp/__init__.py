@@ -1,6 +1,6 @@
 from . import utils  # noqa: F401
 
-__version__ = "1.0.100"
+__version__ = "1.0.101"
 
 
 def create_mcp():
