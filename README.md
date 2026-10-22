@@ -37,7 +37,7 @@ The Model Context Protocol (MCP) is a standard interface through which a Large L
 
 Use the [local Python package](/python-mcp/overview/installation) with clients that launch STDIO servers, including [Claude Desktop](/python-mcp/overview/using-with-claude).
 
-For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server). Files.com operates the server, so you do not need to install the Python package. Running the Python package as an HTTP or SSE service is unsupported, including during development.
+For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/ai/model-context-protocol-mcp-server/). Files.com operates the server, so you do not need to install the Python package. Running the Python package as an HTTP or SSE service is unsupported, including during development.
 
 Install [uv](https://docs.astral.sh/uv/), register `uvx files-com-mcp` as an MCP server in your LLM client, and give it a Files.com API key in the `FILES_COM_API_KEY` environment variable.
 
@@ -47,7 +47,7 @@ https://pypi.org/project/files-com-mcp/
 
 ## Installation
 
-The [`files-com-mcp`](https://pypi.org/project/files-com-mcp/) Python package lets your MCP client call the Files.com API through a process running on your machine. It supports local use over STDIO (standard input and output) only. For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
+The [`files-com-mcp`](https://pypi.org/project/files-com-mcp/) Python package lets your MCP client call the Files.com API through a process running on your machine. It supports local use over STDIO (standard input and output) only. For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/ai/model-context-protocol-mcp-server/).
 
 ### Requirements
 
@@ -63,7 +63,7 @@ The [Claude Desktop configuration](/python-mcp/overview/using-with-claude) shows
 
 ### Authentication
 
-The server authenticates to Files.com with an API key, read from the `FILES_COM_API_KEY` environment variable that your client passes to it. The model can do exactly what the key's user can do, so create a key for this purpose with the permissions the agent needs and no more.
+The server authenticates to Files.com with an API key, read from the `FILES_COM_API_KEY` environment variable that your client passes to it. Use a dedicated key with the permissions the agent needs. A user key follows its account's permissions, narrowed by the key's permission scope, Workspace, and any path restriction on file operations. [API Keys](https://www.files.com/docs/security/authentication-and-credentials/api-keys) explains how to choose that scope and manage the credential's lifecycle.
 
 ### Restricting Local File Transfers
 
@@ -89,7 +89,7 @@ FILES_COM_API_KEY=your-api-key FILES_COM_LOCAL_ROOT=/home/user/Documents uvx fil
 
 ## Using With Claude
 
-Claude Desktop uses the Files.com Python MCP package to call the Files.com API from your machine. This setup supports local use over STDIO (standard input and output) only. For a network connection to MCP, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
+Claude Desktop uses the Files.com Python MCP package to call the Files.com API from your machine. This setup supports local use over STDIO (standard input and output) only. For a network connection to MCP, use the [Files.com hosted MCP service](https://www.files.com/docs/ai/model-context-protocol-mcp-server/).
 
 Claude Desktop reads its MCP servers from `claude_desktop_config.json`. Add the entry on the right under `mcpServers`, replace the `FILES_COM_API_KEY` value with a Files.com API key, and restart Claude Desktop. The [MCP quickstart](https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server) shows where the file lives on each operating system, walking through the same steps for another server.
 
@@ -120,7 +120,7 @@ To restrict local uploads and downloads, optionally add `"FILES_COM_LOCAL_ROOT":
 
 The [files-mcp repository](https://github.com/Files-com/files-mcp) includes a Dockerfile that packages the MCP server with Python 3.11 and every dependency it needs, so the machine running your MCP client needs Docker but not Python or uv.
 
-The container is still a local STDIO server. Your MCP client starts it with `docker run` and sends and receives protocol messages over standard input and output. The container stops when the client closes standard input. It does not listen on a port or start an HTTP server. For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
+The container is still a local STDIO server. Your MCP client starts it with `docker run` and sends and receives protocol messages over standard input and output. The container stops when the client closes standard input. It does not listen on a port or start an HTTP server. For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/ai/model-context-protocol-mcp-server/).
 
 ### Building The Image
 
@@ -299,12 +299,10 @@ Authenticating with an API key is the recommended authentication method for most
 the method used in the examples on this site.
 
 To use an API Key, first generate an API key from the [web
-interface](https://www.files.com/docs/sdk-and-apis/api-keys) or [via the API or an
+interface](https://www.files.com/docs/security/authentication-and-credentials/api-keys) or [via the API or an
 SDK](https://developers.files.com/rest/resources/developers/api-keys).
 
-Note that when using a user-specific API key, if the user is an administrator, you will have full
-access to the entire API. If the user is not an administrator, you will only be able to access files
-that user can access, and no access will be granted to site administration functions in the API.
+A user key follows its account's permissions, narrowed by the key's permission scope, Workspace, and any path restriction on file operations. It can perform administrative operations only when both the account and key permit them. [API Keys](https://www.files.com/docs/security/authentication-and-credentials/api-keys) explains credential scope and lifecycle; [Workspaces](https://developers.files.com/rest/overview/workspaces) explains request context and delegated administration.
 
 Don't forget to replace the placeholder, `YOUR_API_KEY`, with your actual API key.
 
@@ -369,7 +367,7 @@ This behavior applies across:
 - Folder and file lookup operations
 - Automations and workflows
 
-See also: [Case Sensitivity Documentation](https://www.files.com/docs/files-and-folders/case-sensitivity/)
+See also: [Case Sensitivity Documentation](https://www.files.com/docs/files-and-folders/file-system-semantics/case-sensitivity)
 
 ### Slashes
 
