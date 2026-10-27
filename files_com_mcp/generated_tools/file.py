@@ -1008,7 +1008,7 @@ def register_tools(mcp):
             "title": "Begin Delete File",
             "openWorldHint": False,
             "readOnlyHint": False,
-            "destructiveHint": False,
+            "destructiveHint": True,
         },
     )
     async def begin_delete_file_tool(
@@ -1070,7 +1070,7 @@ def register_tools(mcp):
             "title": "Transform File",
             "openWorldHint": False,
             "readOnlyHint": False,
-            "destructiveHint": False,
+            "destructiveHint": True,
         },
     )
     async def transform_file_tool(
@@ -1108,7 +1108,7 @@ def register_tools(mcp):
             "title": "Gpg Decrypt File",
             "openWorldHint": False,
             "readOnlyHint": False,
-            "destructiveHint": False,
+            "destructiveHint": True,
         },
     )
     async def gpg_decrypt_file_tool(
@@ -1133,7 +1133,7 @@ def register_tools(mcp):
             "title": "Gpg Encrypt File",
             "openWorldHint": False,
             "readOnlyHint": False,
-            "destructiveHint": False,
+            "destructiveHint": True,
         },
     )
     async def gpg_encrypt_file_tool(
