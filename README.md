@@ -39,7 +39,7 @@ Use the [local Python package](/python-mcp/overview/installation) with clients t
 
 For clients that connect to MCP over a network, use the [Files.com hosted MCP service](https://www.files.com/docs/ai/model-context-protocol-mcp-server/). Files.com operates the server, so you do not need to install the Python package. Running the Python package as an HTTP or SSE service is unsupported, including during development.
 
-Install [uv](https://docs.astral.sh/uv/), register `uvx files-com-mcp` as an MCP server in your LLM client, and give it a Files.com API key in the `FILES_COM_API_KEY` environment variable.
+Install [uv](https://docs.astral.sh/uv/), register `uvx --python ">=3.11" files-com-mcp` as an MCP server in your LLM client, and give it a Files.com API key in the `FILES_COM_API_KEY` environment variable.
 
 ```text title="Package"
 https://pypi.org/project/files-com-mcp/
@@ -55,9 +55,11 @@ Your MCP client must be able to start a local STDIO server. Your machine needs o
 
 The examples run the server with `uvx`, which is part of [uv](https://docs.astral.sh/uv/). It runs a Python tool in an isolated environment of its own, so there is nothing to install or configure by hand beyond uv itself. Install uv first. You can also [run the server in Docker](https://developers.files.com/python-mcp/overview/docker).
 
+Version 2 of the package needs Python 3.11 or newer; version 1 releases also support Python 3.10. The examples pass `--python ">=3.11"` so that `uvx` runs the server with Python 3.11 or newer. Without it, `uvx` uses whichever Python uv selects by default, which can be older.
+
 ### Registering The Server
 
-Set your client's local STDIO server command to `uvx` with `files-com-mcp` as the argument. `uvx` downloads the package on first use and starts it each time your client launches the server.
+Set your client's local STDIO server command to `uvx` with `--python`, `>=3.11` and `files-com-mcp` as its arguments, in that order. `uvx` downloads the package on first use and starts it each time your client launches the server.
 
 The [Claude Desktop configuration](/python-mcp/overview/using-with-claude) shows these settings in JSON. For other clients, follow their instructions for adding a local STDIO server.
 
@@ -76,15 +78,15 @@ This setting does not separate operating-system accounts; operating-system permi
 This setting applies to local transfer paths. Files.com paths continue to follow the API key's permissions.
 
 ```shell title="Start the server"
-uvx files-com-mcp
+uvx --python ">=3.11" files-com-mcp
 ```
 
 ```shell title="With the API key in the environment"
-FILES_COM_API_KEY=your-api-key uvx files-com-mcp
+FILES_COM_API_KEY=your-api-key uvx --python ">=3.11" files-com-mcp
 ```
 
 ```shell title="Restrict local uploads and downloads"
-FILES_COM_API_KEY=your-api-key FILES_COM_LOCAL_ROOT=/home/user/Documents uvx files-com-mcp
+FILES_COM_API_KEY=your-api-key FILES_COM_LOCAL_ROOT=/home/user/Documents uvx --python ">=3.11" files-com-mcp
 ```
 
 ## Using With Claude
@@ -93,7 +95,7 @@ Claude Desktop uses the Files.com Python MCP package to call the Files.com API f
 
 Claude Desktop reads its MCP servers from `claude_desktop_config.json`. Add the entry on the right under `mcpServers`, replace the `FILES_COM_API_KEY` value with a Files.com API key, and restart Claude Desktop. The [MCP quickstart](https://modelcontextprotocol.io/quickstart/user#2-add-the-filesystem-mcp-server) shows where the file lives on each operating system, walking through the same steps for another server.
 
-The entry starts the server with `uvx`, so [uv](https://docs.astral.sh/uv/) has to be installed first; see [Installation](/python-mcp/overview/installation).
+The entry starts the server with `uvx`, so [uv](https://docs.astral.sh/uv/) has to be installed first; see [Installation](/python-mcp/overview/installation). Its `--python` and `>=3.11` arguments have `uvx` run the server with Python 3.11 or newer, which version 2 of the package needs.
 
 Once Claude has restarted, the Files.com tools appear in its tool list. [Tools](/python-mcp/overview/tools) lists them by category and explains why it pays to enable only the ones a task needs.
 
@@ -106,6 +108,8 @@ To restrict local uploads and downloads, optionally add `"FILES_COM_LOCAL_ROOT":
       "type": "stdio",
       "command": "uvx",
       "args": [
+        "--python",
+        ">=3.11",
         "files-com-mcp"
       ],
       "env": {
@@ -586,9 +590,26 @@ bundle exec puma
 FILES_MOCK_MODE=simulation bundle exec puma
 ```
 
+## Compatibility
+
+Version 2 of `files-com-mcp` needs Python 3.11 or newer, up from the previous Python 3.10 minimum, and version 2 of the Files.com Python SDK (`files-com>=2.0.0,<3`), which it installs itself. To use version 2, make sure your client starts the server with Python 3.11 or newer, for example with `uvx --python ">=3.11" files-com-mcp`.
+
+Changes in version 2:
+
+* A tool call that fails, such as for a missing required input, an API key the site rejects, a permission or not-found error, a local path outside `FILES_COM_LOCAL_ROOT` or a failed transfer, now returns an MCP tool result with `isError` set. The message text is unchanged.
+* List tools that return one page of results at a time take the `cursor` their response gives for the next page, and a `per_page` page size.
+* Tool calls run concurrently. Cancelling a call, or closing the connection, stops its request or transfer before the call ends: the client receives the cancellation only after the call has stopped, and an interrupted download does not leave a partial file.
+* The server no longer prints a banner or checks PyPI for FastMCP updates when it starts. `files-com-mcp --version` prints its version.
+* The package installs FastMCP 3.4.7 as `fastmcp-slim` with the requirements of its server extra, but with the memory and file-tree key-value stores only, not the keyring store (and the `keyring` package it brings). The server uses neither keyring nor that store. Python code that embeds this package and configures FastMCP's `KeyringStore` must now install `py-key-value-aio[keyring]` itself.
+* It requires exactly the FastMCP (3.4.7) and `mcp` (1.30.0) releases whose internals it adapts, and refuses to start with others. It adapts them by replacing methods on their classes when `create_mcp()` first builds a server (the STDIO server calls it), so from then on the changed cancellation and end-of-input handling apply to every FastMCP server in the process, including those of other applications hosted beside this package.
+
 ## Development
 
 Run the Python MCP package locally over STDIO when developing or modifying tools. Upload and Download tools rely on the file system where the MCP is running. For network connections, use the [Files.com hosted MCP service](https://www.files.com/docs/integrations/model-context-protocol-mcp-server).
+
+`pyproject.toml` lists FastMCP's server requirements itself, so upgrading FastMCP means reconciling that list with the new release's metadata: `./test.sh` fails until the list matches fastmcp-slim's server extra, apart from the deviations it explains, and the adapters in `files_com_mcp/patches` must be checked against the new FastMCP and `mcp` internals before `files_com_mcp/framework.py` accepts them.
+
+The server depends on the Files.com Python SDK generated with it. `./test.sh` checks formatting, lint and types and runs the tests without changing any file; set `FILES_COM_SDK` to that SDK's wheel, or generate the `python` target next to this one and it is built for you. `PYTHON` chooses the interpreter (3.11 or newer). `scripts/tasks.py` also builds and tests the wheel and sdist (`package`) and resolves the hash-pinned requirements in `requirements/` (`lock`).
 
 To test LLM tools we recommend a popular command-line program called `inspector`. This will start a WebUI on a local port, the output of the command will give you the link to the inspector GUI.
 Ex: http://127.0.0.1:6274
@@ -599,6 +620,8 @@ Ex: http://127.0.0.1:6274
 ```
 FILES_COM_API_KEY="dummyKey" npx @modelcontextprotocol/inspector uv run -m files_com_mcp
 ```
+
+`uv run` resolves the package's dependencies, and cannot find the unreleased SDK version that a development build requires; run it in an environment that already has that SDK installed, or use an environment built by `scripts/tasks.py`.
 
 
 ### Development Claude Config
@@ -623,6 +646,19 @@ FILES_COM_API_KEY="dummyKey" npx @modelcontextprotocol/inspector uv run -m files
   }
 }
 ```
+
+
+### Development - Shared Mock Server
+
+`tests/shared_user_find.py` checks the generated `Find_User` tool end to end against the mock server's shared `users-find` scenario. It starts this package as a child MCP STDIO server pointed at the mock server, and compares the user the tool returns with the scenario's `expected_user`.
+
+In the generator repository, generate this target, `python` and `mock-server`, install the mock server's gems (see its README), and run `pip3 install ../python .` in `generated/python-mcp` to install the SDK generated beside this package with it. Then run from that directory:
+
+```
+ruby ../mock-server/with-scenario.rb --scenario users-find --out "$(mktemp -d)" -- python3 -m unittest -v tests.shared_user_find
+```
+
+The launcher passes the mock server's address, a placeholder API key and the scenario file. The test gives the address and key to the server it starts as `FILES_COM_BASE_URL` and `FILES_COM_API_KEY`. `unittest discover` does not run it, and it fails when run without the launcher.
 
 ## MCP Registry Metadata
 

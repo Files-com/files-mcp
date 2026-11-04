@@ -55,6 +55,28 @@ class TestUserUpdates(unittest.IsolatedAsyncioTestCase):
                         await self.update_user(arguments), arguments
                     )
 
+    async def test_failed_api_request_is_an_mcp_tool_error(self):
+        mcp = FastMCP("user-error-test")
+        user.register_tools(mcp)
+        response = Response()
+        response.status_code = 404
+        response._content = b""
+
+        with (
+            patch("files_sdk.get_api_key", return_value="testapikey"),
+            patch("requests.Session.send", return_value=response),
+        ):
+            async with Client(mcp) as client:
+                result = await client.call_tool(
+                    "Find_User", {"id": 123}, raise_on_error=False
+                )
+
+        # Clients rely on the error flag, not on the text, to tell failure.
+        self.assertTrue(result.is_error)
+        content = result.content[0]
+        assert isinstance(content, TextContent)
+        self.assertTrue(content.text.startswith("Files.com Error: "))
+
 
 if __name__ == "__main__":
     unittest.main()

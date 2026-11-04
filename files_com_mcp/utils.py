@@ -35,22 +35,20 @@ def object_list_to_markdown_table(
     :param items: List of objects (same type) to convert.
     :param default_attributes: Attribute names used when `fields` is not provided.
     :param fields: Optional caller-supplied attribute names. When set and
-        non-empty, overrides `default_attributes`. Credential-bearing internal
-        attributes are ignored; other missing attributes render as empty cells.
+        non-empty, overrides `default_attributes`.
     :return: A string containing the Markdown-formatted table.
+
+    Credential-bearing internal attributes are ignored whichever list names
+    them; other missing attributes render as empty cells.
     """
     if not items:
         return "*(no data)*"
 
-    attributes = (
-        [
-            attribute
-            for attribute in fields
-            if attribute not in BLOCKED_TABLE_ATTRIBUTES
-        ]
-        if fields
-        else default_attributes
-    )
+    attributes = [
+        attribute
+        for attribute in (fields or default_attributes)
+        if attribute not in BLOCKED_TABLE_ATTRIBUTES
+    ]
     if not attributes:
         return "*(no columns selected)*"
 

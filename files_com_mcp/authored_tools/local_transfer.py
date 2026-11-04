@@ -3,13 +3,12 @@ from pathlib import Path
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.local_paths import (
-    LocalPathError,
     configured_local_root,
     resolve_local_path,
 )
 import files_sdk
-import files_sdk.error
 
 
 async def download_file_to_local(
@@ -26,23 +25,14 @@ async def download_file_to_local(
         local_root: The configured local directory restriction, if any.
     """
 
-    try:
-        local_path = resolve_local_path(local_path, local_root)
-        options = {"api_key": files_sdk.get_api_key()}
+    def download(options):
+        # Checked before anything is sent or written.
+        path = resolve_local_path(local_path, local_root)
+        files_sdk.file.download_file(remote_path, path, options)
+        return path
 
-        files_sdk.file.download_file(remote_path, local_path, options)
-        return (
-            f"File downloaded successfully to: {os.path.abspath(local_path)}"
-        )
-
-    except LocalPathError as err:
-        return f"Local Path Error: {err}"
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    path = await call_files_api(context, download)
+    return f"File downloaded successfully to: {os.path.abspath(path)}"
 
 
 async def upload_file_from_local(
@@ -59,27 +49,16 @@ async def upload_file_from_local(
         local_root: The configured local directory restriction, if any.
     """
 
-    try:
-        local_path = resolve_local_path(local_path, local_root)
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-
+    def upload(options):
+        # Checked before anything is read or sent.
+        path = resolve_local_path(local_path, local_root)
         # Smart Default(s)
-        params["mkdir_parents"] = True
+        params = {"mkdir_parents": True}
+        files_sdk.file.upload_file(path, remote_path, options, params)
+        return path
 
-        files_sdk.file.upload_file(local_path, remote_path, options, params)
-        return (
-            f"File uploaded successfully from: {os.path.abspath(local_path)}"
-        )
-
-    except LocalPathError as err:
-        return f"Local Path Error: {err}"
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    path = await call_files_api(context, upload)
+    return f"File uploaded successfully from: {os.path.abspath(path)}"
 
 
 def register_tools(mcp):

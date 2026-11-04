@@ -1,14 +1,16 @@
+import io
 import os
-import sys
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
-from fastmcp import Client
-from fastmcp.client.transports import StdioTransport
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
 
 from files_com_mcp import __main__
-
+from tests import stdio_server
 
 PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
 
@@ -24,17 +26,6 @@ class DummyClient:
 
 
 class TestMain(unittest.TestCase):
-    @patch.dict(
-        os.environ,
-        {},
-        clear=True,
-    )
-    @patch("files_com_mcp.__main__.run_stdio")
-    def test_main_runs_stdio(self, mock_run_stdio):
-        __main__.main()
-
-        mock_run_stdio.assert_called_once_with()
-
     @patch.dict(os.environ, {}, clear=True)
     def test_runtime_env_defaults_to_production(self):
         self.assertEqual(__main__._runtime_env(), "production")
@@ -80,17 +71,53 @@ class TestMain(unittest.TestCase):
 
         self.assertTrue(client.session.verify)
 
+    @patch("files_com_mcp.__main__.run_stdio")
+    def test_refuses_to_start_with_an_sdk_that_cannot_cancel(self, run_stdio):
+        released_sdk = SimpleNamespace(version="1.6.489")
+        stderr = io.StringIO()
+        with (
+            patch("files_com_mcp.__main__.files_sdk", released_sdk),
+            redirect_stderr(stderr),
+            self.assertRaises(SystemExit) as exit,
+        ):
+            __main__.main([])
+        self.assertEqual(exit.exception.code, 1)
+        self.assertIn(
+            "needs files-com 2.0 or newer, but files-com 1.6.489 is installed",
+            stderr.getvalue(),
+        )
+        run_stdio.assert_not_called()
+
+    @patch("files_com_mcp.__main__.run_stdio")
+    @patch("files_com_mcp.framework.version")
+    def test_refuses_to_start_with_an_unverified_framework(
+        self, version, run_stdio
+    ):
+        version.side_effect = {"fastmcp-slim": "3.4.7", "mcp": "1.31.0"}.get
+        stderr = io.StringIO()
+        with redirect_stderr(stderr), self.assertRaises(SystemExit) as exit:
+            __main__.main([])
+        self.assertEqual(exit.exception.code, 1)
+        self.assertIn(
+            "supports only fastmcp-slim 3.4.7 and mcp 1.30.0, but found mcp 1.31.0",
+            stderr.getvalue(),
+        )
+        run_stdio.assert_not_called()
+
 
 class TestStdioStartup(unittest.IsolatedAsyncioTestCase):
     async def test_lists_tools_over_stdio(self):
-        transport = StdioTransport(
-            command=sys.executable,
-            args=["-m", "files_com_mcp"],
+        command = stdio_server.module_command()
+        server = StdioServerParameters(
+            command=command[0],
+            args=command[1:],
             cwd=PROJECT_ROOT,
             env={"FILES_COM_SSL_VERIFY": "true"},
         )
-        async with Client(transport, timeout=10, init_timeout=10) as client:
-            tools = await client.list_tools()
+        async with stdio_client(server) as streams:
+            async with ClientSession(*streams) as session:
+                await session.initialize()
+                tools = (await session.list_tools()).tools
         self.assertTrue(tools)
 
 

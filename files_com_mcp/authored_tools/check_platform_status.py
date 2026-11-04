@@ -1,7 +1,8 @@
 import requests
+from fastmcp.exceptions import ToolError
 
 
-async def check_platform_status() -> str:
+def check_platform_status() -> str:
     """Check Files.com platform status at status.files.com."""
     url = "https://status.files.com/api/v2/status.json"
     try:
@@ -12,13 +13,13 @@ async def check_platform_status() -> str:
                 .get("status", {})
                 .get("description", "Error processing the status page")
             )
-        else:
-            return "Error connecting to status page"
     except requests.exceptions.RequestException:
-        return "Error connecting to status page"
+        pass
+    raise ToolError("Error connecting to status page")
 
 
 def register_tools(mcp):
+    # A synchronous tool: FastMCP runs it in a worker thread.
     @mcp.tool(
         name="Check_Platform_Status",
         description="Check Files.com platform status at status.files.com.",
@@ -28,5 +29,5 @@ def register_tools(mcp):
             "openWorldHint": False,
         },
     )
-    async def check_platform_status_tool() -> str:
-        return await check_platform_status()
+    def check_platform_status_tool() -> str:
+        return check_platform_status()

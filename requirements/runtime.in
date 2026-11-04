@@ -1,0 +1,5 @@
+# The runtime graph the tests and the installed-package checks use.
+# scripts/tasks.py lock resolves it from the dependencies in pyproject.toml
+# and those of the Files.com SDK wheel it is tested with; neither files-com
+# nor this package is locked here, and each environment installs a given
+# SDK wheel by hash.

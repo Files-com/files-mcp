@@ -1,0 +1,8 @@
+{
+  "name": "files-mcp-type-checker",
+  "private": true,
+  "description": "Pins the Pyright version that test.sh uses to type-check the Files.com MCP server.",
+  "devDependencies": {
+    "pyright": "1.1.414"
+  }
+}

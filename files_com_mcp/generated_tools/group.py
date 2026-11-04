@@ -1,13 +1,28 @@
 from fastmcp import Context
+from fastmcp.exceptions import ToolError
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
-import files_sdk.error
 
 
 async def list_group(
     context: Context,
+    cursor: Annotated[
+        str | None,
+        Field(
+            description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+            default=None,
+        ),
+    ],
+    per_page: Annotated[
+        int | None,
+        Field(
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+            default=None,
+        ),
+    ],
     fields: Annotated[
         list[str] | None,
         Field(
@@ -17,51 +32,55 @@ async def list_group(
         BeforeValidator(coerce_json),
     ],
 ) -> str:
-    """List Groups"""
+    """List Groups
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
+    Args:
+        cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
+    """
 
-        list_obj = files_sdk.group.list(params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No groups found."
+    params = {}
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "name",
-                "allowed_ips",
-                "admin_ids",
-                "notes",
-                "user_ids",
-                "usernames",
-                "ai_assistant_personality_id",
-                "ftp_permission",
-                "sftp_permission",
-                "dav_permission",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "site_id",
-                "workspace_id",
-            ],
-            fields=fields,
-        )
-        response = f"Group Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.group.list(params, options)
+        return list(page), page.cursor
+
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No groups found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "name",
+            "allowed_ips",
+            "admin_ids",
+            "notes",
+            "user_ids",
+            "usernames",
+            "ai_assistant_personality_id",
+            "ftp_permission",
+            "sftp_permission",
+            "dav_permission",
+            "restapi_permission",
+            "s3_compatible_endpoint_permission",
+            "desktop_configuration_profile_id",
+            "integration_centric_profile_id",
+            "site_id",
+            "workspace_id",
+        ],
+        fields=fields,
+    )
+    response = f"Group Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def find_group(
@@ -74,49 +93,42 @@ async def find_group(
         id: Group ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.group.find(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.group.find(id, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "name",
-                "allowed_ips",
-                "admin_ids",
-                "notes",
-                "user_ids",
-                "usernames",
-                "ai_assistant_personality_id",
-                "ftp_permission",
-                "sftp_permission",
-                "dav_permission",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "site_id",
-                "workspace_id",
-            ],
-        )
-        response = f"Group Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "name",
+            "allowed_ips",
+            "admin_ids",
+            "notes",
+            "user_ids",
+            "usernames",
+            "ai_assistant_personality_id",
+            "ftp_permission",
+            "sftp_permission",
+            "dav_permission",
+            "restapi_permission",
+            "s3_compatible_endpoint_permission",
+            "desktop_configuration_profile_id",
+            "integration_centric_profile_id",
+            "site_id",
+            "workspace_id",
+        ],
+    )
+    response = f"Group Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def create_group(
@@ -151,55 +163,48 @@ async def create_group(
         admin_ids: A list of group admin user ids. If sent as a string, should be comma-delimited.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if name is None:
-            return "Missing required parameter: name"
-        params["name"] = name
-        if notes is not None:
-            params["notes"] = notes
-        if user_ids is not None:
-            params["user_ids"] = user_ids
-        if admin_ids is not None:
-            params["admin_ids"] = admin_ids
+    params = {}
+    if name is None:
+        raise ToolError("Missing required parameter: name")
+    params["name"] = name
+    if notes is not None:
+        params["notes"] = notes
+    if user_ids is not None:
+        params["user_ids"] = user_ids
+    if admin_ids is not None:
+        params["admin_ids"] = admin_ids
 
-        retval = files_sdk.group.create(params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.group.create(params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "name",
-                "allowed_ips",
-                "admin_ids",
-                "notes",
-                "user_ids",
-                "usernames",
-                "ai_assistant_personality_id",
-                "ftp_permission",
-                "sftp_permission",
-                "dav_permission",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "site_id",
-                "workspace_id",
-            ],
-        )
-        response = f"Group Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "name",
+            "allowed_ips",
+            "admin_ids",
+            "notes",
+            "user_ids",
+            "usernames",
+            "ai_assistant_personality_id",
+            "ftp_permission",
+            "sftp_permission",
+            "dav_permission",
+            "restapi_permission",
+            "s3_compatible_endpoint_permission",
+            "desktop_configuration_profile_id",
+            "integration_centric_profile_id",
+            "site_id",
+            "workspace_id",
+        ],
+    )
+    response = f"Group Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def update_group(
@@ -236,57 +241,50 @@ async def update_group(
         name: Group name.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
-        if notes is not None:
-            params["notes"] = notes
-        if user_ids is not None:
-            params["user_ids"] = user_ids
-        if admin_ids is not None:
-            params["admin_ids"] = admin_ids
-        if name is not None:
-            params["name"] = name
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
+    if notes is not None:
+        params["notes"] = notes
+    if user_ids is not None:
+        params["user_ids"] = user_ids
+    if admin_ids is not None:
+        params["admin_ids"] = admin_ids
+    if name is not None:
+        params["name"] = name
 
-        retval = files_sdk.group.update(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.group.update(id, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "name",
-                "allowed_ips",
-                "admin_ids",
-                "notes",
-                "user_ids",
-                "usernames",
-                "ai_assistant_personality_id",
-                "ftp_permission",
-                "sftp_permission",
-                "dav_permission",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "site_id",
-                "workspace_id",
-            ],
-        )
-        response = f"Group Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "name",
+            "allowed_ips",
+            "admin_ids",
+            "notes",
+            "user_ids",
+            "usernames",
+            "ai_assistant_personality_id",
+            "ftp_permission",
+            "sftp_permission",
+            "dav_permission",
+            "restapi_permission",
+            "s3_compatible_endpoint_permission",
+            "desktop_configuration_profile_id",
+            "integration_centric_profile_id",
+            "site_id",
+            "workspace_id",
+        ],
+    )
+    response = f"Group Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def delete_group(
@@ -299,49 +297,23 @@ async def delete_group(
         id: Group ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.group.delete(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        # The API returns no record for this operation.
+        files_sdk.group.delete(id, params, options)
+        return [], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "name",
-                "allowed_ips",
-                "admin_ids",
-                "notes",
-                "user_ids",
-                "usernames",
-                "ai_assistant_personality_id",
-                "ftp_permission",
-                "sftp_permission",
-                "dav_permission",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "site_id",
-                "workspace_id",
-            ],
-        )
-        response = f"Group Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(retval, [])
+    response = f"Group Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 def register_tools(mcp):
@@ -356,6 +328,20 @@ def register_tools(mcp):
     )
     async def list_group_tool(
         context: Context,
+        cursor: Annotated[
+            str | None,
+            Field(
+                description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+                default=None,
+            ),
+        ],
+        per_page: Annotated[
+            int | None,
+            Field(
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+                default=None,
+            ),
+        ],
         fields: Annotated[
             list[str] | None,
             Field(
@@ -365,7 +351,7 @@ def register_tools(mcp):
             BeforeValidator(coerce_json),
         ],
     ) -> str:
-        return await list_group(context, fields=fields)
+        return await list_group(context, cursor, per_page, fields=fields)
 
     @mcp.tool(
         name="Find_Group",

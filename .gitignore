@@ -1,4 +1,6 @@
 __pycache__
 *.pyc
 build/
+dist/
 files_com_mcp.egg-info/
+.tools/

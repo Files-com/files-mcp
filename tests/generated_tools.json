@@ -1,0 +1,992 @@
+[
+  {
+    "name": "Begin_Delete_File",
+    "annotations": {
+      "title": "Begin Delete File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "path"
+    ]
+  },
+  {
+    "name": "Copy_File",
+    "annotations": {
+      "title": "Copy File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "path",
+      "destination"
+    ]
+  },
+  {
+    "name": "Create_Bundle",
+    "annotations": {
+      "title": "Create Bundle",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "parameters": [
+      "paths",
+      "password",
+      "expires_at",
+      "max_uses",
+      "description",
+      "note",
+      "permissions",
+      "require_registration"
+    ]
+  },
+  {
+    "name": "Create_Bundle_Notification",
+    "annotations": {
+      "title": "Create Bundle Notification",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "parameters": [
+      "bundle_id",
+      "notify_user_id",
+      "notify_on_registration",
+      "notify_on_upload"
+    ]
+  },
+  {
+    "name": "Create_Bundle_Recipient",
+    "annotations": {
+      "title": "Create Bundle Recipient",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "parameters": [
+      "bundle_id",
+      "recipient",
+      "name",
+      "company",
+      "note",
+      "share_after_create"
+    ]
+  },
+  {
+    "name": "Create_Folder",
+    "annotations": {
+      "title": "Create Folder",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "parameters": [
+      "path"
+    ]
+  },
+  {
+    "name": "Create_Group",
+    "annotations": {
+      "title": "Create Group",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "parameters": [
+      "name",
+      "notes",
+      "user_ids",
+      "admin_ids"
+    ]
+  },
+  {
+    "name": "Create_Permission",
+    "annotations": {
+      "title": "Create Permission",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "parameters": [
+      "path",
+      "group_id",
+      "permission",
+      "user_id"
+    ]
+  },
+  {
+    "name": "Create_User",
+    "annotations": {
+      "title": "Create User",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": false
+    },
+    "parameters": [
+      "username",
+      "email",
+      "group_ids",
+      "password",
+      "authentication_method",
+      "dav_permission",
+      "ftp_permission",
+      "name",
+      "company",
+      "notes",
+      "require_password_change",
+      "restapi_permission",
+      "s3_compatible_endpoint_permission",
+      "sftp_permission",
+      "user_root",
+      "user_home"
+    ]
+  },
+  {
+    "name": "Delete_Bundle",
+    "annotations": {
+      "title": "Delete Bundle",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Delete_Bundle_Notification",
+    "annotations": {
+      "title": "Delete Bundle Notification",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Delete_File",
+    "annotations": {
+      "title": "Delete File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "path"
+    ]
+  },
+  {
+    "name": "Delete_Group",
+    "annotations": {
+      "title": "Delete Group",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Delete_Permission",
+    "annotations": {
+      "title": "Delete Permission",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Delete_User",
+    "annotations": {
+      "title": "Delete User",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Find_Automation",
+    "annotations": {
+      "title": "Find Automation",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Find_Bundle",
+    "annotations": {
+      "title": "Find Bundle",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Find_Bundle_Notification",
+    "annotations": {
+      "title": "Find Bundle Notification",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Find_File",
+    "annotations": {
+      "title": "Find File",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "path"
+    ]
+  },
+  {
+    "name": "Find_Group",
+    "annotations": {
+      "title": "Find Group",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Find_Remote_Server",
+    "annotations": {
+      "title": "Find Remote Server",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Find_User",
+    "annotations": {
+      "title": "Find User",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "id"
+    ]
+  },
+  {
+    "name": "Gpg_Decrypt_File",
+    "annotations": {
+      "title": "Gpg Decrypt File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "path",
+      "destination"
+    ]
+  },
+  {
+    "name": "Gpg_Encrypt_File",
+    "annotations": {
+      "title": "Gpg Encrypt File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "path",
+      "destination"
+    ]
+  },
+  {
+    "name": "List_Action_Log",
+    "annotations": {
+      "title": "List Action Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Api_Request_Log",
+    "annotations": {
+      "title": "List Api Request Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Automation",
+    "annotations": {
+      "title": "List Automation",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Automation_Log",
+    "annotations": {
+      "title": "List Automation Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Bundle",
+    "annotations": {
+      "title": "List Bundle",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Bundle_Download",
+    "annotations": {
+      "title": "List Bundle Download",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "bundle_id",
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Bundle_Notification",
+    "annotations": {
+      "title": "List Bundle Notification",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Bundle_Recipient",
+    "annotations": {
+      "title": "List Bundle Recipient",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "bundle_id",
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Bundle_Registration",
+    "annotations": {
+      "title": "List Bundle Registration",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "bundle_id",
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Email_Log",
+    "annotations": {
+      "title": "List Email Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Exavault_Api_Request_Log",
+    "annotations": {
+      "title": "List Exavault Api Request Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_External_Event",
+    "annotations": {
+      "title": "List External Event",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "sort_by",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_File_Migration_Log",
+    "annotations": {
+      "title": "List File Migration Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_For_File_History",
+    "annotations": {
+      "title": "List For File History",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "start_at",
+      "end_at",
+      "display",
+      "cursor",
+      "per_page",
+      "sort_by",
+      "path",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_For_Folder",
+    "annotations": {
+      "title": "List For Folder",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "path",
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_For_Folder_History",
+    "annotations": {
+      "title": "List For Folder History",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "start_at",
+      "end_at",
+      "display",
+      "cursor",
+      "per_page",
+      "sort_by",
+      "path",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_For_User_History",
+    "annotations": {
+      "title": "List For User History",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "start_at",
+      "end_at",
+      "display",
+      "cursor",
+      "per_page",
+      "sort_by",
+      "user_id",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Ftp_Action_Log",
+    "annotations": {
+      "title": "List Ftp Action Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Group",
+    "annotations": {
+      "title": "List Group",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_History",
+    "annotations": {
+      "title": "List History",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "start_at",
+      "end_at",
+      "display",
+      "cursor",
+      "per_page",
+      "sort_by",
+      "filter",
+      "filter_prefix",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Inbound_S3_Log",
+    "annotations": {
+      "title": "List Inbound S3 Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Logins_History",
+    "annotations": {
+      "title": "List Logins History",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "start_at",
+      "end_at",
+      "display",
+      "cursor",
+      "per_page",
+      "sort_by",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Outbound_Connection_Log",
+    "annotations": {
+      "title": "List Outbound Connection Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Permission",
+    "annotations": {
+      "title": "List Permission",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "path",
+      "group_id",
+      "user_id",
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Public_Hosting_Request_Log",
+    "annotations": {
+      "title": "List Public Hosting Request Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Remote_Server",
+    "annotations": {
+      "title": "List Remote Server",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Scim_Log",
+    "annotations": {
+      "title": "List Scim Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "sort_by",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Settings_Change",
+    "annotations": {
+      "title": "List Settings Change",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "sort_by",
+      "filter",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Sftp_Action_Log",
+    "annotations": {
+      "title": "List Sftp Action Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Sync_Log",
+    "annotations": {
+      "title": "List Sync Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_User",
+    "annotations": {
+      "title": "List User",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "fields"
+    ]
+  },
+  {
+    "name": "List_Web_Dav_Action_Log",
+    "annotations": {
+      "title": "List Web Dav Action Log",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "cursor",
+      "per_page",
+      "filter",
+      "filter_gt",
+      "filter_gteq",
+      "filter_prefix",
+      "filter_lt",
+      "filter_lteq",
+      "fields"
+    ]
+  },
+  {
+    "name": "Move_File",
+    "annotations": {
+      "title": "Move File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "path",
+      "destination"
+    ]
+  },
+  {
+    "name": "Transform_File",
+    "annotations": {
+      "title": "Transform File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "path",
+      "destination",
+      "transform_type",
+      "target_format"
+    ]
+  },
+  {
+    "name": "Unzip_File",
+    "annotations": {
+      "title": "Unzip File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "path",
+      "destination"
+    ]
+  },
+  {
+    "name": "Update_Bundle",
+    "annotations": {
+      "title": "Update Bundle",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id",
+      "expires_at",
+      "permissions"
+    ]
+  },
+  {
+    "name": "Update_Bundle_Notification",
+    "annotations": {
+      "title": "Update Bundle Notification",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id",
+      "notify_on_registration",
+      "notify_on_upload"
+    ]
+  },
+  {
+    "name": "Update_Group",
+    "annotations": {
+      "title": "Update Group",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id",
+      "notes",
+      "user_ids",
+      "admin_ids",
+      "name"
+    ]
+  },
+  {
+    "name": "Update_User",
+    "annotations": {
+      "title": "Update User",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "id",
+      "email",
+      "group_ids",
+      "password",
+      "authentication_method",
+      "dav_permission",
+      "ftp_permission",
+      "name",
+      "company",
+      "notes",
+      "require_password_change",
+      "restapi_permission",
+      "s3_compatible_endpoint_permission",
+      "sftp_permission",
+      "user_root",
+      "user_home",
+      "username"
+    ]
+  },
+  {
+    "name": "Zip_File",
+    "annotations": {
+      "title": "Zip File",
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "destructiveHint": true
+    },
+    "parameters": [
+      "paths",
+      "destination"
+    ]
+  },
+  {
+    "name": "Zip_List_Contents_File",
+    "annotations": {
+      "title": "Zip List Contents File",
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "parameters": [
+      "path",
+      "fields"
+    ]
+  }
+]

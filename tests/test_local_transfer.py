@@ -77,18 +77,21 @@ class TestLocalTransfers(unittest.IsolatedAsyncioTestCase):
                 result = await client.call_tool(
                     tool,
                     {"local_path": str(path), "remote_path": "remote.txt"},
+                    raise_on_error=False,
                 )
         content = result.content[0]
         assert isinstance(content, TextContent)
-        return content.text, send.call_count
+        return result.is_error, content.text, send.call_count
 
     async def assert_transfer_round_trip(self, path):
         path.write_bytes(b"upload content")
-        message, _ = await self.transfer("Upload_File_from_Local", path)
+        error, message, _ = await self.transfer("Upload_File_from_Local", path)
+        self.assertFalse(error)
         self.assertIn("File uploaded successfully", message)
         self.assertEqual(self.uploaded.pop(), b"upload content")
         path.unlink()
-        message, _ = await self.transfer("Download_File_to_Local", path)
+        error, message, _ = await self.transfer("Download_File_to_Local", path)
+        self.assertFalse(error)
         self.assertIn("File downloaded successfully", message)
         self.assertEqual(path.read_bytes(), b"downloaded content")
 
@@ -116,9 +119,10 @@ class TestLocalTransfers(unittest.IsolatedAsyncioTestCase):
         outside = self.outside / "file.txt"
         outside.write_bytes(b"untouched")
         for tool in ("Upload_File_from_Local", "Download_File_to_Local"):
-            message, calls = await self.transfer(
+            error, message, calls = await self.transfer(
                 tool, os.path.relpath(outside)
             )
+            self.assertTrue(error)
             self.assertIn("Local Path Error:", message)
             self.assertEqual(calls, 0)
             self.assertEqual(outside.read_bytes(), b"untouched")
@@ -144,7 +148,8 @@ class TestLocalTransfers(unittest.IsolatedAsyncioTestCase):
         for tool in ("Upload_File_from_Local", "Download_File_to_Local"):
             for path in paths:
                 with self.subTest(tool=tool, path=path):
-                    message, calls = await self.transfer(tool, path)
+                    error, message, calls = await self.transfer(tool, path)
+                    self.assertTrue(error)
                     self.assertIn("Local Path Error:", message)
                     self.assertEqual(calls, 0)
                     self.assertEqual(outside_file.read_bytes(), b"untouched")
@@ -155,10 +160,12 @@ class TestLocalTransfers(unittest.IsolatedAsyncioTestCase):
         target.write_bytes(b"upload content")
         link = self.root / "link.txt"
         link.symlink_to(target)
-        message, _ = await self.transfer("Upload_File_from_Local", link)
+        error, message, _ = await self.transfer("Upload_File_from_Local", link)
+        self.assertFalse(error)
         self.assertIn("File uploaded successfully", message)
         self.assertEqual(self.uploaded, [b"upload content"])
-        message, _ = await self.transfer("Download_File_to_Local", link)
+        error, message, _ = await self.transfer("Download_File_to_Local", link)
+        self.assertFalse(error)
         self.assertIn("File downloaded successfully", message)
         self.assertTrue(link.is_symlink())
         self.assertEqual(target.read_bytes(), b"downloaded content")
@@ -179,7 +186,8 @@ class TestLocalTransfers(unittest.IsolatedAsyncioTestCase):
         for tool in ("Upload_File_from_Local", "Download_File_to_Local"):
             for path in (outside_file, new_file):
                 with self.subTest(tool=tool, path=path):
-                    message, calls = await self.transfer(tool, path)
+                    error, message, calls = await self.transfer(tool, path)
+                    self.assertTrue(error)
                     self.assertIn("Local Path Error:", message)
                     self.assertEqual(calls, 0)
                     self.assertEqual(outside_file.read_bytes(), b"untouched")

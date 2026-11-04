@@ -1,9 +1,10 @@
 from fastmcp import Context
+from fastmcp.exceptions import ToolError
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
-import files_sdk.error
 
 
 async def list_permission(
@@ -17,6 +18,20 @@ async def list_permission(
     ],
     group_id: Annotated[str | None, Field(description="", default=None)],
     user_id: Annotated[str | None, Field(description="", default=None)],
+    cursor: Annotated[
+        str | None,
+        Field(
+            description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+            default=None,
+        ),
+    ],
+    per_page: Annotated[
+        int | None,
+        Field(
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+            default=None,
+        ),
+    ],
     fields: Annotated[
         list[str] | None,
         Field(
@@ -32,53 +47,54 @@ async def list_permission(
         path: Permission path.  If provided, will scope all permissions(including upward) to this path.
         group_id:
         user_id:
+        cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is not None:
-            params["path"] = path
-        if group_id is not None:
-            params["group_id"] = group_id
-        if user_id is not None:
-            params["user_id"] = user_id
+    params = {}
+    if path is not None:
+        params["path"] = path
+    if group_id is not None:
+        params["group_id"] = group_id
+    if user_id is not None:
+        params["user_id"] = user_id
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
 
-        list_obj = files_sdk.permission.list(params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No permissions found."
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.permission.list(params, options)
+        return list(page), page.cursor
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "path",
-                "user_id",
-                "username",
-                "group_id",
-                "group_name",
-                "group_ids",
-                "group_names",
-                "partner_id",
-                "partner_name",
-                "permission",
-                "recursive",
-                "site_id",
-            ],
-            fields=fields,
-        )
-        response = f"Permission Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No permissions found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "path",
+            "user_id",
+            "username",
+            "group_id",
+            "group_name",
+            "group_ids",
+            "group_names",
+            "partner_id",
+            "partner_name",
+            "permission",
+            "recursive",
+            "site_id",
+        ],
+        fields=fields,
+    )
+    response = f"Permission Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def create_permission(
@@ -117,51 +133,44 @@ async def create_permission(
         user_id: User ID.  Provide `username` or `user_id`
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
-        if group_id is not None:
-            params["group_id"] = group_id
-        if permission is not None:
-            params["permission"] = permission
-        if user_id is not None:
-            params["user_id"] = user_id
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+    if group_id is not None:
+        params["group_id"] = group_id
+    if permission is not None:
+        params["permission"] = permission
+    if user_id is not None:
+        params["user_id"] = user_id
 
-        retval = files_sdk.permission.create(params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.permission.create(params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "path",
-                "user_id",
-                "username",
-                "group_id",
-                "group_name",
-                "group_ids",
-                "group_names",
-                "partner_id",
-                "partner_name",
-                "permission",
-                "recursive",
-                "site_id",
-            ],
-        )
-        response = f"Permission Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "path",
+            "user_id",
+            "username",
+            "group_id",
+            "group_name",
+            "group_ids",
+            "group_names",
+            "partner_id",
+            "partner_name",
+            "permission",
+            "recursive",
+            "site_id",
+        ],
+    )
+    response = f"Permission Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def delete_permission(
@@ -176,45 +185,23 @@ async def delete_permission(
         id: Permission ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.permission.delete(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        # The API returns no record for this operation.
+        files_sdk.permission.delete(id, params, options)
+        return [], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "path",
-                "user_id",
-                "username",
-                "group_id",
-                "group_name",
-                "group_ids",
-                "group_names",
-                "partner_id",
-                "partner_name",
-                "permission",
-                "recursive",
-                "site_id",
-            ],
-        )
-        response = f"Permission Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(retval, [])
+    response = f"Permission Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 def register_tools(mcp):
@@ -238,6 +225,20 @@ def register_tools(mcp):
         ],
         group_id: Annotated[str | None, Field(description="", default=None)],
         user_id: Annotated[str | None, Field(description="", default=None)],
+        cursor: Annotated[
+            str | None,
+            Field(
+                description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+                default=None,
+            ),
+        ],
+        per_page: Annotated[
+            int | None,
+            Field(
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+                default=None,
+            ),
+        ],
         fields: Annotated[
             list[str] | None,
             Field(
@@ -248,7 +249,7 @@ def register_tools(mcp):
         ],
     ) -> str:
         return await list_permission(
-            context, path, group_id, user_id, fields=fields
+            context, path, group_id, user_id, cursor, per_page, fields=fields
         )
 
     @mcp.tool(

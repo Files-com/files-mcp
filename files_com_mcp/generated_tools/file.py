@@ -1,9 +1,10 @@
 from fastmcp import Context
+from fastmcp.exceptions import ToolError
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
-import files_sdk.error
 
 
 async def delete_file(
@@ -18,68 +19,23 @@ async def delete_file(
         path: Path to operate on.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
 
-        retval = files_sdk.file.delete(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        # The API returns no record for this operation.
+        files_sdk.file.delete(path, params, options)
+        return [], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(retval, [])
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def find_file(
@@ -94,68 +50,61 @@ async def find_file(
         path: Path to operate on.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
 
-        retval = files_sdk.file.find(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.find(path, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "path",
+            "created_by_id",
+            "created_by_api_key_id",
+            "created_by_as2_incoming_message_id",
+            "created_by_automation_id",
+            "created_by_bundle_registration_id",
+            "created_by_inbox_id",
+            "created_by_remote_server_id",
+            "created_by_sync_id",
+            "custom_metadata",
+            "display_name",
+            "type",
+            "size",
+            "created_at",
+            "last_modified_by_id",
+            "last_modified_by_api_key_id",
+            "last_modified_by_automation_id",
+            "last_modified_by_bundle_registration_id",
+            "last_modified_by_remote_server_id",
+            "last_modified_by_sync_id",
+            "mtime",
+            "provided_mtime",
+            "crc32",
+            "md5",
+            "sha1",
+            "sha256",
+            "mime_type",
+            "region",
+            "permissions",
+            "subfolders_locked?",
+            "is_locked",
+            "download_uri",
+            "direct_connection_info",
+            "priority_color",
+            "preview_id",
+            "preview",
+        ],
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def zip_list_contents_file(
@@ -178,70 +127,28 @@ async def zip_list_contents_file(
         path: Path to operate on.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
 
-        retval = files_sdk.file.zip_list_contents(path, params, options)
-        next_cursor = None
-        if not retval:
-            return "No fileactions found."
-
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-            fields=fields,
+    def call(options):
+        return (
+            list(files_sdk.file.zip_list_contents(path, params, options)),
+            None,
         )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No files found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["path", "size"], fields=fields
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def begin_delete_file(
@@ -256,68 +163,23 @@ async def begin_delete_file(
         path: Path to operate on.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
 
-        retval = files_sdk.file.begin_delete(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.begin_delete(path, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def copy_file(
@@ -336,71 +198,26 @@ async def copy_file(
         destination: Copy destination path.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
-        if destination is None:
-            return "Missing required parameter: destination"
-        params["destination"] = destination
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
 
-        retval = files_sdk.file.copy(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.copy(path, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def move_file(
@@ -419,71 +236,26 @@ async def move_file(
         destination: Move destination path.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
-        if destination is None:
-            return "Missing required parameter: destination"
-        params["destination"] = destination
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
 
-        retval = files_sdk.file.move(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.move(path, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def transform_file(
@@ -519,77 +291,32 @@ async def transform_file(
         target_format: Destination format to create.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
-        if destination is None:
-            return "Missing required parameter: destination"
-        params["destination"] = destination
-        if transform_type is None:
-            return "Missing required parameter: transform_type"
-        params["transform_type"] = transform_type
-        if target_format is None:
-            return "Missing required parameter: target_format"
-        params["target_format"] = target_format
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
+    if transform_type is None:
+        raise ToolError("Missing required parameter: transform_type")
+    params["transform_type"] = transform_type
+    if target_format is None:
+        raise ToolError("Missing required parameter: target_format")
+    params["target_format"] = target_format
 
-        retval = files_sdk.file.transform(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.transform(path, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def gpg_decrypt_file(
@@ -612,71 +339,26 @@ async def gpg_decrypt_file(
         destination: Destination file path for the decrypted file.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
-        if destination is None:
-            return "Missing required parameter: destination"
-        params["destination"] = destination
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
 
-        retval = files_sdk.file.gpg_decrypt(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.gpg_decrypt(path, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def gpg_encrypt_file(
@@ -699,71 +381,26 @@ async def gpg_encrypt_file(
         destination: Destination file path for the encrypted file.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
-        if destination is None:
-            return "Missing required parameter: destination"
-        params["destination"] = destination
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
 
-        retval = files_sdk.file.gpg_encrypt(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.gpg_encrypt(path, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def unzip_file(
@@ -787,71 +424,26 @@ async def unzip_file(
         destination: Destination folder path for extracted files.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
-        if destination is None:
-            return "Missing required parameter: destination"
-        params["destination"] = destination
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
 
-        retval = files_sdk.file.unzip(path, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.unzip(path, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def zip_file(
@@ -873,71 +465,26 @@ async def zip_file(
         destination: Destination file path for the ZIP.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if paths is None:
-            return "Missing required parameter: paths"
-        params["paths"] = paths
-        if destination is None:
-            return "Missing required parameter: destination"
-        params["destination"] = destination
+    params = {}
+    if paths is None:
+        raise ToolError("Missing required parameter: paths")
+    params["paths"] = paths
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
 
-        retval = files_sdk.file.zip(params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.file.zip(params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "path",
-                "created_by_id",
-                "created_by_api_key_id",
-                "created_by_as2_incoming_message_id",
-                "created_by_automation_id",
-                "created_by_bundle_registration_id",
-                "created_by_inbox_id",
-                "created_by_remote_server_id",
-                "created_by_sync_id",
-                "custom_metadata",
-                "display_name",
-                "type",
-                "size",
-                "created_at",
-                "last_modified_by_id",
-                "last_modified_by_api_key_id",
-                "last_modified_by_automation_id",
-                "last_modified_by_bundle_registration_id",
-                "last_modified_by_remote_server_id",
-                "last_modified_by_sync_id",
-                "mtime",
-                "provided_mtime",
-                "crc32",
-                "md5",
-                "sha1",
-                "sha256",
-                "mime_type",
-                "region",
-                "permissions",
-                "subfolders_locked?",
-                "is_locked",
-                "download_uri",
-                "direct_connection_info",
-                "priority_color",
-                "preview_id",
-                "preview",
-            ],
-        )
-        response = f"File Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 def register_tools(mcp):

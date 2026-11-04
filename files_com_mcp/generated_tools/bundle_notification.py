@@ -1,13 +1,28 @@
 from fastmcp import Context
+from fastmcp.exceptions import ToolError
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
-import files_sdk.error
 
 
 async def list_bundle_notification(
     context: Context,
+    cursor: Annotated[
+        str | None,
+        Field(
+            description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+            default=None,
+        ),
+    ],
+    per_page: Annotated[
+        int | None,
+        Field(
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+            default=None,
+        ),
+    ],
     fields: Annotated[
         list[str] | None,
         Field(
@@ -17,41 +32,45 @@ async def list_bundle_notification(
         BeforeValidator(coerce_json),
     ],
 ) -> str:
-    """List Share Link Notifications"""
+    """List Share Link Notifications
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
+    Args:
+        cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
+    """
 
-        list_obj = files_sdk.bundle_notification.list(params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No bundlenotifications found."
+    params = {}
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "bundle_id",
-                "id",
-                "notify_on_registration",
-                "notify_on_upload",
-                "notify_current_user",
-                "notify_user_id",
-                "workspace_id",
-            ],
-            fields=fields,
-        )
-        response = f"BundleNotification Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.bundle_notification.list(params, options)
+        return list(page), page.cursor
+
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No bundlenotifications found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "bundle_id",
+            "id",
+            "notify_on_registration",
+            "notify_on_upload",
+            "notify_current_user",
+            "notify_user_id",
+            "workspace_id",
+        ],
+        fields=fields,
+    )
+    response = f"BundleNotification Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def find_bundle_notification(
@@ -66,39 +85,32 @@ async def find_bundle_notification(
         id: Bundle Notification ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.bundle_notification.find(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.bundle_notification.find(id, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "bundle_id",
-                "id",
-                "notify_on_registration",
-                "notify_on_upload",
-                "notify_current_user",
-                "notify_user_id",
-                "workspace_id",
-            ],
-        )
-        response = f"BundleNotification Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "bundle_id",
+            "id",
+            "notify_on_registration",
+            "notify_on_upload",
+            "notify_current_user",
+            "notify_user_id",
+            "workspace_id",
+        ],
+    )
+    response = f"BundleNotification Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def create_bundle_notification(
@@ -134,45 +146,38 @@ async def create_bundle_notification(
         notify_on_upload: Triggers bundle notification when a upload action occurs for it.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if bundle_id is None:
-            return "Missing required parameter: bundle_id"
-        params["bundle_id"] = bundle_id
-        if notify_user_id is not None:
-            params["notify_user_id"] = notify_user_id
-        if notify_on_registration is not None:
-            params["notify_on_registration"] = notify_on_registration
-        if notify_on_upload is not None:
-            params["notify_on_upload"] = notify_on_upload
+    params = {}
+    if bundle_id is None:
+        raise ToolError("Missing required parameter: bundle_id")
+    params["bundle_id"] = bundle_id
+    if notify_user_id is not None:
+        params["notify_user_id"] = notify_user_id
+    if notify_on_registration is not None:
+        params["notify_on_registration"] = notify_on_registration
+    if notify_on_upload is not None:
+        params["notify_on_upload"] = notify_on_upload
 
-        retval = files_sdk.bundle_notification.create(params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.bundle_notification.create(params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "bundle_id",
-                "id",
-                "notify_on_registration",
-                "notify_on_upload",
-                "notify_current_user",
-                "notify_user_id",
-                "workspace_id",
-            ],
-        )
-        response = f"BundleNotification Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "bundle_id",
+            "id",
+            "notify_on_registration",
+            "notify_on_upload",
+            "notify_current_user",
+            "notify_user_id",
+            "workspace_id",
+        ],
+    )
+    response = f"BundleNotification Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def update_bundle_notification(
@@ -203,43 +208,38 @@ async def update_bundle_notification(
         notify_on_upload: Triggers bundle notification when a upload action occurs for it.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
-        if notify_on_registration is not None:
-            params["notify_on_registration"] = notify_on_registration
-        if notify_on_upload is not None:
-            params["notify_on_upload"] = notify_on_upload
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
+    if notify_on_registration is not None:
+        params["notify_on_registration"] = notify_on_registration
+    if notify_on_upload is not None:
+        params["notify_on_upload"] = notify_on_upload
 
-        retval = files_sdk.bundle_notification.update(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [
+            files_sdk.bundle_notification.update(id, params, options)
+        ], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "bundle_id",
-                "id",
-                "notify_on_registration",
-                "notify_on_upload",
-                "notify_current_user",
-                "notify_user_id",
-                "workspace_id",
-            ],
-        )
-        response = f"BundleNotification Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "bundle_id",
+            "id",
+            "notify_on_registration",
+            "notify_on_upload",
+            "notify_current_user",
+            "notify_user_id",
+            "workspace_id",
+        ],
+    )
+    response = f"BundleNotification Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def delete_bundle_notification(
@@ -254,39 +254,23 @@ async def delete_bundle_notification(
         id: Bundle Notification ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.bundle_notification.delete(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        # The API returns no record for this operation.
+        files_sdk.bundle_notification.delete(id, params, options)
+        return [], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "bundle_id",
-                "id",
-                "notify_on_registration",
-                "notify_on_upload",
-                "notify_current_user",
-                "notify_user_id",
-                "workspace_id",
-            ],
-        )
-        response = f"BundleNotification Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(retval, [])
+    response = f"BundleNotification Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 def register_tools(mcp):
@@ -301,6 +285,20 @@ def register_tools(mcp):
     )
     async def list_bundle_notification_tool(
         context: Context,
+        cursor: Annotated[
+            str | None,
+            Field(
+                description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+                default=None,
+            ),
+        ],
+        per_page: Annotated[
+            int | None,
+            Field(
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+                default=None,
+            ),
+        ],
         fields: Annotated[
             list[str] | None,
             Field(
@@ -310,7 +308,9 @@ def register_tools(mcp):
             BeforeValidator(coerce_json),
         ],
     ) -> str:
-        return await list_bundle_notification(context, fields=fields)
+        return await list_bundle_notification(
+            context, cursor, per_page, fields=fields
+        )
 
     @mcp.tool(
         name="Find_Bundle_Notification",

@@ -1,9 +1,9 @@
 from fastmcp import Context
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
-import files_sdk.error
 
 
 async def list_api_request_log(
@@ -92,69 +92,64 @@ async def list_api_request_log(
         filter_lteq: If set, return records where the specified field is less than or equal the supplied value. Valid fields are `created_at`.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if cursor is not None:
-            params["cursor"] = cursor
-        if per_page is not None:
-            params["per_page"] = per_page
-        if filter is not None:
-            params["filter"] = filter
-        if filter_gt is not None:
-            params["filter_gt"] = filter_gt
-        if filter_gteq is not None:
-            params["filter_gteq"] = filter_gteq
-        if filter_prefix is not None:
-            params["filter_prefix"] = filter_prefix
-        if filter_lt is not None:
-            params["filter_lt"] = filter_lt
-        if filter_lteq is not None:
-            params["filter_lteq"] = filter_lteq
+    params = {}
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
+    if filter is not None:
+        params["filter"] = filter
+    if filter_gt is not None:
+        params["filter_gt"] = filter_gt
+    if filter_gteq is not None:
+        params["filter_gteq"] = filter_gteq
+    if filter_prefix is not None:
+        params["filter_prefix"] = filter_prefix
+    if filter_lt is not None:
+        params["filter_lt"] = filter_lt
+    if filter_lteq is not None:
+        params["filter_lteq"] = filter_lteq
 
-        list_obj = files_sdk.api_request_log.list(params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No apirequestlogs found."
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.api_request_log.list(params, options)
+        return list(page), page.cursor
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "timestamp",
-                "api_key_id",
-                "api_key_prefix",
-                "user_id",
-                "username",
-                "user_is_from_parent_site",
-                "interface",
-                "request_method",
-                "request_path",
-                "request_ip",
-                "request_host",
-                "request_id",
-                "api_name",
-                "user_agent",
-                "error_type",
-                "error_message",
-                "response_code",
-                "success",
-                "duration_ms",
-                "impersonator_user_id",
-                "created_at",
-            ],
-            fields=fields,
-        )
-        response = f"ApiRequestLog Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No apirequestlogs found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "timestamp",
+            "api_key_id",
+            "api_key_prefix",
+            "user_id",
+            "username",
+            "user_is_from_parent_site",
+            "interface",
+            "request_method",
+            "request_path",
+            "request_ip",
+            "request_host",
+            "request_id",
+            "api_name",
+            "user_agent",
+            "error_type",
+            "error_message",
+            "response_code",
+            "success",
+            "duration_ms",
+            "impersonator_user_id",
+            "created_at",
+        ],
+        fields=fields,
+    )
+    response = f"ApiRequestLog Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 def register_tools(mcp):

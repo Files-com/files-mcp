@@ -1,9 +1,10 @@
 from fastmcp import Context
+from fastmcp.exceptions import ToolError
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
-import files_sdk.error
 
 
 async def list_for_file_history(
@@ -75,60 +76,55 @@ async def list_for_file_history(
         path: Path to operate on.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if start_at is not None:
-            params["start_at"] = start_at
-        if end_at is not None:
-            params["end_at"] = end_at
-        if display is not None:
-            params["display"] = display
-        if cursor is not None:
-            params["cursor"] = cursor
-        if per_page is not None:
-            params["per_page"] = per_page
-        if sort_by is not None:
-            params["sort_by"] = sort_by
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
+    params = {}
+    if start_at is not None:
+        params["start_at"] = start_at
+    if end_at is not None:
+        params["end_at"] = end_at
+    if display is not None:
+        params["display"] = display
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
+    if sort_by is not None:
+        params["sort_by"] = sort_by
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
 
-        list_obj = files_sdk.history.list_for_file(path, params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No histories found."
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.history.list_for_file(path, params, options)
+        return list(page), page.cursor
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "path",
-                "when",
-                "destination",
-                "display",
-                "ip",
-                "source",
-                "targets",
-                "user_id",
-                "username",
-                "action",
-                "failure_type",
-                "interface",
-            ],
-            fields=fields,
-        )
-        response = f"History Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No histories found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "path",
+            "when",
+            "destination",
+            "display",
+            "ip",
+            "source",
+            "targets",
+            "user_id",
+            "username",
+            "action",
+            "failure_type",
+            "interface",
+        ],
+        fields=fields,
+    )
+    response = f"History Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def list_for_folder_history(
@@ -200,60 +196,55 @@ async def list_for_folder_history(
         path: Path to operate on.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if start_at is not None:
-            params["start_at"] = start_at
-        if end_at is not None:
-            params["end_at"] = end_at
-        if display is not None:
-            params["display"] = display
-        if cursor is not None:
-            params["cursor"] = cursor
-        if per_page is not None:
-            params["per_page"] = per_page
-        if sort_by is not None:
-            params["sort_by"] = sort_by
-        if path is None:
-            return "Missing required parameter: path"
-        params["path"] = path
+    params = {}
+    if start_at is not None:
+        params["start_at"] = start_at
+    if end_at is not None:
+        params["end_at"] = end_at
+    if display is not None:
+        params["display"] = display
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
+    if sort_by is not None:
+        params["sort_by"] = sort_by
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
 
-        list_obj = files_sdk.history.list_for_folder(path, params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No histories found."
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.history.list_for_folder(path, params, options)
+        return list(page), page.cursor
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "path",
-                "when",
-                "destination",
-                "display",
-                "ip",
-                "source",
-                "targets",
-                "user_id",
-                "username",
-                "action",
-                "failure_type",
-                "interface",
-            ],
-            fields=fields,
-        )
-        response = f"History Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No histories found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "path",
+            "when",
+            "destination",
+            "display",
+            "ip",
+            "source",
+            "targets",
+            "user_id",
+            "username",
+            "action",
+            "failure_type",
+            "interface",
+        ],
+        fields=fields,
+    )
+    response = f"History Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def list_for_user_history(
@@ -325,60 +316,55 @@ async def list_for_user_history(
         user_id: User ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if start_at is not None:
-            params["start_at"] = start_at
-        if end_at is not None:
-            params["end_at"] = end_at
-        if display is not None:
-            params["display"] = display
-        if cursor is not None:
-            params["cursor"] = cursor
-        if per_page is not None:
-            params["per_page"] = per_page
-        if sort_by is not None:
-            params["sort_by"] = sort_by
-        if user_id is None:
-            return "Missing required parameter: user_id"
-        params["user_id"] = user_id
+    params = {}
+    if start_at is not None:
+        params["start_at"] = start_at
+    if end_at is not None:
+        params["end_at"] = end_at
+    if display is not None:
+        params["display"] = display
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
+    if sort_by is not None:
+        params["sort_by"] = sort_by
+    if user_id is None:
+        raise ToolError("Missing required parameter: user_id")
+    params["user_id"] = user_id
 
-        list_obj = files_sdk.history.list_for_user(user_id, params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No histories found."
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.history.list_for_user(user_id, params, options)
+        return list(page), page.cursor
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "path",
-                "when",
-                "destination",
-                "display",
-                "ip",
-                "source",
-                "targets",
-                "user_id",
-                "username",
-                "action",
-                "failure_type",
-                "interface",
-            ],
-            fields=fields,
-        )
-        response = f"History Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No histories found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "path",
+            "when",
+            "destination",
+            "display",
+            "ip",
+            "source",
+            "targets",
+            "user_id",
+            "username",
+            "action",
+            "failure_type",
+            "interface",
+        ],
+        fields=fields,
+    )
+    response = f"History Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def list_logins_history(
@@ -446,57 +432,52 @@ async def list_logins_history(
         sort_by: If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if start_at is not None:
-            params["start_at"] = start_at
-        if end_at is not None:
-            params["end_at"] = end_at
-        if display is not None:
-            params["display"] = display
-        if cursor is not None:
-            params["cursor"] = cursor
-        if per_page is not None:
-            params["per_page"] = per_page
-        if sort_by is not None:
-            params["sort_by"] = sort_by
+    params = {}
+    if start_at is not None:
+        params["start_at"] = start_at
+    if end_at is not None:
+        params["end_at"] = end_at
+    if display is not None:
+        params["display"] = display
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
+    if sort_by is not None:
+        params["sort_by"] = sort_by
 
-        list_obj = files_sdk.history.list_logins(params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No histories found."
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.history.list_logins(params, options)
+        return list(page), page.cursor
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "path",
-                "when",
-                "destination",
-                "display",
-                "ip",
-                "source",
-                "targets",
-                "user_id",
-                "username",
-                "action",
-                "failure_type",
-                "interface",
-            ],
-            fields=fields,
-        )
-        response = f"History Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No histories found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "path",
+            "when",
+            "destination",
+            "display",
+            "ip",
+            "source",
+            "targets",
+            "user_id",
+            "username",
+            "action",
+            "failure_type",
+            "interface",
+        ],
+        fields=fields,
+    )
+    response = f"History Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def list_history(
@@ -582,61 +563,56 @@ async def list_history(
         filter_prefix: If set, return records where the specified field is prefixed by the supplied value. Valid fields are `path`.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if start_at is not None:
-            params["start_at"] = start_at
-        if end_at is not None:
-            params["end_at"] = end_at
-        if display is not None:
-            params["display"] = display
-        if cursor is not None:
-            params["cursor"] = cursor
-        if per_page is not None:
-            params["per_page"] = per_page
-        if sort_by is not None:
-            params["sort_by"] = sort_by
-        if filter is not None:
-            params["filter"] = filter
-        if filter_prefix is not None:
-            params["filter_prefix"] = filter_prefix
+    params = {}
+    if start_at is not None:
+        params["start_at"] = start_at
+    if end_at is not None:
+        params["end_at"] = end_at
+    if display is not None:
+        params["display"] = display
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
+    if sort_by is not None:
+        params["sort_by"] = sort_by
+    if filter is not None:
+        params["filter"] = filter
+    if filter_prefix is not None:
+        params["filter_prefix"] = filter_prefix
 
-        list_obj = files_sdk.history.list(params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No histories found."
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.history.list(params, options)
+        return list(page), page.cursor
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "path",
-                "when",
-                "destination",
-                "display",
-                "ip",
-                "source",
-                "targets",
-                "user_id",
-                "username",
-                "action",
-                "failure_type",
-                "interface",
-            ],
-            fields=fields,
-        )
-        response = f"History Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No histories found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "path",
+            "when",
+            "destination",
+            "display",
+            "ip",
+            "source",
+            "targets",
+            "user_id",
+            "username",
+            "action",
+            "failure_type",
+            "interface",
+        ],
+        fields=fields,
+    )
+    response = f"History Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 def register_tools(mcp):

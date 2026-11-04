@@ -1,13 +1,28 @@
 from fastmcp import Context
+from fastmcp.exceptions import ToolError
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
-import files_sdk.error
 
 
 async def list_bundle(
     context: Context,
+    cursor: Annotated[
+        str | None,
+        Field(
+            description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+            default=None,
+        ),
+    ],
+    per_page: Annotated[
+        int | None,
+        Field(
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+            default=None,
+        ),
+    ],
     fields: Annotated[
         list[str] | None,
         Field(
@@ -17,83 +32,87 @@ async def list_bundle(
         BeforeValidator(coerce_json),
     ],
 ) -> str:
-    """List Share Links"""
+    """List Share Links
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
+    Args:
+        cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
+    """
 
-        list_obj = files_sdk.bundle.list(params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No bundles found."
+    params = {}
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "code",
-                "color_left",
-                "color_link",
-                "color_text",
-                "color_top",
-                "color_top_text",
-                "url",
-                "description",
-                "expires_at",
-                "password_protected",
-                "permissions",
-                "preview_only",
-                "require_registration",
-                "require_share_recipient",
-                "require_logout",
-                "clickwrap_body",
-                "form_field_set",
-                "skip_name",
-                "skip_email",
-                "start_access_on_date",
-                "skip_company",
-                "id",
-                "bypasses_site_expiration_rules",
-                "created_at",
-                "deleted",
-                "deleted_at",
-                "dont_separate_submissions_by_folder",
-                "effective_expires_at",
-                "max_uses",
-                "internal_name",
-                "note",
-                "path_template",
-                "path_template_time_zone",
-                "send_email_receipt_to_uploader",
-                "snapshot_id",
-                "user_id",
-                "username",
-                "group_id",
-                "clickwrap_id",
-                "inbox_id",
-                "watermark_attachment",
-                "watermark_value",
-                "send_one_time_password_to_recipient_at_registration",
-                "workspace_id",
-                "has_inbox",
-                "dont_allow_folders_in_uploads",
-                "requested_upload_slots",
-                "paths",
-                "bundlepaths",
-            ],
-            fields=fields,
-        )
-        response = f"Bundle Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.bundle.list(params, options)
+        return list(page), page.cursor
+
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No bundles found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "code",
+            "color_left",
+            "color_link",
+            "color_text",
+            "color_top",
+            "color_top_text",
+            "url",
+            "description",
+            "expires_at",
+            "password_protected",
+            "permissions",
+            "preview_only",
+            "require_registration",
+            "require_share_recipient",
+            "require_logout",
+            "clickwrap_body",
+            "form_field_set",
+            "skip_name",
+            "skip_email",
+            "start_access_on_date",
+            "skip_company",
+            "id",
+            "bypasses_site_expiration_rules",
+            "created_at",
+            "deleted",
+            "deleted_at",
+            "dont_separate_submissions_by_folder",
+            "effective_expires_at",
+            "max_uses",
+            "internal_name",
+            "note",
+            "path_template",
+            "path_template_time_zone",
+            "send_email_receipt_to_uploader",
+            "snapshot_id",
+            "user_id",
+            "username",
+            "group_id",
+            "clickwrap_id",
+            "inbox_id",
+            "watermark_attachment",
+            "watermark_value",
+            "send_one_time_password_to_recipient_at_registration",
+            "workspace_id",
+            "has_inbox",
+            "dont_allow_folders_in_uploads",
+            "requested_upload_slots",
+            "paths",
+            "bundlepaths",
+        ],
+        fields=fields,
+    )
+    response = f"Bundle Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def find_bundle(
@@ -106,81 +125,74 @@ async def find_bundle(
         id: Bundle ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.bundle.find(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.bundle.find(id, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "code",
-                "color_left",
-                "color_link",
-                "color_text",
-                "color_top",
-                "color_top_text",
-                "url",
-                "description",
-                "expires_at",
-                "password_protected",
-                "permissions",
-                "preview_only",
-                "require_registration",
-                "require_share_recipient",
-                "require_logout",
-                "clickwrap_body",
-                "form_field_set",
-                "skip_name",
-                "skip_email",
-                "start_access_on_date",
-                "skip_company",
-                "id",
-                "bypasses_site_expiration_rules",
-                "created_at",
-                "deleted",
-                "deleted_at",
-                "dont_separate_submissions_by_folder",
-                "effective_expires_at",
-                "max_uses",
-                "internal_name",
-                "note",
-                "path_template",
-                "path_template_time_zone",
-                "send_email_receipt_to_uploader",
-                "snapshot_id",
-                "user_id",
-                "username",
-                "group_id",
-                "clickwrap_id",
-                "inbox_id",
-                "watermark_attachment",
-                "watermark_value",
-                "send_one_time_password_to_recipient_at_registration",
-                "workspace_id",
-                "has_inbox",
-                "dont_allow_folders_in_uploads",
-                "requested_upload_slots",
-                "paths",
-                "bundlepaths",
-            ],
-        )
-        response = f"Bundle Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "code",
+            "color_left",
+            "color_link",
+            "color_text",
+            "color_top",
+            "color_top_text",
+            "url",
+            "description",
+            "expires_at",
+            "password_protected",
+            "permissions",
+            "preview_only",
+            "require_registration",
+            "require_share_recipient",
+            "require_logout",
+            "clickwrap_body",
+            "form_field_set",
+            "skip_name",
+            "skip_email",
+            "start_access_on_date",
+            "skip_company",
+            "id",
+            "bypasses_site_expiration_rules",
+            "created_at",
+            "deleted",
+            "deleted_at",
+            "dont_separate_submissions_by_folder",
+            "effective_expires_at",
+            "max_uses",
+            "internal_name",
+            "note",
+            "path_template",
+            "path_template_time_zone",
+            "send_email_receipt_to_uploader",
+            "snapshot_id",
+            "user_id",
+            "username",
+            "group_id",
+            "clickwrap_id",
+            "inbox_id",
+            "watermark_attachment",
+            "watermark_value",
+            "send_one_time_password_to_recipient_at_registration",
+            "workspace_id",
+            "has_inbox",
+            "dont_allow_folders_in_uploads",
+            "requested_upload_slots",
+            "paths",
+            "bundlepaths",
+        ],
+    )
+    response = f"Bundle Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def create_bundle(
@@ -245,95 +257,88 @@ async def create_bundle(
         require_registration: Show a registration page that captures the downloader's name and email address?
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if paths is None:
-            return "Missing required parameter: paths"
-        params["paths"] = paths
-        if password is not None:
-            params["password"] = password
-        if expires_at is not None:
-            params["expires_at"] = expires_at
-        if max_uses is not None:
-            params["max_uses"] = max_uses
-        if description is not None:
-            params["description"] = description
-        if note is not None:
-            params["note"] = note
-        if permissions is not None:
-            params["permissions"] = permissions
-        if require_registration is not None:
-            params["require_registration"] = require_registration
+    params = {}
+    if paths is None:
+        raise ToolError("Missing required parameter: paths")
+    params["paths"] = paths
+    if password is not None:
+        params["password"] = password
+    if expires_at is not None:
+        params["expires_at"] = expires_at
+    if max_uses is not None:
+        params["max_uses"] = max_uses
+    if description is not None:
+        params["description"] = description
+    if note is not None:
+        params["note"] = note
+    if permissions is not None:
+        params["permissions"] = permissions
+    if require_registration is not None:
+        params["require_registration"] = require_registration
 
-        retval = files_sdk.bundle.create(params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.bundle.create(params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "code",
-                "color_left",
-                "color_link",
-                "color_text",
-                "color_top",
-                "color_top_text",
-                "url",
-                "description",
-                "expires_at",
-                "password_protected",
-                "permissions",
-                "preview_only",
-                "require_registration",
-                "require_share_recipient",
-                "require_logout",
-                "clickwrap_body",
-                "form_field_set",
-                "skip_name",
-                "skip_email",
-                "start_access_on_date",
-                "skip_company",
-                "id",
-                "bypasses_site_expiration_rules",
-                "created_at",
-                "deleted",
-                "deleted_at",
-                "dont_separate_submissions_by_folder",
-                "effective_expires_at",
-                "max_uses",
-                "internal_name",
-                "note",
-                "path_template",
-                "path_template_time_zone",
-                "send_email_receipt_to_uploader",
-                "snapshot_id",
-                "user_id",
-                "username",
-                "group_id",
-                "clickwrap_id",
-                "inbox_id",
-                "watermark_attachment",
-                "watermark_value",
-                "send_one_time_password_to_recipient_at_registration",
-                "workspace_id",
-                "has_inbox",
-                "dont_allow_folders_in_uploads",
-                "requested_upload_slots",
-                "paths",
-                "bundlepaths",
-            ],
-        )
-        response = f"Bundle Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "code",
+            "color_left",
+            "color_link",
+            "color_text",
+            "color_top",
+            "color_top_text",
+            "url",
+            "description",
+            "expires_at",
+            "password_protected",
+            "permissions",
+            "preview_only",
+            "require_registration",
+            "require_share_recipient",
+            "require_logout",
+            "clickwrap_body",
+            "form_field_set",
+            "skip_name",
+            "skip_email",
+            "start_access_on_date",
+            "skip_company",
+            "id",
+            "bypasses_site_expiration_rules",
+            "created_at",
+            "deleted",
+            "deleted_at",
+            "dont_separate_submissions_by_folder",
+            "effective_expires_at",
+            "max_uses",
+            "internal_name",
+            "note",
+            "path_template",
+            "path_template_time_zone",
+            "send_email_receipt_to_uploader",
+            "snapshot_id",
+            "user_id",
+            "username",
+            "group_id",
+            "clickwrap_id",
+            "inbox_id",
+            "watermark_attachment",
+            "watermark_value",
+            "send_one_time_password_to_recipient_at_registration",
+            "workspace_id",
+            "has_inbox",
+            "dont_allow_folders_in_uploads",
+            "requested_upload_slots",
+            "paths",
+            "bundlepaths",
+        ],
+    )
+    response = f"Bundle Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def update_bundle(
@@ -362,85 +367,78 @@ async def update_bundle(
         permissions: Permissions that apply to Folders in this Share Link.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
-        if expires_at is not None:
-            params["expires_at"] = expires_at
-        if permissions is not None:
-            params["permissions"] = permissions
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
+    if expires_at is not None:
+        params["expires_at"] = expires_at
+    if permissions is not None:
+        params["permissions"] = permissions
 
-        retval = files_sdk.bundle.update(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.bundle.update(id, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "code",
-                "color_left",
-                "color_link",
-                "color_text",
-                "color_top",
-                "color_top_text",
-                "url",
-                "description",
-                "expires_at",
-                "password_protected",
-                "permissions",
-                "preview_only",
-                "require_registration",
-                "require_share_recipient",
-                "require_logout",
-                "clickwrap_body",
-                "form_field_set",
-                "skip_name",
-                "skip_email",
-                "start_access_on_date",
-                "skip_company",
-                "id",
-                "bypasses_site_expiration_rules",
-                "created_at",
-                "deleted",
-                "deleted_at",
-                "dont_separate_submissions_by_folder",
-                "effective_expires_at",
-                "max_uses",
-                "internal_name",
-                "note",
-                "path_template",
-                "path_template_time_zone",
-                "send_email_receipt_to_uploader",
-                "snapshot_id",
-                "user_id",
-                "username",
-                "group_id",
-                "clickwrap_id",
-                "inbox_id",
-                "watermark_attachment",
-                "watermark_value",
-                "send_one_time_password_to_recipient_at_registration",
-                "workspace_id",
-                "has_inbox",
-                "dont_allow_folders_in_uploads",
-                "requested_upload_slots",
-                "paths",
-                "bundlepaths",
-            ],
-        )
-        response = f"Bundle Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "code",
+            "color_left",
+            "color_link",
+            "color_text",
+            "color_top",
+            "color_top_text",
+            "url",
+            "description",
+            "expires_at",
+            "password_protected",
+            "permissions",
+            "preview_only",
+            "require_registration",
+            "require_share_recipient",
+            "require_logout",
+            "clickwrap_body",
+            "form_field_set",
+            "skip_name",
+            "skip_email",
+            "start_access_on_date",
+            "skip_company",
+            "id",
+            "bypasses_site_expiration_rules",
+            "created_at",
+            "deleted",
+            "deleted_at",
+            "dont_separate_submissions_by_folder",
+            "effective_expires_at",
+            "max_uses",
+            "internal_name",
+            "note",
+            "path_template",
+            "path_template_time_zone",
+            "send_email_receipt_to_uploader",
+            "snapshot_id",
+            "user_id",
+            "username",
+            "group_id",
+            "clickwrap_id",
+            "inbox_id",
+            "watermark_attachment",
+            "watermark_value",
+            "send_one_time_password_to_recipient_at_registration",
+            "workspace_id",
+            "has_inbox",
+            "dont_allow_folders_in_uploads",
+            "requested_upload_slots",
+            "paths",
+            "bundlepaths",
+        ],
+    )
+    response = f"Bundle Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def delete_bundle(
@@ -453,81 +451,23 @@ async def delete_bundle(
         id: Bundle ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.bundle.delete(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        # The API returns no record for this operation.
+        files_sdk.bundle.delete(id, params, options)
+        return [], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "code",
-                "color_left",
-                "color_link",
-                "color_text",
-                "color_top",
-                "color_top_text",
-                "url",
-                "description",
-                "expires_at",
-                "password_protected",
-                "permissions",
-                "preview_only",
-                "require_registration",
-                "require_share_recipient",
-                "require_logout",
-                "clickwrap_body",
-                "form_field_set",
-                "skip_name",
-                "skip_email",
-                "start_access_on_date",
-                "skip_company",
-                "id",
-                "bypasses_site_expiration_rules",
-                "created_at",
-                "deleted",
-                "deleted_at",
-                "dont_separate_submissions_by_folder",
-                "effective_expires_at",
-                "max_uses",
-                "internal_name",
-                "note",
-                "path_template",
-                "path_template_time_zone",
-                "send_email_receipt_to_uploader",
-                "snapshot_id",
-                "user_id",
-                "username",
-                "group_id",
-                "clickwrap_id",
-                "inbox_id",
-                "watermark_attachment",
-                "watermark_value",
-                "send_one_time_password_to_recipient_at_registration",
-                "workspace_id",
-                "has_inbox",
-                "dont_allow_folders_in_uploads",
-                "requested_upload_slots",
-                "paths",
-                "bundlepaths",
-            ],
-        )
-        response = f"Bundle Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(retval, [])
+    response = f"Bundle Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 def register_tools(mcp):
@@ -542,6 +482,20 @@ def register_tools(mcp):
     )
     async def list_bundle_tool(
         context: Context,
+        cursor: Annotated[
+            str | None,
+            Field(
+                description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+                default=None,
+            ),
+        ],
+        per_page: Annotated[
+            int | None,
+            Field(
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+                default=None,
+            ),
+        ],
         fields: Annotated[
             list[str] | None,
             Field(
@@ -551,7 +505,7 @@ def register_tools(mcp):
             BeforeValidator(coerce_json),
         ],
     ) -> str:
-        return await list_bundle(context, fields=fields)
+        return await list_bundle(context, cursor, per_page, fields=fields)
 
     @mcp.tool(
         name="Find_Bundle",

@@ -1,13 +1,28 @@
 from fastmcp import Context
+from fastmcp.exceptions import ToolError
 from typing_extensions import Annotated
 from pydantic import BeforeValidator, Field
+from files_com_mcp.sdk_calls import call_files_api
 from files_com_mcp.utils import coerce_json, object_list_to_markdown_table
 import files_sdk
-import files_sdk.error
 
 
 async def list_user(
     context: Context,
+    cursor: Annotated[
+        str | None,
+        Field(
+            description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+            default=None,
+        ),
+    ],
+    per_page: Annotated[
+        int | None,
+        Field(
+            description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+            default=None,
+        ),
+    ],
     fields: Annotated[
         list[str] | None,
         Field(
@@ -17,123 +32,127 @@ async def list_user(
         BeforeValidator(coerce_json),
     ],
 ) -> str:
-    """List Users"""
+    """List Users
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
+    Args:
+        cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
+        per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
+    """
 
-        list_obj = files_sdk.user.list(params, options)
-        retval = list(list_obj)
-        next_cursor = getattr(list_obj, "cursor", None)
-        if not retval:
-            return "No users found."
+    params = {}
+    if cursor is not None:
+        params["cursor"] = cursor
+    if per_page is not None:
+        params["per_page"] = per_page
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "username",
-                "admin_group_ids",
-                "allowed_ips",
-                "attachments_permission",
-                "api_keys_count",
-                "authenticate_until",
-                "authentication_method",
-                "avatar_url",
-                "billable",
-                "billing_permission",
-                "bypass_site_allowed_ips",
-                "bypass_user_lifecycle_rules",
-                "created_at",
-                "dav_permission",
-                "disabled",
-                "disabled_expired_or_inactive",
-                "ai_assistant_personality_id",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "email",
-                "filesystem_layout",
-                "first_login_at",
-                "ftp_permission",
-                "group_ids",
-                "header_text",
-                "language",
-                "last_login_at",
-                "last_web_login_at",
-                "last_ftp_login_at",
-                "last_sftp_login_at",
-                "last_dav_login_at",
-                "last_desktop_login_at",
-                "last_restapi_login_at",
-                "last_api_use_at",
-                "last_active_at",
-                "last_protocol_cipher",
-                "lockout_expires",
-                "name",
-                "company",
-                "notes",
-                "notification_daily_send_time",
-                "office_integration_enabled",
-                "partner_admin",
-                "partner_id",
-                "partner_name",
-                "password_set_at",
-                "password_validity_days",
-                "primary_group_id",
-                "public_keys_count",
-                "receive_admin_alerts",
-                "notify_on_all_site_warnings",
-                "notify_on_all_sso_failures",
-                "notify_on_all_user_security_events",
-                "notify_on_all_pending_work_failures",
-                "notify_on_all_siem_http_destination_failures",
-                "notify_on_all_sync_failures",
-                "notify_on_all_automation_failures",
-                "notify_on_all_expectation_failures",
-                "require_2fa",
-                "require_login_by",
-                "active_2fa",
-                "require_password_change",
-                "password_expired",
-                "responsible_group_id",
-                "responsible_user_id",
-                "readonly_site_admin",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "self_managed",
-                "sftp_permission",
-                "site_admin",
-                "workspace_admin",
-                "site_id",
-                "workspace_id",
-                "default_workspace_id",
-                "skip_welcome_screen",
-                "ftp_tls_session_reuse_required",
-                "ssl_required",
-                "sso_strategy_id",
-                "externally_managed",
-                "tags",
-                "time_zone",
-                "type_of_2fa",
-                "type_of_2fa_for_display",
-                "user_root",
-                "user_home",
-                "days_remaining_until_password_expire",
-                "password_expire_at",
-            ],
-            fields=fields,
-        )
-        response = f"User Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    def call(options):
+        # One page; the response tells the caller how to fetch the next.
+        page = files_sdk.user.list(params, options)
+        return list(page), page.cursor
+
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No users found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "username",
+            "admin_group_ids",
+            "allowed_ips",
+            "attachments_permission",
+            "api_keys_count",
+            "authenticate_until",
+            "authentication_method",
+            "avatar_url",
+            "billable",
+            "billing_permission",
+            "bypass_site_allowed_ips",
+            "bypass_user_lifecycle_rules",
+            "created_at",
+            "dav_permission",
+            "disabled",
+            "disabled_expired_or_inactive",
+            "ai_assistant_personality_id",
+            "desktop_configuration_profile_id",
+            "integration_centric_profile_id",
+            "email",
+            "filesystem_layout",
+            "first_login_at",
+            "ftp_permission",
+            "group_ids",
+            "header_text",
+            "language",
+            "last_login_at",
+            "last_web_login_at",
+            "last_ftp_login_at",
+            "last_sftp_login_at",
+            "last_dav_login_at",
+            "last_desktop_login_at",
+            "last_restapi_login_at",
+            "last_api_use_at",
+            "last_active_at",
+            "last_protocol_cipher",
+            "lockout_expires",
+            "name",
+            "company",
+            "notes",
+            "notification_daily_send_time",
+            "office_integration_enabled",
+            "partner_admin",
+            "partner_id",
+            "partner_name",
+            "password_set_at",
+            "password_validity_days",
+            "primary_group_id",
+            "public_keys_count",
+            "receive_admin_alerts",
+            "notify_on_all_site_warnings",
+            "notify_on_all_sso_failures",
+            "notify_on_all_user_security_events",
+            "notify_on_all_pending_work_failures",
+            "notify_on_all_siem_http_destination_failures",
+            "notify_on_all_sync_failures",
+            "notify_on_all_automation_failures",
+            "notify_on_all_expectation_failures",
+            "require_2fa",
+            "require_login_by",
+            "active_2fa",
+            "require_password_change",
+            "password_expired",
+            "responsible_group_id",
+            "responsible_user_id",
+            "readonly_site_admin",
+            "restapi_permission",
+            "s3_compatible_endpoint_permission",
+            "self_managed",
+            "sftp_permission",
+            "site_admin",
+            "workspace_admin",
+            "site_id",
+            "workspace_id",
+            "default_workspace_id",
+            "skip_welcome_screen",
+            "ftp_tls_session_reuse_required",
+            "ssl_required",
+            "sso_strategy_id",
+            "externally_managed",
+            "tags",
+            "time_zone",
+            "type_of_2fa",
+            "type_of_2fa_for_display",
+            "user_root",
+            "user_home",
+            "days_remaining_until_password_expire",
+            "password_expire_at",
+        ],
+        fields=fields,
+    )
+    response = f"User Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def find_user(
@@ -146,121 +165,114 @@ async def find_user(
         id: User ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.user.find(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        return [files_sdk.user.find(id, params, options)], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "username",
-                "admin_group_ids",
-                "allowed_ips",
-                "attachments_permission",
-                "api_keys_count",
-                "authenticate_until",
-                "authentication_method",
-                "avatar_url",
-                "billable",
-                "billing_permission",
-                "bypass_site_allowed_ips",
-                "bypass_user_lifecycle_rules",
-                "created_at",
-                "dav_permission",
-                "disabled",
-                "disabled_expired_or_inactive",
-                "ai_assistant_personality_id",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "email",
-                "filesystem_layout",
-                "first_login_at",
-                "ftp_permission",
-                "group_ids",
-                "header_text",
-                "language",
-                "last_login_at",
-                "last_web_login_at",
-                "last_ftp_login_at",
-                "last_sftp_login_at",
-                "last_dav_login_at",
-                "last_desktop_login_at",
-                "last_restapi_login_at",
-                "last_api_use_at",
-                "last_active_at",
-                "last_protocol_cipher",
-                "lockout_expires",
-                "name",
-                "company",
-                "notes",
-                "notification_daily_send_time",
-                "office_integration_enabled",
-                "partner_admin",
-                "partner_id",
-                "partner_name",
-                "password_set_at",
-                "password_validity_days",
-                "primary_group_id",
-                "public_keys_count",
-                "receive_admin_alerts",
-                "notify_on_all_site_warnings",
-                "notify_on_all_sso_failures",
-                "notify_on_all_user_security_events",
-                "notify_on_all_pending_work_failures",
-                "notify_on_all_siem_http_destination_failures",
-                "notify_on_all_sync_failures",
-                "notify_on_all_automation_failures",
-                "notify_on_all_expectation_failures",
-                "require_2fa",
-                "require_login_by",
-                "active_2fa",
-                "require_password_change",
-                "password_expired",
-                "responsible_group_id",
-                "responsible_user_id",
-                "readonly_site_admin",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "self_managed",
-                "sftp_permission",
-                "site_admin",
-                "workspace_admin",
-                "site_id",
-                "workspace_id",
-                "default_workspace_id",
-                "skip_welcome_screen",
-                "ftp_tls_session_reuse_required",
-                "ssl_required",
-                "sso_strategy_id",
-                "externally_managed",
-                "tags",
-                "time_zone",
-                "type_of_2fa",
-                "type_of_2fa_for_display",
-                "user_root",
-                "user_home",
-                "days_remaining_until_password_expire",
-                "password_expire_at",
-            ],
-        )
-        response = f"User Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "username",
+            "admin_group_ids",
+            "allowed_ips",
+            "attachments_permission",
+            "api_keys_count",
+            "authenticate_until",
+            "authentication_method",
+            "avatar_url",
+            "billable",
+            "billing_permission",
+            "bypass_site_allowed_ips",
+            "bypass_user_lifecycle_rules",
+            "created_at",
+            "dav_permission",
+            "disabled",
+            "disabled_expired_or_inactive",
+            "ai_assistant_personality_id",
+            "desktop_configuration_profile_id",
+            "integration_centric_profile_id",
+            "email",
+            "filesystem_layout",
+            "first_login_at",
+            "ftp_permission",
+            "group_ids",
+            "header_text",
+            "language",
+            "last_login_at",
+            "last_web_login_at",
+            "last_ftp_login_at",
+            "last_sftp_login_at",
+            "last_dav_login_at",
+            "last_desktop_login_at",
+            "last_restapi_login_at",
+            "last_api_use_at",
+            "last_active_at",
+            "last_protocol_cipher",
+            "lockout_expires",
+            "name",
+            "company",
+            "notes",
+            "notification_daily_send_time",
+            "office_integration_enabled",
+            "partner_admin",
+            "partner_id",
+            "partner_name",
+            "password_set_at",
+            "password_validity_days",
+            "primary_group_id",
+            "public_keys_count",
+            "receive_admin_alerts",
+            "notify_on_all_site_warnings",
+            "notify_on_all_sso_failures",
+            "notify_on_all_user_security_events",
+            "notify_on_all_pending_work_failures",
+            "notify_on_all_siem_http_destination_failures",
+            "notify_on_all_sync_failures",
+            "notify_on_all_automation_failures",
+            "notify_on_all_expectation_failures",
+            "require_2fa",
+            "require_login_by",
+            "active_2fa",
+            "require_password_change",
+            "password_expired",
+            "responsible_group_id",
+            "responsible_user_id",
+            "readonly_site_admin",
+            "restapi_permission",
+            "s3_compatible_endpoint_permission",
+            "self_managed",
+            "sftp_permission",
+            "site_admin",
+            "workspace_admin",
+            "site_id",
+            "workspace_id",
+            "default_workspace_id",
+            "skip_welcome_screen",
+            "ftp_tls_session_reuse_required",
+            "ssl_required",
+            "sso_strategy_id",
+            "externally_managed",
+            "tags",
+            "time_zone",
+            "type_of_2fa",
+            "type_of_2fa_for_display",
+            "user_root",
+            "user_home",
+            "days_remaining_until_password_expire",
+            "password_expire_at",
+        ],
+    )
+    response = f"User Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def create_user(
@@ -364,153 +376,146 @@ async def create_user(
         user_home: Home folder for FTP/SFTP. For users with the partner_root filesystem layout, this path is relative to the Partner root folder. In all other cases, it is an absolute path. Only applies to FTP and SFTP, and not any other interface.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if username is None:
-            return "Missing required parameter: username"
-        params["username"] = username
-        if email is not None:
-            params["email"] = email
-        if group_ids is not None:
-            params["group_ids"] = group_ids
-        if password is not None:
-            params["password"] = password
-        if authentication_method is not None:
-            params["authentication_method"] = authentication_method
-        if dav_permission is not None:
-            params["dav_permission"] = dav_permission
-        if ftp_permission is not None:
-            params["ftp_permission"] = ftp_permission
-        if name is not None:
-            params["name"] = name
-        if company is not None:
-            params["company"] = company
-        if notes is not None:
-            params["notes"] = notes
-        if require_password_change is not None:
-            params["require_password_change"] = require_password_change
-        if restapi_permission is not None:
-            params["restapi_permission"] = restapi_permission
-        if s3_compatible_endpoint_permission is not None:
-            params[
-                "s3_compatible_endpoint_permission"
-            ] = s3_compatible_endpoint_permission
-        if sftp_permission is not None:
-            params["sftp_permission"] = sftp_permission
-        if user_root is not None:
-            params["user_root"] = user_root
-        if user_home is not None:
-            params["user_home"] = user_home
-
-        retval = files_sdk.user.create(params, options)
-        retval = [retval]
-        next_cursor = None
-
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "username",
-                "admin_group_ids",
-                "allowed_ips",
-                "attachments_permission",
-                "api_keys_count",
-                "authenticate_until",
-                "authentication_method",
-                "avatar_url",
-                "billable",
-                "billing_permission",
-                "bypass_site_allowed_ips",
-                "bypass_user_lifecycle_rules",
-                "created_at",
-                "dav_permission",
-                "disabled",
-                "disabled_expired_or_inactive",
-                "ai_assistant_personality_id",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "email",
-                "filesystem_layout",
-                "first_login_at",
-                "ftp_permission",
-                "group_ids",
-                "header_text",
-                "language",
-                "last_login_at",
-                "last_web_login_at",
-                "last_ftp_login_at",
-                "last_sftp_login_at",
-                "last_dav_login_at",
-                "last_desktop_login_at",
-                "last_restapi_login_at",
-                "last_api_use_at",
-                "last_active_at",
-                "last_protocol_cipher",
-                "lockout_expires",
-                "name",
-                "company",
-                "notes",
-                "notification_daily_send_time",
-                "office_integration_enabled",
-                "partner_admin",
-                "partner_id",
-                "partner_name",
-                "password_set_at",
-                "password_validity_days",
-                "primary_group_id",
-                "public_keys_count",
-                "receive_admin_alerts",
-                "notify_on_all_site_warnings",
-                "notify_on_all_sso_failures",
-                "notify_on_all_user_security_events",
-                "notify_on_all_pending_work_failures",
-                "notify_on_all_siem_http_destination_failures",
-                "notify_on_all_sync_failures",
-                "notify_on_all_automation_failures",
-                "notify_on_all_expectation_failures",
-                "require_2fa",
-                "require_login_by",
-                "active_2fa",
-                "require_password_change",
-                "password_expired",
-                "responsible_group_id",
-                "responsible_user_id",
-                "readonly_site_admin",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "self_managed",
-                "sftp_permission",
-                "site_admin",
-                "workspace_admin",
-                "site_id",
-                "workspace_id",
-                "default_workspace_id",
-                "skip_welcome_screen",
-                "ftp_tls_session_reuse_required",
-                "ssl_required",
-                "sso_strategy_id",
-                "externally_managed",
-                "tags",
-                "time_zone",
-                "type_of_2fa",
-                "type_of_2fa_for_display",
-                "user_root",
-                "user_home",
-                "days_remaining_until_password_expire",
-                "password_expire_at",
-            ],
+    params = {}
+    if username is None:
+        raise ToolError("Missing required parameter: username")
+    params["username"] = username
+    if email is not None:
+        params["email"] = email
+    if group_ids is not None:
+        params["group_ids"] = group_ids
+    if password is not None:
+        params["password"] = password
+    if authentication_method is not None:
+        params["authentication_method"] = authentication_method
+    if dav_permission is not None:
+        params["dav_permission"] = dav_permission
+    if ftp_permission is not None:
+        params["ftp_permission"] = ftp_permission
+    if name is not None:
+        params["name"] = name
+    if company is not None:
+        params["company"] = company
+    if notes is not None:
+        params["notes"] = notes
+    if require_password_change is not None:
+        params["require_password_change"] = require_password_change
+    if restapi_permission is not None:
+        params["restapi_permission"] = restapi_permission
+    if s3_compatible_endpoint_permission is not None:
+        params["s3_compatible_endpoint_permission"] = (
+            s3_compatible_endpoint_permission
         )
-        response = f"User Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    if sftp_permission is not None:
+        params["sftp_permission"] = sftp_permission
+    if user_root is not None:
+        params["user_root"] = user_root
+    if user_home is not None:
+        params["user_home"] = user_home
+
+    def call(options):
+        return [files_sdk.user.create(params, options)], None
+
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "username",
+            "admin_group_ids",
+            "allowed_ips",
+            "attachments_permission",
+            "api_keys_count",
+            "authenticate_until",
+            "authentication_method",
+            "avatar_url",
+            "billable",
+            "billing_permission",
+            "bypass_site_allowed_ips",
+            "bypass_user_lifecycle_rules",
+            "created_at",
+            "dav_permission",
+            "disabled",
+            "disabled_expired_or_inactive",
+            "ai_assistant_personality_id",
+            "desktop_configuration_profile_id",
+            "integration_centric_profile_id",
+            "email",
+            "filesystem_layout",
+            "first_login_at",
+            "ftp_permission",
+            "group_ids",
+            "header_text",
+            "language",
+            "last_login_at",
+            "last_web_login_at",
+            "last_ftp_login_at",
+            "last_sftp_login_at",
+            "last_dav_login_at",
+            "last_desktop_login_at",
+            "last_restapi_login_at",
+            "last_api_use_at",
+            "last_active_at",
+            "last_protocol_cipher",
+            "lockout_expires",
+            "name",
+            "company",
+            "notes",
+            "notification_daily_send_time",
+            "office_integration_enabled",
+            "partner_admin",
+            "partner_id",
+            "partner_name",
+            "password_set_at",
+            "password_validity_days",
+            "primary_group_id",
+            "public_keys_count",
+            "receive_admin_alerts",
+            "notify_on_all_site_warnings",
+            "notify_on_all_sso_failures",
+            "notify_on_all_user_security_events",
+            "notify_on_all_pending_work_failures",
+            "notify_on_all_siem_http_destination_failures",
+            "notify_on_all_sync_failures",
+            "notify_on_all_automation_failures",
+            "notify_on_all_expectation_failures",
+            "require_2fa",
+            "require_login_by",
+            "active_2fa",
+            "require_password_change",
+            "password_expired",
+            "responsible_group_id",
+            "responsible_user_id",
+            "readonly_site_admin",
+            "restapi_permission",
+            "s3_compatible_endpoint_permission",
+            "self_managed",
+            "sftp_permission",
+            "site_admin",
+            "workspace_admin",
+            "site_id",
+            "workspace_id",
+            "default_workspace_id",
+            "skip_welcome_screen",
+            "ftp_tls_session_reuse_required",
+            "ssl_required",
+            "sso_strategy_id",
+            "externally_managed",
+            "tags",
+            "time_zone",
+            "type_of_2fa",
+            "type_of_2fa_for_display",
+            "user_root",
+            "user_home",
+            "days_remaining_until_password_expire",
+            "password_expire_at",
+        ],
+    )
+    response = f"User Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def update_user(
@@ -616,155 +621,148 @@ async def update_user(
         username: User's username
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
-        if email is not None:
-            params["email"] = email
-        if group_ids is not None:
-            params["group_ids"] = group_ids
-        if password is not None:
-            params["password"] = password
-        if authentication_method is not None:
-            params["authentication_method"] = authentication_method
-        if dav_permission is not None:
-            params["dav_permission"] = dav_permission
-        if ftp_permission is not None:
-            params["ftp_permission"] = ftp_permission
-        if name is not None:
-            params["name"] = name
-        if company is not None:
-            params["company"] = company
-        if notes is not None:
-            params["notes"] = notes
-        if require_password_change is not None:
-            params["require_password_change"] = require_password_change
-        if restapi_permission is not None:
-            params["restapi_permission"] = restapi_permission
-        if s3_compatible_endpoint_permission is not None:
-            params[
-                "s3_compatible_endpoint_permission"
-            ] = s3_compatible_endpoint_permission
-        if sftp_permission is not None:
-            params["sftp_permission"] = sftp_permission
-        if user_root is not None:
-            params["user_root"] = user_root
-        if user_home is not None:
-            params["user_home"] = user_home
-        if username is not None:
-            params["username"] = username
-
-        retval = files_sdk.user.update(id, params, options)
-        retval = [retval]
-        next_cursor = None
-
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "username",
-                "admin_group_ids",
-                "allowed_ips",
-                "attachments_permission",
-                "api_keys_count",
-                "authenticate_until",
-                "authentication_method",
-                "avatar_url",
-                "billable",
-                "billing_permission",
-                "bypass_site_allowed_ips",
-                "bypass_user_lifecycle_rules",
-                "created_at",
-                "dav_permission",
-                "disabled",
-                "disabled_expired_or_inactive",
-                "ai_assistant_personality_id",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "email",
-                "filesystem_layout",
-                "first_login_at",
-                "ftp_permission",
-                "group_ids",
-                "header_text",
-                "language",
-                "last_login_at",
-                "last_web_login_at",
-                "last_ftp_login_at",
-                "last_sftp_login_at",
-                "last_dav_login_at",
-                "last_desktop_login_at",
-                "last_restapi_login_at",
-                "last_api_use_at",
-                "last_active_at",
-                "last_protocol_cipher",
-                "lockout_expires",
-                "name",
-                "company",
-                "notes",
-                "notification_daily_send_time",
-                "office_integration_enabled",
-                "partner_admin",
-                "partner_id",
-                "partner_name",
-                "password_set_at",
-                "password_validity_days",
-                "primary_group_id",
-                "public_keys_count",
-                "receive_admin_alerts",
-                "notify_on_all_site_warnings",
-                "notify_on_all_sso_failures",
-                "notify_on_all_user_security_events",
-                "notify_on_all_pending_work_failures",
-                "notify_on_all_siem_http_destination_failures",
-                "notify_on_all_sync_failures",
-                "notify_on_all_automation_failures",
-                "notify_on_all_expectation_failures",
-                "require_2fa",
-                "require_login_by",
-                "active_2fa",
-                "require_password_change",
-                "password_expired",
-                "responsible_group_id",
-                "responsible_user_id",
-                "readonly_site_admin",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "self_managed",
-                "sftp_permission",
-                "site_admin",
-                "workspace_admin",
-                "site_id",
-                "workspace_id",
-                "default_workspace_id",
-                "skip_welcome_screen",
-                "ftp_tls_session_reuse_required",
-                "ssl_required",
-                "sso_strategy_id",
-                "externally_managed",
-                "tags",
-                "time_zone",
-                "type_of_2fa",
-                "type_of_2fa_for_display",
-                "user_root",
-                "user_home",
-                "days_remaining_until_password_expire",
-                "password_expire_at",
-            ],
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
+    if email is not None:
+        params["email"] = email
+    if group_ids is not None:
+        params["group_ids"] = group_ids
+    if password is not None:
+        params["password"] = password
+    if authentication_method is not None:
+        params["authentication_method"] = authentication_method
+    if dav_permission is not None:
+        params["dav_permission"] = dav_permission
+    if ftp_permission is not None:
+        params["ftp_permission"] = ftp_permission
+    if name is not None:
+        params["name"] = name
+    if company is not None:
+        params["company"] = company
+    if notes is not None:
+        params["notes"] = notes
+    if require_password_change is not None:
+        params["require_password_change"] = require_password_change
+    if restapi_permission is not None:
+        params["restapi_permission"] = restapi_permission
+    if s3_compatible_endpoint_permission is not None:
+        params["s3_compatible_endpoint_permission"] = (
+            s3_compatible_endpoint_permission
         )
-        response = f"User Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    if sftp_permission is not None:
+        params["sftp_permission"] = sftp_permission
+    if user_root is not None:
+        params["user_root"] = user_root
+    if user_home is not None:
+        params["user_home"] = user_home
+    if username is not None:
+        params["username"] = username
+
+    def call(options):
+        return [files_sdk.user.update(id, params, options)], None
+
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval,
+        [
+            "id",
+            "username",
+            "admin_group_ids",
+            "allowed_ips",
+            "attachments_permission",
+            "api_keys_count",
+            "authenticate_until",
+            "authentication_method",
+            "avatar_url",
+            "billable",
+            "billing_permission",
+            "bypass_site_allowed_ips",
+            "bypass_user_lifecycle_rules",
+            "created_at",
+            "dav_permission",
+            "disabled",
+            "disabled_expired_or_inactive",
+            "ai_assistant_personality_id",
+            "desktop_configuration_profile_id",
+            "integration_centric_profile_id",
+            "email",
+            "filesystem_layout",
+            "first_login_at",
+            "ftp_permission",
+            "group_ids",
+            "header_text",
+            "language",
+            "last_login_at",
+            "last_web_login_at",
+            "last_ftp_login_at",
+            "last_sftp_login_at",
+            "last_dav_login_at",
+            "last_desktop_login_at",
+            "last_restapi_login_at",
+            "last_api_use_at",
+            "last_active_at",
+            "last_protocol_cipher",
+            "lockout_expires",
+            "name",
+            "company",
+            "notes",
+            "notification_daily_send_time",
+            "office_integration_enabled",
+            "partner_admin",
+            "partner_id",
+            "partner_name",
+            "password_set_at",
+            "password_validity_days",
+            "primary_group_id",
+            "public_keys_count",
+            "receive_admin_alerts",
+            "notify_on_all_site_warnings",
+            "notify_on_all_sso_failures",
+            "notify_on_all_user_security_events",
+            "notify_on_all_pending_work_failures",
+            "notify_on_all_siem_http_destination_failures",
+            "notify_on_all_sync_failures",
+            "notify_on_all_automation_failures",
+            "notify_on_all_expectation_failures",
+            "require_2fa",
+            "require_login_by",
+            "active_2fa",
+            "require_password_change",
+            "password_expired",
+            "responsible_group_id",
+            "responsible_user_id",
+            "readonly_site_admin",
+            "restapi_permission",
+            "s3_compatible_endpoint_permission",
+            "self_managed",
+            "sftp_permission",
+            "site_admin",
+            "workspace_admin",
+            "site_id",
+            "workspace_id",
+            "default_workspace_id",
+            "skip_welcome_screen",
+            "ftp_tls_session_reuse_required",
+            "ssl_required",
+            "sso_strategy_id",
+            "externally_managed",
+            "tags",
+            "time_zone",
+            "type_of_2fa",
+            "type_of_2fa_for_display",
+            "user_root",
+            "user_home",
+            "days_remaining_until_password_expire",
+            "password_expire_at",
+        ],
+    )
+    response = f"User Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 async def delete_user(
@@ -777,121 +775,23 @@ async def delete_user(
         id: User ID.
     """
 
-    try:
-        options = {"api_key": files_sdk.get_api_key()}
-        params = {}
-        if id is None:
-            return "Missing required parameter: id"
-        params["id"] = id
+    params = {}
+    if id is None:
+        raise ToolError("Missing required parameter: id")
+    params["id"] = id
 
-        retval = files_sdk.user.delete(id, params, options)
-        retval = [retval]
-        next_cursor = None
+    def call(options):
+        # The API returns no record for this operation.
+        files_sdk.user.delete(id, params, options)
+        return [], None
 
-        markdown_list = object_list_to_markdown_table(
-            retval,
-            [
-                "id",
-                "username",
-                "admin_group_ids",
-                "allowed_ips",
-                "attachments_permission",
-                "api_keys_count",
-                "authenticate_until",
-                "authentication_method",
-                "avatar_url",
-                "billable",
-                "billing_permission",
-                "bypass_site_allowed_ips",
-                "bypass_user_lifecycle_rules",
-                "created_at",
-                "dav_permission",
-                "disabled",
-                "disabled_expired_or_inactive",
-                "ai_assistant_personality_id",
-                "desktop_configuration_profile_id",
-                "integration_centric_profile_id",
-                "email",
-                "filesystem_layout",
-                "first_login_at",
-                "ftp_permission",
-                "group_ids",
-                "header_text",
-                "language",
-                "last_login_at",
-                "last_web_login_at",
-                "last_ftp_login_at",
-                "last_sftp_login_at",
-                "last_dav_login_at",
-                "last_desktop_login_at",
-                "last_restapi_login_at",
-                "last_api_use_at",
-                "last_active_at",
-                "last_protocol_cipher",
-                "lockout_expires",
-                "name",
-                "company",
-                "notes",
-                "notification_daily_send_time",
-                "office_integration_enabled",
-                "partner_admin",
-                "partner_id",
-                "partner_name",
-                "password_set_at",
-                "password_validity_days",
-                "primary_group_id",
-                "public_keys_count",
-                "receive_admin_alerts",
-                "notify_on_all_site_warnings",
-                "notify_on_all_sso_failures",
-                "notify_on_all_user_security_events",
-                "notify_on_all_pending_work_failures",
-                "notify_on_all_siem_http_destination_failures",
-                "notify_on_all_sync_failures",
-                "notify_on_all_automation_failures",
-                "notify_on_all_expectation_failures",
-                "require_2fa",
-                "require_login_by",
-                "active_2fa",
-                "require_password_change",
-                "password_expired",
-                "responsible_group_id",
-                "responsible_user_id",
-                "readonly_site_admin",
-                "restapi_permission",
-                "s3_compatible_endpoint_permission",
-                "self_managed",
-                "sftp_permission",
-                "site_admin",
-                "workspace_admin",
-                "site_id",
-                "workspace_id",
-                "default_workspace_id",
-                "skip_welcome_screen",
-                "ftp_tls_session_reuse_required",
-                "ssl_required",
-                "sso_strategy_id",
-                "externally_managed",
-                "tags",
-                "time_zone",
-                "type_of_2fa",
-                "type_of_2fa_for_display",
-                "user_root",
-                "user_home",
-                "days_remaining_until_password_expire",
-                "password_expire_at",
-            ],
-        )
-        response = f"User Response:\n{markdown_list}"
-        if next_cursor:
-            response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-        return response
-    except files_sdk.error.NotAuthenticatedError as err:
-        return f"Authentication Error: {err}"
-    except files_sdk.error.Error as err:
-        return f"Files.com Error: {err}"
-    except Exception as ex:
-        return f"General Exception: {ex}"
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(retval, [])
+    response = f"User Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
 
 
 def register_tools(mcp):
@@ -906,6 +806,20 @@ def register_tools(mcp):
     )
     async def list_user_tool(
         context: Context,
+        cursor: Annotated[
+            str | None,
+            Field(
+                description="Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.",
+                default=None,
+            ),
+        ],
+        per_page: Annotated[
+            int | None,
+            Field(
+                description="Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).",
+                default=None,
+            ),
+        ],
         fields: Annotated[
             list[str] | None,
             Field(
@@ -915,7 +829,7 @@ def register_tools(mcp):
             BeforeValidator(coerce_json),
         ],
     ) -> str:
-        return await list_user(context, fields=fields)
+        return await list_user(context, cursor, per_page, fields=fields)
 
     @mcp.tool(
         name="Find_User",
