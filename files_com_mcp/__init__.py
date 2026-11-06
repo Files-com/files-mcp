@@ -1,7 +1,7 @@
 from . import utils  # noqa: F401
 
 # The release process writes the published version here and in pyproject.toml.
-__version__ = "2.0.8"
+__version__ = "2.0.9"
 version = __version__
 
 
