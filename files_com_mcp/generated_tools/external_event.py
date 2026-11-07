@@ -25,7 +25,7 @@ async def list_external_event(
     sort_by: Annotated[
         dict | None,
         Field(
-            description="If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`, `status`, `event_type` or `workspace_id`.",
+            description="If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`, `status` or `event_type`.",
             default=None,
         ),
         BeforeValidator(coerce_json),
@@ -84,7 +84,7 @@ async def list_external_event(
     Args:
         cursor: Used for pagination.  When a list request has more records available, cursors are provided in the response headers `X-Files-Cursor-Next` and `X-Files-Cursor-Prev`.  Send one of those cursor value here to resume an existing list from the next available record.  Note: many of our SDKs have iterator methods that will automatically handle cursor-based pagination.
         per_page: Number of records to show per page.  (Max: 10000, 1,000 or less is recommended).
-        sort_by: If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`, `status`, `event_type` or `workspace_id`.
+        sort_by: If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`, `status` or `event_type`.
         filter: If set, return records where the specified field is equal to the supplied value. Valid fields are `created_at`, `status` or `workspace_id`.
         filter_gt: If set, return records where the specified field is greater than the supplied value. Valid fields are `created_at`.
         filter_gteq: If set, return records where the specified field is greater than or equal the supplied value. Valid fields are `created_at`.
@@ -167,7 +167,7 @@ def register_tools(mcp):
         sort_by: Annotated[
             dict | None,
             Field(
-                description="If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`, `status`, `event_type` or `workspace_id`.",
+                description="If set, sort records by the specified field in either `asc` or `desc` direction. Valid fields are `created_at`, `status` or `event_type`.",
                 default=None,
             ),
             BeforeValidator(coerce_json),
