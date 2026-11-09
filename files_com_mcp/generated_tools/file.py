@@ -38,6 +38,50 @@ async def delete_file(
     return response
 
 
+async def zip_list_contents_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+    fields: Annotated[
+        list[str] | None,
+        Field(
+            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
+            default=None,
+        ),
+        BeforeValidator(coerce_json),
+    ],
+) -> str:
+    """List the contents of a ZIP file.
+
+    Args:
+        path: Path to operate on.
+    """
+
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+
+    def call(options):
+        return (
+            list(files_sdk.file.zip_list_contents(path, params, options)),
+            None,
+        )
+
+    retval, next_cursor = await call_files_api(context, call)
+    if not retval:
+        return "No files found."
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["path", "size"], fields=fields
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
+
+
 async def find_file(
     context: Context,
     path: Annotated[
@@ -107,69 +151,35 @@ async def find_file(
     return response
 
 
-async def zip_list_contents_file(
+async def zip_file(
     context: Context,
-    path: Annotated[
-        str | None, Field(description="Path to operate on.", default=None)
-    ],
-    fields: Annotated[
-        list[str] | None,
-        Field(
-            description="Optional list of attribute names to include as columns in the response table. When omitted, a sensible default set is used. Useful for narrowing wide entities or surfacing fields not in the default.",
-            default=None,
-        ),
+    paths: Annotated[
+        list | None,
+        Field(description="Paths to include in the ZIP.", default=None),
         BeforeValidator(coerce_json),
     ],
-) -> str:
-    """List the contents of a ZIP file.
-
-    Args:
-        path: Path to operate on.
-    """
-
-    params = {}
-    if path is None:
-        raise ToolError("Missing required parameter: path")
-    params["path"] = path
-
-    def call(options):
-        return (
-            list(files_sdk.file.zip_list_contents(path, params, options)),
-            None,
-        )
-
-    retval, next_cursor = await call_files_api(context, call)
-    if not retval:
-        return "No files found."
-
-    markdown_list = object_list_to_markdown_table(
-        retval, ["path", "size"], fields=fields
-    )
-    response = f"File Response:\n{markdown_list}"
-    if next_cursor:
-        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-    return response
-
-
-async def begin_delete_file(
-    context: Context,
-    path: Annotated[
-        str | None, Field(description="Path to operate on.", default=None)
+    destination: Annotated[
+        str | None,
+        Field(description="Destination file path for the ZIP.", default=None),
     ],
 ) -> str:
-    """Delete File/Folder and return its File Action.  A pending or processing deletion continues in the background after this returns; check its File Migration for completion.  Waiting for the File Migration does not cancel the deletion.
+    """Create a ZIP from one or more paths and save it to a destination path.
 
     Args:
-        path: Path to operate on.
+        paths: Paths to include in the ZIP.
+        destination: Destination file path for the ZIP.
     """
 
     params = {}
-    if path is None:
-        raise ToolError("Missing required parameter: path")
-    params["path"] = path
+    if paths is None:
+        raise ToolError("Missing required parameter: paths")
+    params["paths"] = paths
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
 
     def call(options):
-        return [files_sdk.file.begin_delete(path, params, options)], None
+        return [files_sdk.file.zip(params, options)], None
 
     retval, next_cursor = await call_files_api(context, call)
 
@@ -182,20 +192,25 @@ async def begin_delete_file(
     return response
 
 
-async def copy_file(
+async def unzip_file(
     context: Context,
     path: Annotated[
-        str | None, Field(description="Path to operate on.", default=None)
+        str | None,
+        Field(description="ZIP file path to extract.", default=None),
     ],
     destination: Annotated[
-        str | None, Field(description="Copy destination path.", default=None)
+        str | None,
+        Field(
+            description="Destination folder path for extracted files.",
+            default=None,
+        ),
     ],
 ) -> str:
-    """Copy File/Folder
+    """Extract a ZIP file to a destination folder.
 
     Args:
-        path: Path to operate on.
-        destination: Copy destination path.
+        path: ZIP file path to extract.
+        destination: Destination folder path for extracted files.
     """
 
     params = {}
@@ -207,7 +222,7 @@ async def copy_file(
     params["destination"] = destination
 
     def call(options):
-        return [files_sdk.file.copy(path, params, options)], None
+        return [files_sdk.file.unzip(path, params, options)], None
 
     retval, next_cursor = await call_files_api(context, call)
 
@@ -220,20 +235,24 @@ async def copy_file(
     return response
 
 
-async def move_file(
+async def gpg_encrypt_file(
     context: Context,
     path: Annotated[
         str | None, Field(description="Path to operate on.", default=None)
     ],
     destination: Annotated[
-        str | None, Field(description="Move destination path.", default=None)
+        str | None,
+        Field(
+            description="Destination file path for the encrypted file.",
+            default=None,
+        ),
     ],
 ) -> str:
-    """Move File/Folder
+    """Encrypt a file with GPG and save it to a destination path.
 
     Args:
         path: Path to operate on.
-        destination: Move destination path.
+        destination: Destination file path for the encrypted file.
     """
 
     params = {}
@@ -245,7 +264,49 @@ async def move_file(
     params["destination"] = destination
 
     def call(options):
-        return [files_sdk.file.move(path, params, options)], None
+        return [files_sdk.file.gpg_encrypt(path, params, options)], None
+
+    retval, next_cursor = await call_files_api(context, call)
+
+    markdown_list = object_list_to_markdown_table(
+        retval, ["status", "file_migration_id"]
+    )
+    response = f"File Response:\n{markdown_list}"
+    if next_cursor:
+        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
+    return response
+
+
+async def gpg_decrypt_file(
+    context: Context,
+    path: Annotated[
+        str | None, Field(description="Path to operate on.", default=None)
+    ],
+    destination: Annotated[
+        str | None,
+        Field(
+            description="Destination file path for the decrypted file.",
+            default=None,
+        ),
+    ],
+) -> str:
+    """Decrypt a GPG-encrypted file and save it to a destination path.
+
+    Args:
+        path: Path to operate on.
+        destination: Destination file path for the decrypted file.
+    """
+
+    params = {}
+    if path is None:
+        raise ToolError("Missing required parameter: path")
+    params["path"] = path
+    if destination is None:
+        raise ToolError("Missing required parameter: destination")
+    params["destination"] = destination
+
+    def call(options):
+        return [files_sdk.file.gpg_decrypt(path, params, options)], None
 
     retval, next_cursor = await call_files_api(context, call)
 
@@ -319,24 +380,20 @@ async def transform_file(
     return response
 
 
-async def gpg_decrypt_file(
+async def move_file(
     context: Context,
     path: Annotated[
         str | None, Field(description="Path to operate on.", default=None)
     ],
     destination: Annotated[
-        str | None,
-        Field(
-            description="Destination file path for the decrypted file.",
-            default=None,
-        ),
+        str | None, Field(description="Move destination path.", default=None)
     ],
 ) -> str:
-    """Decrypt a GPG-encrypted file and save it to a destination path.
+    """Move File/Folder
 
     Args:
         path: Path to operate on.
-        destination: Destination file path for the decrypted file.
+        destination: Move destination path.
     """
 
     params = {}
@@ -348,7 +405,7 @@ async def gpg_decrypt_file(
     params["destination"] = destination
 
     def call(options):
-        return [files_sdk.file.gpg_decrypt(path, params, options)], None
+        return [files_sdk.file.move(path, params, options)], None
 
     retval, next_cursor = await call_files_api(context, call)
 
@@ -361,24 +418,20 @@ async def gpg_decrypt_file(
     return response
 
 
-async def gpg_encrypt_file(
+async def copy_file(
     context: Context,
     path: Annotated[
         str | None, Field(description="Path to operate on.", default=None)
     ],
     destination: Annotated[
-        str | None,
-        Field(
-            description="Destination file path for the encrypted file.",
-            default=None,
-        ),
+        str | None, Field(description="Copy destination path.", default=None)
     ],
 ) -> str:
-    """Encrypt a file with GPG and save it to a destination path.
+    """Copy File/Folder
 
     Args:
         path: Path to operate on.
-        destination: Destination file path for the encrypted file.
+        destination: Copy destination path.
     """
 
     params = {}
@@ -390,7 +443,7 @@ async def gpg_encrypt_file(
     params["destination"] = destination
 
     def call(options):
-        return [files_sdk.file.gpg_encrypt(path, params, options)], None
+        return [files_sdk.file.copy(path, params, options)], None
 
     retval, next_cursor = await call_files_api(context, call)
 
@@ -403,78 +456,25 @@ async def gpg_encrypt_file(
     return response
 
 
-async def unzip_file(
+async def begin_delete_file(
     context: Context,
     path: Annotated[
-        str | None,
-        Field(description="ZIP file path to extract.", default=None),
-    ],
-    destination: Annotated[
-        str | None,
-        Field(
-            description="Destination folder path for extracted files.",
-            default=None,
-        ),
+        str | None, Field(description="Path to operate on.", default=None)
     ],
 ) -> str:
-    """Extract a ZIP file to a destination folder.
+    """Delete File/Folder and return its File Action.  A pending or processing deletion continues in the background after this returns; check its File Migration for completion.  Waiting for the File Migration does not cancel the deletion.
 
     Args:
-        path: ZIP file path to extract.
-        destination: Destination folder path for extracted files.
+        path: Path to operate on.
     """
 
     params = {}
     if path is None:
         raise ToolError("Missing required parameter: path")
     params["path"] = path
-    if destination is None:
-        raise ToolError("Missing required parameter: destination")
-    params["destination"] = destination
 
     def call(options):
-        return [files_sdk.file.unzip(path, params, options)], None
-
-    retval, next_cursor = await call_files_api(context, call)
-
-    markdown_list = object_list_to_markdown_table(
-        retval, ["status", "file_migration_id"]
-    )
-    response = f"File Response:\n{markdown_list}"
-    if next_cursor:
-        response += f"\n\nMore results available. Pass cursor={next_cursor!r} to fetch the next page."
-    return response
-
-
-async def zip_file(
-    context: Context,
-    paths: Annotated[
-        list | None,
-        Field(description="Paths to include in the ZIP.", default=None),
-        BeforeValidator(coerce_json),
-    ],
-    destination: Annotated[
-        str | None,
-        Field(description="Destination file path for the ZIP.", default=None),
-    ],
-) -> str:
-    """Create a ZIP from one or more paths and save it to a destination path.
-
-    Args:
-        paths: Paths to include in the ZIP.
-        destination: Destination file path for the ZIP.
-    """
-
-    params = {}
-    if paths is None:
-        raise ToolError("Missing required parameter: paths")
-    params["paths"] = paths
-    if destination is None:
-        raise ToolError("Missing required parameter: destination")
-    params["destination"] = destination
-
-    def call(options):
-        return [files_sdk.file.zip(params, options)], None
+        return [files_sdk.file.begin_delete(path, params, options)], None
 
     retval, next_cursor = await call_files_api(context, call)
 
@@ -507,23 +507,6 @@ def register_tools(mcp):
         return await delete_file(context, path)
 
     @mcp.tool(
-        name="Find_File",
-        description="Find File/Folder by Path",
-        annotations={
-            "title": "Find File",
-            "openWorldHint": False,
-            "readOnlyHint": True,
-        },
-    )
-    async def find_file_tool(
-        context: Context,
-        path: Annotated[
-            str | None, Field(description="Path to operate on.", default=None)
-        ],
-    ) -> str:
-        return await find_file(context, path)
-
-    @mcp.tool(
         name="Zip_List_Contents_File",
         description="List the contents of a ZIP file.",
         annotations={
@@ -549,66 +532,123 @@ def register_tools(mcp):
         return await zip_list_contents_file(context, path, fields=fields)
 
     @mcp.tool(
-        name="Begin_Delete_File",
-        description="Delete File/Folder and return its File Action.  A pending or processing deletion continues in the background after this returns; check its File Migration for completion.  Waiting for the File Migration does not cancel the deletion.",
+        name="Find_File",
+        description="Find File/Folder by Path",
         annotations={
-            "title": "Begin Delete File",
+            "title": "Find File",
             "openWorldHint": False,
-            "readOnlyHint": False,
-            "destructiveHint": True,
+            "readOnlyHint": True,
         },
     )
-    async def begin_delete_file_tool(
+    async def find_file_tool(
         context: Context,
         path: Annotated[
             str | None, Field(description="Path to operate on.", default=None)
         ],
     ) -> str:
-        return await begin_delete_file(context, path)
+        return await find_file(context, path)
 
     @mcp.tool(
-        name="Copy_File",
-        description="Copy File/Folder",
+        name="Zip_File",
+        description="Create a ZIP from one or more paths and save it to a destination path.",
         annotations={
-            "title": "Copy File",
+            "title": "Zip File",
             "openWorldHint": False,
             "readOnlyHint": False,
             "destructiveHint": True,
         },
     )
-    async def copy_file_tool(
+    async def zip_file_tool(
+        context: Context,
+        paths: Annotated[
+            list | None,
+            Field(description="Paths to include in the ZIP.", default=None),
+            BeforeValidator(coerce_json),
+        ],
+        destination: Annotated[
+            str | None,
+            Field(
+                description="Destination file path for the ZIP.", default=None
+            ),
+        ],
+    ) -> str:
+        return await zip_file(context, paths, destination)
+
+    @mcp.tool(
+        name="Unzip_File",
+        description="Extract a ZIP file to a destination folder.",
+        annotations={
+            "title": "Unzip File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
+    async def unzip_file_tool(
+        context: Context,
+        path: Annotated[
+            str | None,
+            Field(description="ZIP file path to extract.", default=None),
+        ],
+        destination: Annotated[
+            str | None,
+            Field(
+                description="Destination folder path for extracted files.",
+                default=None,
+            ),
+        ],
+    ) -> str:
+        return await unzip_file(context, path, destination)
+
+    @mcp.tool(
+        name="Gpg_Encrypt_File",
+        description="Encrypt a file with GPG and save it to a destination path.",
+        annotations={
+            "title": "Gpg Encrypt File",
+            "openWorldHint": False,
+            "readOnlyHint": False,
+            "destructiveHint": True,
+        },
+    )
+    async def gpg_encrypt_file_tool(
         context: Context,
         path: Annotated[
             str | None, Field(description="Path to operate on.", default=None)
         ],
         destination: Annotated[
             str | None,
-            Field(description="Copy destination path.", default=None),
+            Field(
+                description="Destination file path for the encrypted file.",
+                default=None,
+            ),
         ],
     ) -> str:
-        return await copy_file(context, path, destination)
+        return await gpg_encrypt_file(context, path, destination)
 
     @mcp.tool(
-        name="Move_File",
-        description="Move File/Folder",
+        name="Gpg_Decrypt_File",
+        description="Decrypt a GPG-encrypted file and save it to a destination path.",
         annotations={
-            "title": "Move File",
+            "title": "Gpg Decrypt File",
             "openWorldHint": False,
             "readOnlyHint": False,
             "destructiveHint": True,
         },
     )
-    async def move_file_tool(
+    async def gpg_decrypt_file_tool(
         context: Context,
         path: Annotated[
             str | None, Field(description="Path to operate on.", default=None)
         ],
         destination: Annotated[
             str | None,
-            Field(description="Move destination path.", default=None),
+            Field(
+                description="Destination file path for the decrypted file.",
+                default=None,
+            ),
         ],
     ) -> str:
-        return await move_file(context, path, destination)
+        return await gpg_decrypt_file(context, path, destination)
 
     @mcp.tool(
         name="Transform_File",
@@ -649,103 +689,63 @@ def register_tools(mcp):
         )
 
     @mcp.tool(
-        name="Gpg_Decrypt_File",
-        description="Decrypt a GPG-encrypted file and save it to a destination path.",
+        name="Move_File",
+        description="Move File/Folder",
         annotations={
-            "title": "Gpg Decrypt File",
+            "title": "Move File",
             "openWorldHint": False,
             "readOnlyHint": False,
             "destructiveHint": True,
         },
     )
-    async def gpg_decrypt_file_tool(
+    async def move_file_tool(
         context: Context,
         path: Annotated[
             str | None, Field(description="Path to operate on.", default=None)
         ],
         destination: Annotated[
             str | None,
-            Field(
-                description="Destination file path for the decrypted file.",
-                default=None,
-            ),
+            Field(description="Move destination path.", default=None),
         ],
     ) -> str:
-        return await gpg_decrypt_file(context, path, destination)
+        return await move_file(context, path, destination)
 
     @mcp.tool(
-        name="Gpg_Encrypt_File",
-        description="Encrypt a file with GPG and save it to a destination path.",
+        name="Copy_File",
+        description="Copy File/Folder",
         annotations={
-            "title": "Gpg Encrypt File",
+            "title": "Copy File",
             "openWorldHint": False,
             "readOnlyHint": False,
             "destructiveHint": True,
         },
     )
-    async def gpg_encrypt_file_tool(
+    async def copy_file_tool(
         context: Context,
         path: Annotated[
             str | None, Field(description="Path to operate on.", default=None)
         ],
         destination: Annotated[
             str | None,
-            Field(
-                description="Destination file path for the encrypted file.",
-                default=None,
-            ),
+            Field(description="Copy destination path.", default=None),
         ],
     ) -> str:
-        return await gpg_encrypt_file(context, path, destination)
+        return await copy_file(context, path, destination)
 
     @mcp.tool(
-        name="Unzip_File",
-        description="Extract a ZIP file to a destination folder.",
+        name="Begin_Delete_File",
+        description="Delete File/Folder and return its File Action.  A pending or processing deletion continues in the background after this returns; check its File Migration for completion.  Waiting for the File Migration does not cancel the deletion.",
         annotations={
-            "title": "Unzip File",
+            "title": "Begin Delete File",
             "openWorldHint": False,
             "readOnlyHint": False,
             "destructiveHint": True,
         },
     )
-    async def unzip_file_tool(
+    async def begin_delete_file_tool(
         context: Context,
         path: Annotated[
-            str | None,
-            Field(description="ZIP file path to extract.", default=None),
-        ],
-        destination: Annotated[
-            str | None,
-            Field(
-                description="Destination folder path for extracted files.",
-                default=None,
-            ),
+            str | None, Field(description="Path to operate on.", default=None)
         ],
     ) -> str:
-        return await unzip_file(context, path, destination)
-
-    @mcp.tool(
-        name="Zip_File",
-        description="Create a ZIP from one or more paths and save it to a destination path.",
-        annotations={
-            "title": "Zip File",
-            "openWorldHint": False,
-            "readOnlyHint": False,
-            "destructiveHint": True,
-        },
-    )
-    async def zip_file_tool(
-        context: Context,
-        paths: Annotated[
-            list | None,
-            Field(description="Paths to include in the ZIP.", default=None),
-            BeforeValidator(coerce_json),
-        ],
-        destination: Annotated[
-            str | None,
-            Field(
-                description="Destination file path for the ZIP.", default=None
-            ),
-        ],
-    ) -> str:
-        return await zip_file(context, paths, destination)
+        return await begin_delete_file(context, path)

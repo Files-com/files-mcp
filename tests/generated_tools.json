@@ -539,13 +539,13 @@
       "readOnlyHint": true
     },
     "parameters": [
+      "path",
       "start_at",
       "end_at",
       "display",
       "cursor",
       "per_page",
       "sort_by",
-      "path",
       "fields"
     ]
   },
@@ -571,13 +571,13 @@
       "readOnlyHint": true
     },
     "parameters": [
+      "path",
       "start_at",
       "end_at",
       "display",
       "cursor",
       "per_page",
       "sort_by",
-      "path",
       "fields"
     ]
   },
@@ -589,13 +589,13 @@
       "readOnlyHint": true
     },
     "parameters": [
+      "user_id",
       "start_at",
       "end_at",
       "display",
       "cursor",
       "per_page",
       "sort_by",
-      "user_id",
       "fields"
     ]
   },
