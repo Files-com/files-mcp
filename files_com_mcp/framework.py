@@ -2,7 +2,7 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
-SUPPORTED_FRAMEWORK = {"fastmcp-slim": "3.4.7", "mcp": "1.30.0"}
+SUPPORTED_FRAMEWORK = {"fastmcp-slim": "3.4.10", "mcp": "1.30.0"}
 
 
 def _installed(distribution):

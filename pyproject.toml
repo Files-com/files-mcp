@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "files_com_mcp"
-version = "2.0.50"
+version = "2.0.51"
 description = "Local-only MCP server for the Files.com API"
 readme = "README.md"
 license = "MIT"
@@ -15,7 +15,7 @@ requires-python = ">=3.11"
 # (pre_commit.sh) requires the published SDK releases the server supports.
 #
 # FastMCP comes as fastmcp-slim with the requirements of its "server" extra
-# listed here, as fastmcp-slim 3.4.7 declares them, except for:
+# listed here, as fastmcp-slim 3.4.10 declares them, except for:
 #   * py-key-value-aio: the [filetree,memory] stores, not also [keyring]. The
 #     server uses the memory and file-tree stores; the keyring store would
 #     bring keyring and, on Python 3.11, backports.tarfile.
@@ -24,7 +24,7 @@ requires-python = ">=3.11"
 # scripts/tasks.py check compares this list with fastmcp-slim's metadata, so
 # a FastMCP upgrade must reconcile it.
 dependencies = [
-  "fastmcp-slim==3.4.7",
+  "fastmcp-slim==3.4.10",
   "authlib>=1.6.11",
   "cyclopts>=4.0.0",
   "exceptiongroup>=1.2.2",

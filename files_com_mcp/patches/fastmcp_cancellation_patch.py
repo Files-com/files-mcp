@@ -17,7 +17,7 @@ those of other apps hosted beside this package.
 Responders of other sessions, such as MCP clients', keep mcp's behavior.
 
 This relies on mcp 1.30.0's RequestResponder and request dispatch and on
-FastMCP 3.4.7's server session, which files_com_mcp.patches checks before
+FastMCP 3.4.10's server session, which files_com_mcp.patches checks before
 applying it.
 """
 

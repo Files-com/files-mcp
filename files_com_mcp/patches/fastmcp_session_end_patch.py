@@ -1,7 +1,7 @@
 """Cancels the tool calls still running when a session's input ends.
 
 When its client's connection closes, the MCP SDK's server loop cancels the
-requests it is still handling, so none outlives its client. FastMCP 3.4.7
+requests it is still handling, so none outlives its client. FastMCP 3.4.10
 runs its own copy of that loop, without that step: after a STDIO client
 closes the server's input, a transfer would carry on to the end for a
 client that has gone. This restores the step in FastMCP's loop, which runs

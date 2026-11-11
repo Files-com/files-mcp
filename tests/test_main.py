@@ -93,13 +93,13 @@ class TestMain(unittest.TestCase):
     def test_refuses_to_start_with_an_unverified_framework(
         self, version, run_stdio
     ):
-        version.side_effect = {"fastmcp-slim": "3.4.7", "mcp": "1.31.0"}.get
+        version.side_effect = {"fastmcp-slim": "3.4.10", "mcp": "1.31.0"}.get
         stderr = io.StringIO()
         with redirect_stderr(stderr), self.assertRaises(SystemExit) as exit:
             __main__.main([])
         self.assertEqual(exit.exception.code, 1)
         self.assertIn(
-            "supports only fastmcp-slim 3.4.7 and mcp 1.30.0, but found mcp 1.31.0",
+            "supports only fastmcp-slim 3.4.10 and mcp 1.30.0, but found mcp 1.31.0",
             stderr.getvalue(),
         )
         run_stdio.assert_not_called()
