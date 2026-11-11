@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "files_com_mcp"
-version = "2.0.45"
+version = "2.0.46"
 description = "Local-only MCP server for the Files.com API"
 readme = "README.md"
 license = "MIT"
