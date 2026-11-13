@@ -590,6 +590,8 @@ bundle exec puma
 FILES_MOCK_MODE=simulation bundle exec puma
 ```
 
+Set `FILES_COM_CHECK_DOWNLOAD_MODIFICATION_TIME=false` in the subprocess environment to disable the SDK's default-on modification-time checks for downloads. When omitted, the setting is true. Disabling it can miss source changes detectable only by timestamps; strong version, size and byte checks remain enabled.
+
 ## Compatibility
 
 Version 2 of `files-com-mcp` needs Python 3.11 or newer, up from the previous Python 3.10 minimum, and version 2 of the Files.com Python SDK (`files-com>=2.0.0,<3`), which it installs itself. To use version 2, make sure your client starts the server with Python 3.11 or newer, for example with `uvx --python ">=3.11" files-com-mcp`.

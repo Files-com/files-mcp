@@ -9,6 +9,8 @@ from unittest.mock import patch
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+import files_sdk
+
 from files_com_mcp import __main__
 from tests import stdio_server
 
@@ -26,6 +28,35 @@ class DummyClient:
 
 
 class TestMain(unittest.TestCase):
+    def test_startup_resolves_the_download_modification_check(self):
+        for value, expected in (
+            (None, True),
+            ("false", False),
+            ("true", True),
+        ):
+            with (
+                self.subTest(value=value),
+                patch.dict(os.environ, {}, clear=True),
+                patch.object(
+                    files_sdk, "check_download_modification_time", False
+                ),
+            ):
+                if value is not None:
+                    os.environ[
+                        "FILES_COM_CHECK_DOWNLOAD_MODIFICATION_TIME"
+                    ] = value
+                __main__._configure()
+                self.assertIs(
+                    files_sdk.check_download_modification_time, expected
+                )
+        with patch.dict(
+            os.environ,
+            {"FILES_COM_CHECK_DOWNLOAD_MODIFICATION_TIME": "invalid"},
+            clear=True,
+        ):
+            with self.assertRaisesRegex(ValueError, "Invalid boolean"):
+                __main__._configure()
+
     @patch.dict(os.environ, {}, clear=True)
     def test_runtime_env_defaults_to_production(self):
         self.assertEqual(__main__._runtime_env(), "production")

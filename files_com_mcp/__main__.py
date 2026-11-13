@@ -58,6 +58,13 @@ def _configure() -> None:
     if os.getenv("FILES_COM_BASE_URL"):
         files_sdk.base_url = os.getenv("FILES_COM_BASE_URL")
 
+    check_modification_time = _get_bool_env(
+        "FILES_COM_CHECK_DOWNLOAD_MODIFICATION_TIME"
+    )
+    files_sdk.check_download_modification_time = (
+        True if check_modification_time is None else check_modification_time
+    )
+
     _apply_ssl_verify_setting()
     configured_local_root()
 

@@ -11,6 +11,9 @@ from fastmcp import Client, FastMCP
 from mcp.types import TextContent
 from requests import Response
 
+import files_sdk
+
+from files_com_mcp import __main__
 from files_com_mcp.authored_tools import local_transfer
 from files_com_mcp.server import create_mcp
 
@@ -94,6 +97,56 @@ class TestLocalTransfers(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(error)
         self.assertIn("File downloaded successfully", message)
         self.assertEqual(path.read_bytes(), b"downloaded content")
+
+    async def test_download_tool_inherits_the_subprocess_timestamp_setting(
+        self,
+    ):
+        baseline = "Wed, 21 Oct 2015 07:28:00 GMT"
+        newer = "Wed, 21 Oct 2015 07:28:01 GMT"
+        ordinary = self.respond
+        for enabled in (False, True):
+            seen = []
+
+            def response(request, **kwargs):
+                result = ordinary(request, **kwargs)
+                if request.url == "https://transfer.example.test/download":
+                    seen.append(request.headers.get("If-Unmodified-Since"))
+                    result.headers["Last-Modified"] = (
+                        baseline if len(seen) == 1 else newer
+                    )
+                    result.headers["Content-Length"] = "18"
+                    result.raw = io.BytesIO(
+                        b"short" if len(seen) == 1 else b"downloaded content"
+                    )
+                return result
+
+            with (
+                self.subTest(enabled=enabled),
+                patch.dict(
+                    os.environ,
+                    {
+                        "FILES_COM_CHECK_DOWNLOAD_MODIFICATION_TIME": str(
+                            enabled
+                        ).lower()
+                    },
+                ),
+                patch.object(
+                    files_sdk, "check_download_modification_time", True
+                ),
+                patch.object(self, "respond", response),
+            ):
+                __main__._configure()
+                destination = self.root / "dated-download.bin"
+                error, message, _ = await self.transfer(
+                    "Download_File_to_Local", destination
+                )
+                self.assertFalse(error, message)
+                self.assertEqual(
+                    destination.read_bytes(), b"downloaded content"
+                )
+                self.assertEqual(
+                    seen, [None, baseline, None] if enabled else [None, None]
+                )
 
     async def test_transfers_inside_root_and_children(self):
         child = self.root / "child"

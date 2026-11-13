@@ -6,13 +6,13 @@
     "url": "https://github.com/Files-com/files-mcp",
     "source": "github"
   },
-  "version": "2.0.73",
+  "version": "2.0.74",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "files-com-mcp",
-      "version": "2.0.73",
+      "version": "2.0.74",
       "transport": {
         "type": "stdio"
       },
@@ -23,6 +23,13 @@
           "format": "string",
           "isSecret": true,
           "name": "FILES_COM_API_KEY"
+        },
+        {
+          "description": "Check download modification times by default. Set false to disable timestamp checks; stronger version and byte checks remain enabled.",
+          "isRequired": false,
+          "format": "boolean",
+          "default": "true",
+          "name": "FILES_COM_CHECK_DOWNLOAD_MODIFICATION_TIME"
         },
         {
           "description": "Optional absolute path to an existing local directory. Restricts uploads and downloads to that directory and its children. Omit or leave empty to allow any local path accessible to the server.",
