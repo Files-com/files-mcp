@@ -56,7 +56,7 @@ RUN_TESTS = PACKAGE / "scripts" / "run_tests.py"
 PIP_INSTALL = ("-m", "pip", "--disable-pip-version-check", "--no-input")
 LOCKED = ("install", "--quiet", "--require-hashes", "--only-binary", ":all:")
 # Releases published more recently than this are not locked.
-MINIMUM_RELEASE_AGE = datetime.timedelta(days=14)
+MINIMUM_RELEASE_AGE = datetime.timedelta(days=5)
 
 
 class TaskFailed(Exception):
@@ -155,7 +155,7 @@ def pyright():
         for name in ("package.json", "package-lock.json"):
             shutil.copy(lock_dir / name, path)
         # fsevents is optional and only watches files; skip it and its
-        # install script. Refuse packages published in the last 14 days.
+        # install script. Refuse packages published in the last 5 days.
         run(
             npm,
             "ci",
@@ -163,7 +163,7 @@ def pyright():
             "--ignore-scripts",
             "--no-audit",
             "--no-fund",
-            "--min-release-age=14",
+            "--min-release-age=5",
             cwd=path,
             env={**os.environ, "npm_config_cache": str(TOOLS / "npm-cache")},
         )
@@ -739,7 +739,7 @@ def twine(arguments):
 def lock(names, cutoff, allow_newer):
     """Resolve requirements/*.in (or just those named) for every platform
     and supported Python (uv --universal), from releases published before
-    cutoff: by default, 14 days ago. An allow_newer entry, NAME=TIME, admits
+    cutoff: by default, 5 days ago. An allow_newer entry, NAME=TIME, admits
     NAME releases up to TIME when a requirement leaves no older choice; the
     lock header records it, and such a lock does not meet the release-age
     rule. runtime.txt resolves the package's own dependencies from
