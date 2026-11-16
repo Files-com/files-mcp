@@ -6,7 +6,6 @@
     python scripts/tasks.py build     # build and inspect the sdist and wheel
     python scripts/tasks.py package   # build, inspect and test the artifacts
     python scripts/tasks.py lock      # resolve requirements/*.txt again
-    python scripts/tasks.py twine ... # run the pinned twine
 
 Only format and lock change files. Every environment is built with the
 interpreter that runs this script, so "python3.11 scripts/tasks.py test"
@@ -727,12 +726,6 @@ def package(outdir):
     test_installed(sdist, sdk)
 
 
-def twine(arguments):
-    """Run the twine that requirements/package.txt pins, for example to upload
-    what build checked."""
-    run(environment("package", "package.txt"), "-m", "twine", *arguments)
-
-
 # Locking
 
 
@@ -853,8 +846,6 @@ def main():
         metavar="NAME=TIME",
         help="admit releases of NAME published up to TIME",
     )
-    twine_parser = tasks.add_parser("twine", help="run the pinned twine")
-    twine_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
     try:
@@ -868,10 +859,8 @@ def main():
             build(args.outdir)
         elif args.task == "package":
             package(args.outdir)
-        elif args.task == "lock":
-            lock(args.names, args.cutoff, args.allow_newer)
         else:
-            twine(args.arguments)
+            lock(args.names, args.cutoff, args.allow_newer)
     except TaskFailed as failure:
         sys.exit(f"{args.task} failed: {failure}")
 

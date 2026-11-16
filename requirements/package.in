@@ -1,4 +1,3 @@
-# Builds the sdist and wheel and checks them (scripts/tasks.py build); the
-# release (push_release.rb) uploads them with this twine.
+# Builds the sdist and wheel and checks them (scripts/tasks.py build).
 build==1.6.1
 twine==7.0.0
