@@ -39,3 +39,5 @@ if grep -qF "$development" pyproject.toml || ! grep -qF "$release" pyproject.tom
   echo "pre_commit.sh: could not write $release to pyproject.toml" >&2
   exit 1
 fi
+
+git add pyproject.toml
