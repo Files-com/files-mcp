@@ -86,6 +86,7 @@ async def list_bundle(
             "dont_separate_submissions_by_folder",
             "effective_expires_at",
             "max_uses",
+            "effective_max_uses",
             "internal_name",
             "note",
             "path_template",
@@ -167,6 +168,7 @@ async def find_bundle(
             "dont_separate_submissions_by_folder",
             "effective_expires_at",
             "max_uses",
+            "effective_max_uses",
             "internal_name",
             "note",
             "path_template",
@@ -219,7 +221,7 @@ async def create_bundle(
     max_uses: Annotated[
         int | None,
         Field(
-            description="Maximum number of times bundle can be accessed",
+            description="Visitor limit configured for this Share Link. Null uses the Site-wide cap, if set. The configured limit cannot exceed the Site-wide cap.",
             default=None,
         ),
     ],
@@ -250,7 +252,7 @@ async def create_bundle(
         paths: A list of paths to include in this bundle.
         password: Password for this bundle.
         expires_at: Explicit Bundle expiration date/time. If not set, the site-wide expiration setting may apply.
-        max_uses: Maximum number of times bundle can be accessed
+        max_uses: Visitor limit configured for this Share Link. Null uses the Site-wide cap, if set. The configured limit cannot exceed the Site-wide cap.
         description: Public description
         note: Bundle internal note
         permissions: Permissions that apply to Folders in this Share Link.
@@ -313,6 +315,7 @@ async def create_bundle(
             "dont_separate_submissions_by_folder",
             "effective_expires_at",
             "max_uses",
+            "effective_max_uses",
             "internal_name",
             "note",
             "path_template",
@@ -413,6 +416,7 @@ async def update_bundle(
             "dont_separate_submissions_by_folder",
             "effective_expires_at",
             "max_uses",
+            "effective_max_uses",
             "internal_name",
             "note",
             "path_template",
@@ -558,7 +562,7 @@ def register_tools(mcp):
         max_uses: Annotated[
             int | None,
             Field(
-                description="Maximum number of times bundle can be accessed",
+                description="Visitor limit configured for this Share Link. Null uses the Site-wide cap, if set. The configured limit cannot exceed the Site-wide cap.",
                 default=None,
             ),
         ],
